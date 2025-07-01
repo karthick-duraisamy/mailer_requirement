@@ -1,13 +1,29 @@
 import React, { useState } from 'react';
-import { Reply, ReplyAll, Forward, MoreHorizontal, Star, Archive, ChevronDown, ChevronUp } from 'lucide-react';
+import { Reply, ReplyAll, Forward, MoreHorizontal, Star, Archive, ChevronDown, ChevronUp, Sparkles, RotateCcw } from 'lucide-react';
 import { Email } from '../types/email';
+
+interface AiReplyState {
+  isGenerating: boolean;
+  showAiReply: boolean;
+  generatedReply: string;
+  tone: 'professional' | 'friendly' | 'concise';
+}
 
 interface ConversationThreadProps {
   email: Email | null;
   onClose: () => void;
+  aiReplyState: AiReplyState;
+  onGenerateAiReply: (email: Email, tone?: string) => void;
+  onAiReplyStateChange: (state: AiReplyState) => void;
 }
 
-const ConversationThread: React.FC<ConversationThreadProps> = ({ email, onClose }) => {
+const ConversationThread: React.FC<ConversationThreadProps> = ({ 
+  email, 
+  onClose, 
+  aiReplyState, 
+  onGenerateAiReply, 
+  onAiReplyStateChange 
+}) => {
   const [replyText, setReplyText] = useState('');
   const [showReply, setShowReply] = useState(false);
   const [expandedMessages, setExpandedMessages] = useState<Set<string>>(new Set());
@@ -43,6 +59,29 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({ email, onClose 
       // Handle reply logic here
       setReplyText('');
       setShowReply(false);
+      onAiReplyStateChange({ ...aiReplyState, showAiReply: false, generatedReply: '' });
+    }
+  };
+
+  const handleAiReplyGenerate = () => {
+    if (email) {
+      onGenerateAiReply(email, aiReplyState.tone);
+    }
+  };
+
+  const handleToneChange = (tone: 'professional' | 'friendly' | 'concise') => {
+    onAiReplyStateChange({ ...aiReplyState, tone });
+  };
+
+  const handleUseAiReply = () => {
+    setReplyText(aiReplyState.generatedReply);
+    setShowReply(true);
+    onAiReplyStateChange({ ...aiReplyState, showAiReply: false });
+  };
+
+  const handleRegenerateAi = () => {
+    if (email) {
+      onGenerateAiReply(email, aiReplyState.tone);
     }
   };
 
@@ -178,22 +217,81 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({ email, onClose 
                       
                       {/* Action Buttons - Only show for the last message */}
                       {isLastMessage && (
-                        <div className="flex items-center space-x-2 pt-4 border-t border-gray-100">
-                          <button 
-                            onClick={() => setShowReply(!showReply)}
-                            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                          >
-                            <Reply className="w-4 h-4" />
-                            <span>Reply</span>
-                          </button>
-                          <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors">
-                            <ReplyAll className="w-4 h-4" />
-                            <span>Reply All</span>
-                          </button>
-                          <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors">
-                            <Forward className="w-4 h-4" />
-                            <span>Forward</span>
-                          </button>
+                        <div className="space-y-4 pt-4 border-t border-gray-100">
+                          <div className="flex items-center space-x-2">
+                            <button 
+                              onClick={() => setShowReply(!showReply)}
+                              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                            >
+                              <Reply className="w-4 h-4" />
+                              <span>Reply</span>
+                            </button>
+                            <button 
+                              onClick={handleAiReplyGenerate}
+                              disabled={aiReplyState.isGenerating}
+                              className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-400 text-white rounded-lg transition-colors"
+                            >
+                              <Sparkles className="w-4 h-4" />
+                              <span>{aiReplyState.isGenerating ? 'Generating...' : 'Reply with AI'}</span>
+                            </button>
+                            <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors">
+                              <ReplyAll className="w-4 h-4" />
+                              <span>Reply All</span>
+                            </button>
+                            <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors">
+                              <Forward className="w-4 h-4" />
+                              <span>Forward</span>
+                            </button>
+                          </div>
+
+                          {/* AI Reply Preview */}
+                          {aiReplyState.showAiReply && (
+                            <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-4">
+                              <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center space-x-2">
+                                  <Sparkles className="w-4 h-4 text-purple-600" />
+                                  <span className="font-semibold text-gray-900">AI Generated Reply</span>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <select
+                                    value={aiReplyState.tone}
+                                    onChange={(e) => handleToneChange(e.target.value as any)}
+                                    className="text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                  >
+                                    <option value="professional">Professional</option>
+                                    <option value="friendly">Friendly</option>
+                                    <option value="concise">Concise</option>
+                                  </select>
+                                  <button
+                                    onClick={handleRegenerateAi}
+                                    className="text-purple-600 hover:text-purple-700 p-1"
+                                    title="Regenerate"
+                                  >
+                                    <RotateCcw className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              </div>
+                              <div className="bg-white border border-gray-200 rounded p-3 mb-3">
+                                <pre className="whitespace-pre-wrap text-gray-800 text-sm font-sans">
+                                  {aiReplyState.generatedReply}
+                                </pre>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <button
+                                  onClick={handleUseAiReply}
+                                  className="flex items-center space-x-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors text-sm"
+                                >
+                                  <span>Use This Reply</span>
+                                </button>
+                                <button
+                                  onClick={() => onAiReplyStateChange({ ...aiReplyState, showAiReply: false })}
+                                  className="px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors text-sm"
+                                >
+                                  Dismiss
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
                     </>
@@ -229,6 +327,12 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({ email, onClose 
               placeholder="Write your reply..."
               className="w-full h-40 p-4 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
+            {replyText === aiReplyState.generatedReply && aiReplyState.generatedReply && (
+              <div className="mt-2 text-sm text-purple-600 flex items-center space-x-1">
+                <Sparkles className="w-3 h-3" />
+                <span>Using AI-generated reply</span>
+              </div>
+            )}
             <div className="flex items-center justify-between mt-4">
               <button
                 onClick={() => setShowReply(false)}

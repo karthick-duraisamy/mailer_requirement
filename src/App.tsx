@@ -22,6 +22,12 @@ function App() {
     dateRange: { from: '', to: '' },
     intent: 'all',
   });
+  const [aiReplyState, setAiReplyState] = useState({
+    isGenerating: false,
+    showAiReply: false,
+    generatedReply: '',
+    tone: 'professional',
+  });
 
   // Apply filters and sorting
   const applyFilters = (emailList: Email[]) => {
@@ -56,7 +62,7 @@ function App() {
         const emailDate = new Date(email.timestamp);
         const fromDate = filters.dateRange.from ? new Date(filters.dateRange.from) : null;
         const toDate = filters.dateRange.to ? new Date(filters.dateRange.to + 'T23:59:59') : null;
-        
+
         return (!fromDate || emailDate >= fromDate) && (!toDate || emailDate <= toDate);
       });
     }
@@ -242,22 +248,72 @@ function App() {
     setSidebarOpen(false); // Close sidebar on mobile when selecting item
   };
 
+  const handleFiltersChange = (newFilters: FilterOptions) => {
+    setFilters(newFilters);
+  };
+
+  const generateAiReply = async (email: Email, tone: string = 'professional') => {
+    setAiReplyState(prev => ({ ...prev, isGenerating: true }));
+
+    // Simulate AI generation delay
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    // Generate contextual reply based on email content and tone
+    const lastMessage = email.messages[email.messages.length - 1];
+    let generatedReply = '';
+
+    switch (tone) {
+      case 'friendly':
+        generatedReply = `Hi ${lastMessage.sender.split(' ')[0]},\n\nThanks for your email! I appreciate you reaching out.\n\n${getContextualResponse(email)}\n\nLooking forward to hearing from you!\n\nBest regards`;
+        break;
+      case 'concise':
+        generatedReply = `Hi,\n\n${getContextualResponse(email)}\n\nBest regards`;
+        break;
+      default: // professional
+        generatedReply = `Dear ${lastMessage.sender},\n\nThank you for your email regarding ${email.subject.toLowerCase()}.\n\n${getContextualResponse(email)}\n\nPlease let me know if you have any questions.\n\nBest regards`;
+    }
+
+    setAiReplyState(prev => ({
+      ...prev,
+      isGenerating: false,
+      showAiReply: true,
+      generatedReply,
+      tone: tone as any
+    }));
+  };
+
+  const getContextualResponse = (email: Email) => {
+    const content = email.messages[email.messages.length - 1].content.toLowerCase();
+
+    if (content.includes('meeting') || content.includes('schedule')) {
+      return "I've reviewed the meeting details and will check my calendar. I'll get back to you shortly with my availability.";
+    } else if (content.includes('project') || content.includes('timeline')) {
+      return "I understand the project requirements and timeline. I'll review the details and provide an update by end of week.";
+    } else if (content.includes('review') || content.includes('feedback')) {
+      return "Thank you for sharing this information. I'll review the details and provide my feedback within the next 2 business days.";
+    } else if (content.includes('urgent') || content.includes('asap')) {
+      return "I understand this is urgent. I'll prioritize this and get back to you as soon as possible.";
+    } else {
+      return "I've received your message and will address the points raised. I'll follow up with you soon.";
+    }
+  };
+
   return (
     <div className="h-screen flex flex-col bg-gray-50">
       <Header 
         onMenuToggle={handleMenuToggle} 
         onSearch={handleSearch}
-        onFiltersChange={setFilters}
+        onFiltersChange={handleFiltersChange}
         filters={filters}
       />
-      
+
       <div className="flex-1 flex overflow-hidden">
         <Sidebar 
           activeItem={activeItem} 
           onItemSelect={handleSectionChange}
           isOpen={sidebarOpen}
         />
-        
+
         <div className="flex-1 flex min-w-0">
           <div className="w-80 flex-shrink-0">
             <EmailList
@@ -270,11 +326,14 @@ function App() {
               activeSection={activeItem}
             />
           </div>
-          
-          <ConversationThread
-            email={selectedEmail}
-            onClose={() => setSelectedEmail(null)}
-          />
+
+          <ConversationThread 
+              email={selectedEmail} 
+              onClose={() => setSelectedEmail(null)}
+              aiReplyState={aiReplyState}
+              onGenerateAiReply={generateAiReply}
+              onAiReplyStateChange={setAiReplyState}
+            />
         </div>
       </div>
     </div>
