@@ -27,7 +27,7 @@ Here are the highlights:
 • 28% improvement in conversion rates
 • $125K additional revenue generated
 
-I've attached the detailed report for your review. Let's schedule a meeting next week to discuss the strategy for Q1 2024.
+I've attached the detailed report and analytics spreadsheet for your review. Let's schedule a meeting next week to discuss the strategy for Q1 2024.
 
 Best regards,
 Sarah`,
@@ -222,7 +222,7 @@ Feedback Points:
 3. Mobile responsiveness: Some elements need adjustment for smaller screens
 4. User flow: The checkout process could be simplified by one step
 
-I've annotated the designs with specific comments and suggestions. You can access them through the shared Figma link.
+I've annotated the designs with specific comments and suggestions. You can access them through the shared Figma link. I've also attached the updated wireframes as PDF files for offline review.
 
 Let's schedule a design review meeting for Wednesday to go through these in detail.
 

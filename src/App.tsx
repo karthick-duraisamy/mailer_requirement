@@ -5,6 +5,7 @@ import EmailList from './components/EmailList';
 import ConversationThread from './components/ConversationThread';
 import { Email } from './types/email';
 import { mockEmails } from './data/mockEmails';
+import { FilterOptions } from './components/EmailFilters';
 
 function App() {
   const [activeItem, setActiveItem] = useState('inbox');
@@ -13,8 +14,100 @@ function App() {
   const [emails, setEmails] = useState<Email[]>(mockEmails);
   const [checkedEmails, setCheckedEmails] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
+  const [filters, setFilters] = useState<FilterOptions>({
+    readStatus: 'all',
+    starred: false,
+    hasAttachment: false,
+    sortBy: 'newest',
+    dateRange: { from: '', to: '' },
+    intent: 'all',
+  });
 
-  // Filter emails based on active section and search query
+  // Apply filters and sorting
+  const applyFilters = (emailList: Email[]) => {
+    let filtered = [...emailList];
+
+    // Apply read status filter
+    if (filters.readStatus === 'read') {
+      filtered = filtered.filter(email => email.isRead);
+    } else if (filters.readStatus === 'unread') {
+      filtered = filtered.filter(email => !email.isRead);
+    }
+
+    // Apply starred filter
+    if (filters.starred) {
+      filtered = filtered.filter(email => email.isStarred);
+    }
+
+    // Apply attachment filter (mock logic - in real app, check email content)
+    if (filters.hasAttachment) {
+      filtered = filtered.filter(email => 
+        email.messages.some(message => 
+          message.content.toLowerCase().includes('attach') ||
+          message.content.toLowerCase().includes('file') ||
+          message.content.toLowerCase().includes('document')
+        )
+      );
+    }
+
+    // Apply date range filter
+    if (filters.dateRange.from || filters.dateRange.to) {
+      filtered = filtered.filter(email => {
+        const emailDate = new Date(email.timestamp);
+        const fromDate = filters.dateRange.from ? new Date(filters.dateRange.from) : null;
+        const toDate = filters.dateRange.to ? new Date(filters.dateRange.to + 'T23:59:59') : null;
+        
+        return (!fromDate || emailDate >= fromDate) && (!toDate || emailDate <= toDate);
+      });
+    }
+
+    // Apply intent-based filter
+    if (filters.intent !== 'all') {
+      filtered = filtered.filter(email => {
+        const content = `${email.subject} ${email.preview}`.toLowerCase();
+        switch (filters.intent) {
+          case 'meetings':
+            return content.includes('meeting') || content.includes('schedule') || content.includes('appointment');
+          case 'notifications':
+            return content.includes('notification') || content.includes('system') || content.includes('alert');
+          case 'campaigns':
+            return content.includes('newsletter') || content.includes('campaign') || content.includes('marketing');
+          case 'support':
+            return content.includes('support') || content.includes('help') || content.includes('issue');
+          default:
+            return true;
+        }
+      });
+    }
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      switch (filters.sortBy) {
+        case 'oldest':
+          return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+        case 'newest':
+          return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+        case 'subject-az':
+          return a.subject.localeCompare(b.subject);
+        case 'subject-za':
+          return b.subject.localeCompare(a.subject);
+        case 'sender-az':
+          return a.sender.localeCompare(b.sender);
+        case 'sender-za':
+          return b.sender.localeCompare(a.sender);
+        case 'starred-first':
+          if (a.isStarred && !b.isStarred) return -1;
+          if (!a.isStarred && b.isStarred) return 1;
+          return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+        default:
+          return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+      }
+    });
+
+    return filtered;
+  };
+
+  // Filter emails based on active section, search query, and filters
   const filteredEmails = useMemo(() => {
     let filtered = emails;
 
@@ -84,8 +177,11 @@ function App() {
       );
     }
 
+    // Apply advanced filters
+    filtered = applyFilters(filtered);
+
     return filtered;
-  }, [emails, activeItem, searchQuery]);
+  }, [emails, activeItem, searchQuery, filters]);
 
   const handleEmailSelect = (email: Email) => {
     setSelectedEmail(email);
@@ -133,7 +229,12 @@ function App() {
 
   return (
     <div className="h-screen flex flex-col bg-gray-50">
-      <Header onMenuToggle={handleMenuToggle} onSearch={handleSearch} />
+      <Header 
+        onMenuToggle={handleMenuToggle} 
+        onSearch={handleSearch}
+        onFiltersChange={setFilters}
+        filters={filters}
+      />
       
       <div className="flex-1 flex overflow-hidden">
         <Sidebar 
