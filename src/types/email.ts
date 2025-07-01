@@ -8,6 +8,7 @@ export interface Email {
   isStarred: boolean;
   isRead: boolean;
   messages: EmailMessage[];
+  intentLabel?: 'meeting' | 'announcement' | 'system' | 'report' | 'feedback' | 'general';
 }
 
 export interface EmailMessage {

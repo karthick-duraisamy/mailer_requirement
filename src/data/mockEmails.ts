@@ -10,6 +10,7 @@ export const mockEmails: Email[] = [
     timestamp: '2024-01-15T16:45:00Z',
     isStarred: true,
     isRead: false,
+    intentLabel: 'report',
     messages: [
       {
         id: '1-1',
@@ -93,6 +94,7 @@ Manager`,
     timestamp: '2024-01-15T13:45:00Z',
     isStarred: false,
     isRead: false,
+    intentLabel: 'announcement',
     messages: [
       {
         id: '2-1',
@@ -130,6 +132,7 @@ David`,
     timestamp: '2024-01-15T11:20:00Z',
     isStarred: true,
     isRead: true,
+    intentLabel: 'announcement',
     messages: [
       {
         id: '3-1',
@@ -167,6 +170,7 @@ Emma`,
     timestamp: '2024-01-15T09:15:00Z',
     isStarred: false,
     isRead: true,
+    intentLabel: 'meeting',
     messages: [
       {
         id: '4-1',
@@ -204,6 +208,7 @@ Michael`,
     timestamp: '2024-01-14T18:30:00Z',
     isStarred: false,
     isRead: true,
+    intentLabel: 'feedback',
     messages: [
       {
         id: '5-1',
@@ -264,6 +269,7 @@ Alex`,
     timestamp: '2024-01-14T08:00:00Z',
     isStarred: false,
     isRead: true,
+    intentLabel: 'announcement',
     messages: [
       {
         id: '6-1',
@@ -311,6 +317,7 @@ Tech Trends Team`,
     timestamp: '2024-01-13T14:20:00Z',
     isStarred: false,
     isRead: true,
+    intentLabel: 'general',
     messages: [
       {
         id: '7-1',

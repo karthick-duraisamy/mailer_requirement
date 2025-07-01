@@ -64,6 +64,21 @@ function App() {
     // Apply intent-based filter
     if (filters.intent !== 'all') {
       filtered = filtered.filter(email => {
+        if (email.intentLabel) {
+          switch (filters.intent) {
+            case 'meetings':
+              return email.intentLabel === 'meeting';
+            case 'notifications':
+              return email.intentLabel === 'system';
+            case 'campaigns':
+              return email.intentLabel === 'announcement';
+            case 'support':
+              return email.intentLabel === 'feedback';
+            default:
+              return true;
+          }
+        }
+        // Fallback to content-based filtering for emails without intent labels
         const content = `${email.subject} ${email.preview}`.toLowerCase();
         switch (filters.intent) {
           case 'meetings':

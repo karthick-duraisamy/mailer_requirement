@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, Square, CheckSquare, Inbox, Send, FileText, Clock, Tag } from 'lucide-react';
+import { Star, Square, CheckSquare, Inbox, Send, FileText, Clock, Tag, Calendar, Megaphone, AlertTriangle, BarChart3, MessageSquare, Mail } from 'lucide-react';
 import { Email } from '../types/email';
 
 interface EmailListProps {
@@ -39,6 +39,60 @@ const EmailList: React.FC<EmailListProps> = ({
         month: 'short', 
         day: 'numeric' 
       });
+    }
+  };
+
+  const getIntentLabel = (intent: string) => {
+    switch (intent) {
+      case 'meeting': 
+        return { 
+          text: 'Meeting', 
+          icon: Calendar, 
+          color: 'bg-blue-100 text-blue-800',
+          iconColor: 'text-blue-600'
+        };
+      case 'announcement': 
+        return { 
+          text: 'Announcement', 
+          icon: Megaphone, 
+          color: 'bg-purple-100 text-purple-800',
+          iconColor: 'text-purple-600'
+        };
+      case 'system': 
+        return { 
+          text: 'System Alert', 
+          icon: AlertTriangle, 
+          color: 'bg-red-100 text-red-800',
+          iconColor: 'text-red-600'
+        };
+      case 'report': 
+        return { 
+          text: 'Report', 
+          icon: BarChart3, 
+          color: 'bg-green-100 text-green-800',
+          iconColor: 'text-green-600'
+        };
+      case 'feedback': 
+        return { 
+          text: 'Feedback', 
+          icon: MessageSquare, 
+          color: 'bg-orange-100 text-orange-800',
+          iconColor: 'text-orange-600'
+        };
+      case 'general': 
+        return { 
+          text: 'General', 
+          icon: Mail, 
+          color: 'bg-gray-100 text-gray-800',
+          iconColor: 'text-gray-600'
+        };
+      default: 
+        return { 
+          text: 'General', 
+          icon: Mail, 
+          color: 'bg-gray-100 text-gray-800',
+          iconColor: 'text-gray-600'
+        };
     }
   };
 
@@ -160,12 +214,25 @@ const EmailList: React.FC<EmailListProps> = ({
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
-                    <p className={`
-                      text-sm truncate
-                      ${!email.isRead ? 'font-semibold text-gray-900' : 'font-medium text-gray-700'}
-                    `}>
-                      {email.sender}
-                    </p>
+                    <div className="flex items-center space-x-2 min-w-0">
+                      <p className={`
+                        text-sm truncate
+                        ${!email.isRead ? 'font-semibold text-gray-900' : 'font-medium text-gray-700'}
+                      `}>
+                        {email.sender}
+                      </p>
+                      {email.intentLabel && (
+                        <div className={`
+                          inline-flex items-center px-2 py-1 rounded-full text-xs font-medium flex-shrink-0
+                          ${getIntentLabel(email.intentLabel).color}
+                        `}>
+                          {React.createElement(getIntentLabel(email.intentLabel).icon, {
+                            className: `w-3 h-3 mr-1 ${getIntentLabel(email.intentLabel).iconColor}`
+                          })}
+                          {getIntentLabel(email.intentLabel).text}
+                        </div>
+                      )}
+                    </div>
                     <p className="text-xs text-gray-500 ml-2 flex-shrink-0">
                       {formatTime(email.timestamp)}
                     </p>
