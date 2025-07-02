@@ -70,8 +70,11 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     }
   };
 
-  const handleAiReplyGenerate = () => {
+  const handleAiReplyGenerate = (isReplyAll = false) => {
     if (email) {
+      if (isReplyAll) {
+        handleReplyAll();
+      }
       onGenerateAiReply(email, aiReplyState.tone);
     }
   };
@@ -304,7 +307,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                       {/* Action Buttons - Only show for the last message */}
                       {isLastMessage && (
                         <div className="space-y-4 pt-4 border-t border-gray-100">
-                          <div className="flex items-center space-x-2">
+                          <div className="flex items-center space-x-2 flex-wrap gap-2">
                             <button 
                               onClick={() => setShowReply(!showReply)}
                               className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
@@ -313,7 +316,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                               <span>Reply</span>
                             </button>
                             <button 
-                              onClick={handleAiReplyGenerate}
+                              onClick={() => handleAiReplyGenerate(false)}
                               disabled={aiReplyState.isGenerating}
                               className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-400 text-white rounded-lg transition-colors"
                             >
@@ -326,6 +329,15 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                             >
                               <ReplyAll className="w-4 h-4" />
                               <span>Reply All</span>
+                            </button>
+                            <button 
+                              onClick={() => handleAiReplyGenerate(true)}
+                              disabled={aiReplyState.isGenerating}
+                              className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-400 text-white rounded-lg transition-colors"
+                            >
+                              <ReplyAll className="w-4 h-4" />
+                              <Sparkles className="w-4 h-4" />
+                              <span>{aiReplyState.isGenerating ? 'Generating...' : 'Reply All with AI'}</span>
                             </button>
                             <button 
                               onClick={() => handleForward()}
@@ -404,28 +416,56 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
       {/* Reply Box */}
       {showReply && (
-        <div className="border-t border-gray-200 p-6">
+        <div className="border-t border-gray-200 p-6 bg-gray-50">
           <div className="max-w-5xl mx-auto">
             <div className="mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Reply</h3>
-              <div className="text-sm text-gray-600 space-y-1">
-                <p><span className="font-medium">To:</span> {replyText.includes('--- Reply All ---') ? 'Multiple recipients' : replyText.includes('--- Forwarded Message ---') ? '' : email.senderEmail}</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                {replyText.includes('--- Reply All ---') ? 'Reply to All Recipients' : 
+                 replyText.includes('--- Forwarded Message ---') ? 'Forward Message' : 'Reply'}
+              </h3>
+              <div className="text-sm text-gray-600 space-y-1 bg-white p-3 rounded-lg border">
+                <p><span className="font-medium">To:</span> {
+                  replyText.includes('--- Reply All ---') ? 
+                    (() => {
+                      const lastMessage = sortedMessages[sortedMessages.length - 1];
+                      const allRecipients = new Set([
+                        lastMessage.senderEmail,
+                        ...lastMessage.to,
+                        ...(lastMessage.cc || [])
+                      ]);
+                      return Array.from(allRecipients).join(', ');
+                    })() :
+                  replyText.includes('--- Forwarded Message ---') ? 
+                    'Enter recipient email(s)' : 
+                    email.messages[email.messages.length - 1].senderEmail
+                }</p>
                 <p><span className="font-medium">Subject:</span> {replyText.includes('--- Forwarded Message ---') ? `Fwd: ${email.subject}` : `Re: ${email.subject}`}</p>
               </div>
             </div>
-            <textarea
-              value={replyText}
-              onChange={(e) => setReplyText(e.target.value)}
-              placeholder="Write your reply..."
-              className="w-full h-40 p-4 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
+            
+            <div className="mb-3">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Message Content
+                <span className="text-gray-500 font-normal"> - Type your reply below</span>
+              </label>
+              <textarea
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                placeholder={`${replyText.includes('--- Reply All ---') ? 'Write your reply to all recipients...' : 
+                              replyText.includes('--- Forwarded Message ---') ? 'Add a message to forward...' : 
+                              'Write your reply...'}`}
+                className="w-full h-40 p-4 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+              />
+            </div>
+            
             {replyText === aiReplyState.generatedReply && aiReplyState.generatedReply && (
-              <div className="mt-2 text-sm text-purple-600 flex items-center space-x-1">
+              <div className="mb-3 text-sm text-purple-600 flex items-center space-x-1 bg-purple-50 p-2 rounded">
                 <Sparkles className="w-3 h-3" />
                 <span>Using AI-generated reply</span>
               </div>
             )}
-            <div className="flex items-center justify-between mt-4">
+            
+            <div className="flex items-center justify-between">
               <button
                 onClick={() => setShowReply(false)}
                 className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
@@ -433,12 +473,24 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                 Cancel
               </button>
               <div className="flex items-center space-x-2">
+                {/* Show AI generate button if not already using AI reply */}
+                {replyText !== aiReplyState.generatedReply && !aiReplyState.showAiReply && (
+                  <button
+                    onClick={() => handleAiReplyGenerate(replyText.includes('--- Reply All ---'))}
+                    disabled={aiReplyState.isGenerating}
+                    className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-400 text-white rounded-lg transition-colors"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    <span>{aiReplyState.isGenerating ? 'Generating...' : 'Generate with AI'}</span>
+                  </button>
+                )}
                 <button
                   onClick={handleSendReply}
                   disabled={!replyText.trim()}
                   className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg transition-colors"
                 >
-                  Send Reply
+                  {replyText.includes('--- Reply All ---') ? 'Send to All' : 
+                   replyText.includes('--- Forwarded Message ---') ? 'Forward' : 'Send Reply'}
                 </button>
               </div>
             </div>
