@@ -103,17 +103,20 @@ function App() {
               return true;
           }
         }
-        // Fallback to content-based filtering for emails without intent labels
+        // Handle emails without intent labels as 'new'
+        const emailIntent = email.intentLabel || 'new';
         const content = `${email.subject} ${email.preview}`.toLowerCase();
         switch (filters.intent) {
           case 'meetings':
-            return content.includes('meeting') || content.includes('schedule') || content.includes('appointment');
+            return emailIntent === 'meeting' || content.includes('meeting') || content.includes('schedule') || content.includes('appointment');
           case 'notifications':
-            return content.includes('notification') || content.includes('system') || content.includes('alert');
+            return emailIntent === 'system' || content.includes('notification') || content.includes('system') || content.includes('alert');
           case 'campaigns':
-            return content.includes('newsletter') || content.includes('campaign') || content.includes('marketing');
+            return emailIntent === 'announcement' || content.includes('newsletter') || content.includes('campaign') || content.includes('marketing');
           case 'support':
-            return content.includes('support') || content.includes('help') || content.includes('issue');
+            return emailIntent === 'feedback' || content.includes('support') || content.includes('help') || content.includes('issue');
+          case 'new':
+            return emailIntent === 'new';
           default:
             return true;
         }

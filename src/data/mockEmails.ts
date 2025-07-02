@@ -1,6 +1,14 @@
 import { Email } from '../types/email';
 
-export const mockEmails: Email[] = [
+// Helper function to ensure all emails have an intentLabel
+const ensureIntentLabel = (emails: Email[]): Email[] => {
+  return emails.map(email => ({
+    ...email,
+    intentLabel: email.intentLabel || 'new'
+  }));
+};
+
+const rawEmails: Email[] = [
   {
     id: '1',
     sender: 'Sarah Johnson',
@@ -353,3 +361,5 @@ John`,
     ],
   },
 ];
+
+export const mockEmails: Email[] = ensureIntentLabel(rawEmails);

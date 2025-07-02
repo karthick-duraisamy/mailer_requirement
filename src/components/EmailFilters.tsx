@@ -223,6 +223,7 @@ const EmailFilters: React.FC<EmailFiltersProps> = ({
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">All types</option>
+                <option value="new">New emails</option>
                 <option value="meetings">Meeting invites</option>
                 <option value="notifications">System notifications</option>
                 <option value="campaigns">Marketing campaigns</option>
