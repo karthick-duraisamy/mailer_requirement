@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Reply, ReplyAll, Forward, MoreHorizontal, Star, Archive, ChevronDown, ChevronUp, Sparkles, RotateCcw, Tag } from 'lucide-react';
+import { Reply, ReplyAll, Forward, MoreHorizontal, Star, Archive, ChevronDown, ChevronUp, Sparkles, RotateCcw, Tag, ArrowLeft } from 'lucide-react';
 import { Email, CustomLabel } from '../types/email';
 import EmailLabelActions from './EmailLabelActions';
 
@@ -14,6 +14,8 @@ interface AiReplyState {
 interface ConversationThreadProps {
   email: Email | null;
   onClose: () => void;
+  onBack?: () => void;
+  isFullPage: boolean;
   aiReplyState: AiReplyState;
   onGenerateAiReply: (email: Email, tone?: string, replyType?: string) => void;
   onAiReplyStateChange: (state: AiReplyState) => void;
@@ -25,6 +27,8 @@ interface ConversationThreadProps {
 const ConversationThread: React.FC<ConversationThreadProps> = ({ 
   email, 
   onClose, 
+  onBack,
+  isFullPage,
   aiReplyState, 
   onGenerateAiReply, 
   onAiReplyStateChange,
@@ -158,12 +162,22 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       {/* Header */}
       <div className="border-b border-gray-200 p-6">
         <div className="flex items-center justify-between">
-          <div className="flex-1 min-w-0">
-            <h2 className="text-2xl font-semibold text-gray-900 truncate">{email.subject}</h2>
+          <div className="flex-1 min-w-0 flex items-center space-x-3">
+            {isFullPage && onBack && (
+              <button
+                onClick={onBack}
+                className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-gray-100 transition-colors"
+                title="Back to email list"
+              >
+                <ArrowLeft className="w-5 h-5 text-gray-600" />
+              </button>
+            )}
+            <div className="flex-1 min-w-0">
+              <h2 className="text-2xl font-semibold text-gray-900 truncate">{email.subject}</h2>
             <div className="flex items-center space-x-4 mt-2">
-              <p className="text-sm text-gray-500">
-                {email.messages.length} message{email.messages.length !== 1 ? 's' : ''}
-              </p>
+                <p className="text-sm text-gray-500">
+                  {email.messages.length} message{email.messages.length !== 1 ? 's' : ''}
+                </p>
 
               {/* Email Labels */}
               {emailLabels.length > 0 && (
@@ -191,7 +205,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                     </span>
                   )}
                 </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
 

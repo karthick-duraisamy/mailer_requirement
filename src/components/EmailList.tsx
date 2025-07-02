@@ -6,7 +6,7 @@ import EmailLabelActions from './EmailLabelActions';
 interface EmailListProps {
   emails: Email[];
   selectedEmailId: string | null;
-  onEmailSelect: (email: Email) => void;
+  onEmailSelect: (email: Email, fullPage?: boolean) => void;
   onStarToggle: (emailId: string) => void;
   onCheckToggle: (emailId: string) => void;
   checkedEmails: Set<string>;
@@ -32,6 +32,11 @@ const EmailList: React.FC<EmailListProps> = ({
 
   const handleDoubleClick = () => {
     setIsExpanded(!isExpanded);
+  };
+
+  const handleEmailDoubleClick = (email: Email, event: React.MouseEvent) => {
+    event.stopPropagation();
+    onEmailSelect(email, true); // true for full-page view
   };
 
   const formatTime = (timestamp: string) => {
@@ -250,6 +255,8 @@ const EmailList: React.FC<EmailListProps> = ({
                 ${!email.isRead ? 'bg-blue-25' : ''}
               `}
               onClick={() => onEmailSelect(email)}
+              onDoubleClick={(e) => handleEmailDoubleClick(email, e)}
+              title="Double-click to open in full-page view"
             >
               <div className="flex items-start space-x-3">
                 <button

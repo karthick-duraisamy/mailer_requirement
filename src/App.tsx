@@ -39,6 +39,7 @@ function App() {
   });
   const [composeModalOpen, setComposeModalOpen] = useState(false);
   const [labelManagerOpen, setLabelManagerOpen] = useState(false);
+  const [isFullPageView, setIsFullPageView] = useState(false);
 
   // Calculate email counts
   const emailCounts = useMemo(() => {
@@ -242,14 +243,19 @@ function App() {
     return filtered;
   }, [emails, activeItem, searchQuery, filters, customLabels]);
 
-  const handleEmailSelect = (email: Email) => {
+  const handleEmailSelect = (email: Email, fullPage: boolean = false) => {
     setSelectedEmail(email);
+    setIsFullPageView(fullPage);
     // Mark email as read when selected
     setEmails(prevEmails => 
       prevEmails.map(e => 
         e.id === email.id ? { ...e, isRead: true } : e
       )
     );
+  };
+
+  const handleBackToList = () => {
+    setIsFullPageView(false);
   };
 
   const handleStarToggle = (emailId: string) => {
@@ -478,25 +484,12 @@ function App() {
         />
 
         <div className="flex-1 flex min-w-0">
-          <div className="flex flex-1 h-full">
-            <div className="flex-shrink-0">
-              <EmailList
-                emails={filteredEmails}
-                selectedEmailId={selectedEmail?.id || null}
-                onEmailSelect={handleEmailSelect}
-                onStarToggle={handleStarToggle}
-                onCheckToggle={handleCheckToggle}
-                checkedEmails={checkedEmails}
-                activeSection={activeItem}
-                customLabels={customLabels}
-                onEmailLabelsChange={handleEmailLabelsChange}
-                onCreateLabel={handleCreateLabel}
-              />
-            </div>
-
+          {isFullPageView ? (
             <ConversationThread 
               email={selectedEmail} 
               onClose={() => setSelectedEmail(null)}
+              onBack={handleBackToList}
+              isFullPage={true}
               aiReplyState={aiReplyState}
               onGenerateAiReply={generateAiReply}
               onAiReplyStateChange={setAiReplyState}
@@ -504,7 +497,36 @@ function App() {
               onEmailLabelsChange={handleEmailLabelsChange}
               onCreateLabel={handleCreateLabel}
             />
-          </div>
+          ) : (
+            <div className="flex flex-1 h-full">
+              <div className="flex-shrink-0">
+                <EmailList
+                  emails={filteredEmails}
+                  selectedEmailId={selectedEmail?.id || null}
+                  onEmailSelect={handleEmailSelect}
+                  onStarToggle={handleStarToggle}
+                  onCheckToggle={handleCheckToggle}
+                  checkedEmails={checkedEmails}
+                  activeSection={activeItem}
+                  customLabels={customLabels}
+                  onEmailLabelsChange={handleEmailLabelsChange}
+                  onCreateLabel={handleCreateLabel}
+                />
+              </div>
+
+              <ConversationThread 
+                email={selectedEmail} 
+                onClose={() => setSelectedEmail(null)}
+                isFullPage={false}
+                aiReplyState={aiReplyState}
+                onGenerateAiReply={generateAiReply}
+                onAiReplyStateChange={setAiReplyState}
+                customLabels={customLabels}
+                onEmailLabelsChange={handleEmailLabelsChange}
+                onCreateLabel={handleCreateLabel}
+              />
+            </div>
+          )}
         </div>
       </div>
 
