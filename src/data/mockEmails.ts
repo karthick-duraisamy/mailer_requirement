@@ -352,4 +352,50 @@ John`,
       },
     ],
   },
+  {
+    id: '16',
+    sender: 'Unknown Sender',
+    senderEmail: 'contact@example.com',
+    subject: 'New inquiry from website',
+    preview: 'Hello, I found your website and would like to know more about your services...',
+    timestamp: '2024-01-18T09:15:00Z',
+    isRead: false,
+    isStarred: false,
+    messages: [
+      {
+        id: 'msg-16-1',
+        sender: 'Unknown Sender',
+        senderEmail: 'contact@example.com',
+        timestamp: '2024-01-18T09:15:00Z',
+        content: 'Hello,\n\nI found your website and would like to know more about your services. Could you please send me more information?\n\nThank you.',
+        to: ['john.doe@company.com'],
+        cc: [],
+        bcc: []
+      }
+    ]
+  },
+  {
+    id: '17',
+    sender: 'Newsletter Service',
+    senderEmail: 'news@newsletter.com',
+    subject: 'Weekly Updates',
+    preview: 'Your weekly digest of important updates and news...',
+    timestamp: '2024-01-17T18:00:00Z',
+    isRead: false,
+    isStarred: false,
+    messages: [
+      {
+        id: 'msg-17-1',
+        sender: 'Newsletter Service',
+        senderEmail: 'news@newsletter.com',
+        timestamp: '2024-01-17T18:00:00Z',
+        content: 'Your weekly digest of important updates and news from around the industry.',
+        to: ['john.doe@company.com'],
+        cc: [],
+        bcc: []
+      }
+    ]
+  }
 ];
+
+export { mockEmails };
