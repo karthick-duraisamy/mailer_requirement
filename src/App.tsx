@@ -526,17 +526,6 @@ function App() {
                 onEmailLabelsChange={handleEmailLabelsChange}
                 onCreateLabel={handleCreateLabel}
               />
-
-              {/* Compose Panel - Renders on the right side when open */}
-              {composePanelOpen && (
-                <ComposeModal
-                  isOpen={composePanelOpen}
-                  onClose={handleComposeClose}
-                  onSend={handleSendEmail}
-                  onSaveDraft={handleSaveDraft}
-                  isPanel={true}
-                />
-              )}
             </div>
           )}
         </div>
@@ -552,6 +541,17 @@ function App() {
         onUpdateLabel={handleUpdateLabel}
         onDeleteLabel={handleDeleteLabel}
       />
+
+      {/* Compose Panel - Fixed overlay on the right side */}
+      {composePanelOpen && (
+        <ComposeModal
+          isOpen={composePanelOpen}
+          onClose={handleComposeClose}
+          onSend={handleSendEmail}
+          onSaveDraft={handleSaveDraft}
+          isPanel={true}
+        />
+      )}
     </div>
   );
 }

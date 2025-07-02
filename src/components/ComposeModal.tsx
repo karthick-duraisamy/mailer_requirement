@@ -915,7 +915,8 @@ Best regards`
     return (
       <div
         ref={modalRef}
-        className="w-[500px] bg-white border-l border-gray-200 shadow-xl flex flex-col h-full flex-shrink-0"
+        className="fixed top-0 right-0 w-[500px] h-full bg-white border-l border-gray-200 shadow-xl flex flex-col z-40 transform transition-transform duration-300 ease-in-out"
+        style={{ transform: 'translateX(0)' }}
       >
         <ComposeContent />
       </div>
