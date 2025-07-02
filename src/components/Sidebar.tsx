@@ -83,7 +83,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             </button>
           </div>
 
-          <nav className="flex-1 px-2 space-y-1 overflow-y-auto">
+          <nav className="flex-1 px-2 space-y-1 overflow-y-auto thin-scrollbar">
             {navigationItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeItem === item.id;
