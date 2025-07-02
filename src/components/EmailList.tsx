@@ -93,12 +93,19 @@ const EmailList: React.FC<EmailListProps> = ({
           color: 'bg-gray-100 text-gray-800',
           iconColor: 'text-gray-600'
         };
+      case 'new': 
+        return { 
+          text: 'New', 
+          icon: Mail, 
+          color: 'bg-blue-100 text-blue-800',
+          iconColor: 'text-blue-600'
+        };
       default: 
         return { 
-          text: 'General', 
+          text: 'New', 
           icon: Mail, 
-          color: 'bg-gray-100 text-gray-800',
-          iconColor: 'text-gray-600'
+          color: 'bg-blue-100 text-blue-800',
+          iconColor: 'text-blue-600'
         };
     }
   };

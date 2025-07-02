@@ -14,7 +14,12 @@ function App() {
   const [activeItem, setActiveItem] = useState('inbox');
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [emails, setEmails] = useState<Email[]>(mockEmails);
+  const [emails, setEmails] = useState<Email[]>(
+    mockEmails.map(email => ({
+      ...email,
+      intentLabel: email.intentLabel || 'new'
+    }))
+  );
   const [customLabels, setCustomLabels] = useState<CustomLabel[]>(mockCustomLabels);
   const [checkedEmails, setCheckedEmails] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');

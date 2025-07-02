@@ -8,7 +8,7 @@ export interface Email {
   isStarred: boolean;
   isRead: boolean;
   messages: EmailMessage[];
-  intentLabel?: 'meeting' | 'announcement' | 'system' | 'report' | 'feedback' | 'general';
+  intentLabel?: 'meeting' | 'announcement' | 'system' | 'report' | 'feedback' | 'general' | 'new';
   customLabels?: string[]; // Array of custom label IDs
 }
 
