@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Star, Square, CheckSquare, Inbox, Send, FileText, Clock, Tag, Calendar, Megaphone, AlertTriangle, BarChart3, MessageSquare, Mail, MoreHorizontal } from 'lucide-react';
 import { Email, CustomLabel } from '../types/email';
 import EmailLabelActions from './EmailLabelActions';
@@ -28,11 +28,17 @@ const EmailList: React.FC<EmailListProps> = ({
   onEmailLabelsChange,
   onCreateLabel,
 }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const handleDoubleClick = () => {
+    setIsExpanded(!isExpanded);
+  };
+
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
     const now = new Date();
     const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
-    
+
     if (diffInHours < 24) {
       return date.toLocaleTimeString('en-US', { 
         hour: 'numeric', 
@@ -153,7 +159,7 @@ const EmailList: React.FC<EmailListProps> = ({
   const EmptyState = ({ section }: { section: string }) => {
     const Icon = getSectionIcon(section);
     const title = getSectionTitle(section);
-    
+
     return (
       <div className="flex flex-col items-center justify-center h-96 text-center p-8">
         <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
@@ -183,7 +189,12 @@ const EmailList: React.FC<EmailListProps> = ({
 
   if (emails.length === 0) {
     return (
-      <div className="bg-white border-r border-gray-200">
+      <div 
+        className={`bg-white border-r border-gray-200 transition-all duration-300 ${
+          isExpanded ? 'w-[600px]' : 'w-80'
+        }`}
+        onDoubleClick={handleDoubleClick}
+      >
         <div className="p-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900">{getSectionTitle(activeSection)}</h2>
         </div>
@@ -193,14 +204,19 @@ const EmailList: React.FC<EmailListProps> = ({
   }
 
   return (
-    <div className="bg-white border-r border-gray-200">
+    <div 
+      className={`bg-white border-r border-gray-200 transition-all duration-300 ${
+        isExpanded ? 'w-[600px]' : 'w-80'
+      }`}
+      onDoubleClick={handleDoubleClick}
+    >
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-gray-900">{getSectionTitle(activeSection)}</h2>
             <p className="text-sm text-gray-500 mt-1">{emails.length} email{emails.length !== 1 ? 's' : ''}</p>
           </div>
-          
+
           {/* Bulk Actions */}
           {hasCheckedEmails && (
             <div className="flex items-center space-x-2">
@@ -218,13 +234,13 @@ const EmailList: React.FC<EmailListProps> = ({
           )}
         </div>
       </div>
-      
+
       <div className="divide-y divide-gray-100 overflow-y-auto max-h-[calc(100vh-8rem)] thin-scrollbar">
         {emails.map((email) => {
           const isSelected = selectedEmailId === email.id;
           const isChecked = checkedEmails.has(email.id);
           const emailLabels = getEmailCustomLabels(email);
-          
+
           return (
             <div
               key={email.id}
@@ -291,14 +307,14 @@ const EmailList: React.FC<EmailListProps> = ({
                       {formatTime(email.timestamp)}
                     </p>
                   </div>
-                  
+
                   <p className={`
                     text-sm mt-1 truncate
                     ${!email.isRead ? 'font-bold text-black' : 'font-normal text-gray-500'}
                   `}>
                     {email.subject}
                   </p>
-                  
+
                   <p className={`
                     text-sm mt-1 truncate
                     ${!email.isRead ? 'text-gray-700 font-medium' : 'text-gray-400'}

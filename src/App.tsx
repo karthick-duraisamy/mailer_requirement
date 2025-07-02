@@ -478,20 +478,21 @@ function App() {
         />
 
         <div className="flex-1 flex min-w-0">
-          <div className="w-80 flex-shrink-0">
-            <EmailList
-              emails={filteredEmails}
-              selectedEmailId={selectedEmail?.id || null}
-              onEmailSelect={handleEmailSelect}
-              onStarToggle={handleStarToggle}
-              onCheckToggle={handleCheckToggle}
-              checkedEmails={checkedEmails}
-              activeSection={activeItem}
-              customLabels={customLabels}
-              onEmailLabelsChange={handleEmailLabelsChange}
-              onCreateLabel={handleCreateLabel}
-            />
-          </div>
+          <div className="flex flex-1 h-full">
+        <div className="flex-shrink-0">
+          <EmailList
+            emails={filteredEmails}
+            selectedEmailId={selectedEmail?.id || null}
+            onEmailSelect={handleEmailSelect}
+            onStarToggle={handleStarToggle}
+            onCheckToggle={handleCheckToggle}
+            checkedEmails={checkedEmails}
+            activeSection={activeItem}
+            customLabels={customLabels}
+            onEmailLabelsChange={handleEmailLabelsChange}
+            onCreateLabel={handleCreateLabel}
+          />
+        </div>
 
           <ConversationThread 
             email={selectedEmail} 
