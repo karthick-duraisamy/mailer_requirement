@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Star, Square, CheckSquare, Inbox, Send, FileText, Clock, Tag, Calendar, Megaphone, AlertTriangle, BarChart3, MessageSquare, Mail, MoreHorizontal } from 'lucide-react';
+import { Star, Square, CheckSquare, Inbox, Send, FileText, Clock, Tag, Calendar, Megaphone, AlertTriangle, BarChart3, MessageSquare, Mail, MoreHorizontal, ArrowLeftRight } from 'lucide-react';
 import { Email, CustomLabel } from '../types/email';
 import EmailLabelActions from './EmailLabelActions';
 
@@ -217,9 +217,18 @@ const EmailList: React.FC<EmailListProps> = ({
     >
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">{getSectionTitle(activeSection)}</h2>
-            <p className="text-sm text-gray-500 mt-1">{emails.length} email{emails.length !== 1 ? 's' : ''}</p>
+          <div className="flex items-center space-x-3">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">{getSectionTitle(activeSection)}</h2>
+              <p className="text-sm text-gray-500 mt-1">{emails.length} email{emails.length !== 1 ? 's' : ''}</p>
+            </div>
+            <button
+              onClick={handleDoubleClick}
+              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              title="Double-click or click here to resize panel"
+            >
+              <ArrowLeftRight className="w-4 h-4" />
+            </button>
           </div>
 
           {/* Bulk Actions */}
