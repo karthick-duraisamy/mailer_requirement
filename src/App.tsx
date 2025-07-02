@@ -285,13 +285,13 @@ function App() {
   const handleSendEmail = async (emailData: ComposeEmailData) => {
     // Simulate API call to send email
     console.log('Sending email:', emailData);
-
+    
     // In a real app, you would make an API call here
     await new Promise(resolve => setTimeout(resolve, 1000));
-
+    
     // Show success message
     alert('Email sent successfully!');
-
+    
     // Close compose modal
     setComposeModalOpen(false);
   };
@@ -299,15 +299,15 @@ function App() {
   const handleSaveDraft = async (emailData: ComposeEmailData) => {
     // Simulate API call to save draft
     console.log('Saving draft:', emailData);
-
+    
     // In a real app, you would make an API call here
     await new Promise(resolve => setTimeout(resolve, 500));
-
+    
     // Show success message
     if (emailData.to.length > 0 || emailData.subject.trim() || emailData.body.trim()) {
       alert('Draft saved successfully!');
     }
-
+    
     // Close compose modal
     setComposeModalOpen(false);
   };
@@ -319,9 +319,9 @@ function App() {
       id: `custom-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       createdAt: new Date().toISOString(),
     };
-
+    
     setCustomLabels(prev => [...prev, newLabel]);
-
+    
     // In a real app, you would make an API call here
     console.log('Creating label:', newLabel);
   };
@@ -332,7 +332,7 @@ function App() {
         label.id === labelId ? { ...label, ...updates } : label
       )
     );
-
+    
     // In a real app, you would make an API call here
     console.log('Updating label:', labelId, updates);
   };
@@ -345,15 +345,15 @@ function App() {
         customLabels: email.customLabels?.filter(id => id !== labelId) || []
       }))
     );
-
+    
     // Remove label from labels list
     setCustomLabels(prev => prev.filter(label => label.id !== labelId));
-
+    
     // If currently viewing this label, switch to inbox
     if (activeItem === `custom-label-${labelId}`) {
       setActiveItem('inbox');
     }
-
+    
     // In a real app, you would make an API call here
     console.log('Deleting label:', labelId);
   };
@@ -366,7 +366,7 @@ function App() {
           : email
       )
     );
-
+    
     // In a real app, you would make an API call here
     console.log('Updating email labels:', emailIds, labelIds);
   };
@@ -380,7 +380,7 @@ function App() {
     // Generate contextual reply based on email content and tone
     const lastMessage = email.messages[email.messages.length - 1];
     let generatedReply = '';
-
+    
     // Handle different reply types
     if (replyType === 'reply-all') {
       // Get all unique recipients for reply-all
@@ -390,7 +390,7 @@ function App() {
         ...(lastMessage.cc || [])
       ]);
       const recipientList = Array.from(allRecipients).join(', ');
-
+      
       switch (tone) {
         case 'friendly':
           generatedReply = `Hi everyone,\n\nThanks for the email! I wanted to respond to the group with my thoughts.\n\n${getContextualResponse(email)}\n\nLooking forward to hearing from all of you!\n\nBest regards`;
@@ -458,7 +458,6 @@ function App() {
           onComposeClick={handleComposeOpen}
           customLabels={customLabels}
           onManageLabels={() => setLabelManagerOpen(true)}
-          emails={emails}
         />
 
         <div className="flex-1 flex min-w-0">
