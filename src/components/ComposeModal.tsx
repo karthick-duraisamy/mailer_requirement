@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Send, Save, Paperclip, Users, Eye, EyeOff, Upload, Trash2 } from 'lucide-react';
+import { X, Send, Save, Paperclip, Users, Eye, EyeOff, Upload, Trash2, Sparkles, RotateCcw, Wand2 } from 'lucide-react';
 
 interface ComposeModalProps {
   isOpen: boolean;
@@ -23,6 +23,16 @@ interface Attachment {
   id: string;
 }
 
+type ToneType = 'professional' | 'friendly' | 'concise' | 'persuasive';
+
+interface AIState {
+  isGenerating: boolean;
+  showAIPanel: boolean;
+  generatedContent: string;
+  selectedTone: ToneType;
+  hasGenerated: boolean;
+}
+
 const ComposeModal: React.FC<ComposeModalProps> = ({
   isOpen,
   onClose,
@@ -44,6 +54,15 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
   const [toInput, setToInput] = useState('');
   const [ccInput, setCcInput] = useState('');
   const [bccInput, setBccInput] = useState('');
+
+  // AI State
+  const [aiState, setAiState] = useState<AIState>({
+    isGenerating: false,
+    showAIPanel: false,
+    generatedContent: '',
+    selectedTone: 'professional',
+    hasGenerated: false,
+  });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -177,6 +196,294 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  // AI Functions
+  const generateAIContent = async (tone: ToneType, regenerate = false) => {
+    if (!subject.trim()) {
+      alert('Please enter a subject first to generate AI content.');
+      return;
+    }
+
+    setAiState(prev => ({ ...prev, isGenerating: true }));
+
+    // Simulate AI generation delay
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    const generatedContent = generateContextualContent(subject, tone, to);
+
+    setAiState(prev => ({
+      ...prev,
+      isGenerating: false,
+      showAIPanel: true,
+      generatedContent,
+      hasGenerated: true,
+    }));
+  };
+
+  const generateContextualContent = (subject: string, tone: ToneType, recipients: string[]): string => {
+    const subjectLower = subject.toLowerCase();
+    const recipientName = recipients.length > 0 ? recipients[0].split('@')[0].replace(/[._]/g, ' ') : 'there';
+    
+    // Detect intent from subject
+    let intent = 'general';
+    if (subjectLower.includes('meeting') || subjectLower.includes('schedule') || subjectLower.includes('appointment')) {
+      intent = 'meeting';
+    } else if (subjectLower.includes('follow') || subjectLower.includes('update')) {
+      intent = 'followup';
+    } else if (subjectLower.includes('thank') || subjectLower.includes('appreciation')) {
+      intent = 'thanks';
+    } else if (subjectLower.includes('request') || subjectLower.includes('help') || subjectLower.includes('support')) {
+      intent = 'request';
+    } else if (subjectLower.includes('proposal') || subjectLower.includes('offer')) {
+      intent = 'proposal';
+    } else if (subjectLower.includes('reminder') || subjectLower.includes('deadline')) {
+      intent = 'reminder';
+    }
+
+    return generateContentByIntentAndTone(intent, tone, recipientName, subject);
+  };
+
+  const generateContentByIntentAndTone = (intent: string, tone: ToneType, recipientName: string, subject: string): string => {
+    const templates = {
+      meeting: {
+        professional: `Dear ${recipientName},
+
+I hope this email finds you well. I would like to schedule a meeting to discuss ${subject.toLowerCase()}.
+
+Please let me know your availability for the following time slots:
+• [Date/Time Option 1]
+• [Date/Time Option 2]
+• [Date/Time Option 3]
+
+The meeting should take approximately [duration] and can be conducted [in-person/virtually].
+
+Please confirm which option works best for you, or suggest alternative times if none of these are suitable.
+
+Best regards`,
+        friendly: `Hi ${recipientName}!
+
+Hope you're doing well! I'd love to set up a meeting to chat about ${subject.toLowerCase()}.
+
+When would be a good time for you? I'm pretty flexible, so just let me know what works best. We can do it in person or over a video call - whatever's easier for you!
+
+Looking forward to hearing from you!
+
+Best`,
+        concise: `Hi ${recipientName},
+
+Let's schedule a meeting about ${subject.toLowerCase()}.
+
+Available times:
+• [Option 1]
+• [Option 2]
+• [Option 3]
+
+Please confirm your preference.
+
+Thanks`,
+        persuasive: `Dear ${recipientName},
+
+I believe we have a valuable opportunity to discuss ${subject.toLowerCase()} that could benefit both of us significantly.
+
+This meeting would allow us to:
+• Explore potential synergies
+• Address key challenges
+• Develop actionable solutions
+
+I'm confident that dedicating time to this discussion will yield positive results. Please let me know your availability so we can move forward promptly.
+
+Best regards`
+      },
+      followup: {
+        professional: `Dear ${recipientName},
+
+I hope this email finds you well. I wanted to follow up on our previous discussion regarding ${subject.toLowerCase()}.
+
+As discussed, I wanted to provide you with an update on the current status and next steps:
+
+[Key points to address]
+• [Point 1]
+• [Point 2]
+• [Point 3]
+
+Please let me know if you have any questions or if there's anything else you'd like me to address.
+
+Best regards`,
+        friendly: `Hi ${recipientName}!
+
+Hope you're having a great day! Just wanted to circle back on ${subject.toLowerCase()}.
+
+I've been thinking about our conversation and wanted to share a quick update. Things are moving along nicely, and I think you'll be pleased with the progress.
+
+Let me know if you have any questions or if there's anything else I can help with!
+
+Best`,
+        concise: `Hi ${recipientName},
+
+Quick follow-up on ${subject.toLowerCase()}:
+
+• [Update 1]
+• [Update 2]
+• [Next steps]
+
+Let me know if you need anything else.
+
+Thanks`,
+        persuasive: `Dear ${recipientName},
+
+Following up on ${subject.toLowerCase()} - I believe we're at a critical juncture where swift action could maximize our success.
+
+The momentum we've built presents an excellent opportunity to:
+• Capitalize on current market conditions
+• Leverage our competitive advantages
+• Achieve our shared objectives
+
+I recommend we proceed with the next phase immediately. Your prompt response would be greatly appreciated.
+
+Best regards`
+      },
+      thanks: {
+        professional: `Dear ${recipientName},
+
+I wanted to take a moment to express my sincere gratitude regarding ${subject.toLowerCase()}.
+
+Your [support/assistance/collaboration] has been invaluable, and I truly appreciate the time and effort you've invested. The [outcome/result] exceeded my expectations, and I couldn't have achieved this without your contribution.
+
+Thank you once again for your professionalism and dedication.
+
+Best regards`,
+        friendly: `Hi ${recipientName}!
+
+I just had to reach out and say a huge thank you for ${subject.toLowerCase()}!
+
+You really went above and beyond, and it means so much to me. I'm incredibly grateful for all your help and support. You're absolutely amazing!
+
+Thanks again for everything!
+
+With appreciation`,
+        concise: `Hi ${recipientName},
+
+Thank you for ${subject.toLowerCase()}.
+
+Your help was invaluable and greatly appreciated.
+
+Best regards`,
+        persuasive: `Dear ${recipientName},
+
+Your exceptional contribution to ${subject.toLowerCase()} deserves special recognition.
+
+The impact of your work has been transformative, demonstrating the value of our collaboration. I believe this success positions us perfectly for future opportunities together.
+
+I would welcome the chance to discuss how we can build on this momentum.
+
+With sincere appreciation`
+      },
+      request: {
+        professional: `Dear ${recipientName},
+
+I hope this email finds you well. I am writing to request your assistance with ${subject.toLowerCase()}.
+
+Specifically, I would appreciate your help with:
+• [Specific request 1]
+• [Specific request 2]
+• [Timeline/deadline]
+
+I understand you have a busy schedule, but your expertise in this area would be invaluable. Please let me know if this is something you would be able to assist with.
+
+Thank you for considering my request.
+
+Best regards`,
+        friendly: `Hi ${recipientName}!
+
+Hope you're doing well! I'm reaching out because I could really use your help with ${subject.toLowerCase()}.
+
+I know you're super busy, but you're honestly the best person I can think of for this. Would you be able to lend a hand? I'd really appreciate any assistance you can provide!
+
+Let me know what you think!
+
+Thanks so much`,
+        concise: `Hi ${recipientName},
+
+I need assistance with ${subject.toLowerCase()}.
+
+Requirements:
+• [Item 1]
+• [Item 2]
+• [Deadline]
+
+Can you help?
+
+Thanks`,
+        persuasive: `Dear ${recipientName},
+
+I have an exciting opportunity that aligns perfectly with your expertise: ${subject.toLowerCase()}.
+
+This request represents a chance to:
+• Showcase your exceptional skills
+• Make a significant impact
+• Contribute to a meaningful outcome
+
+Your unique qualifications make you the ideal person for this. I'm confident that your involvement would ensure success.
+
+Would you be interested in discussing this further?
+
+Best regards`
+      },
+      general: {
+        professional: `Dear ${recipientName},
+
+I hope this email finds you well. I am writing to you regarding ${subject.toLowerCase()}.
+
+[Please provide specific details about your message here]
+
+I would appreciate your thoughts on this matter and look forward to your response.
+
+Best regards`,
+        friendly: `Hi ${recipientName}!
+
+Hope you're having a great day! I wanted to reach out about ${subject.toLowerCase()}.
+
+[Add your personal message here]
+
+Let me know what you think!
+
+Best`,
+        concise: `Hi ${recipientName},
+
+Regarding ${subject.toLowerCase()}:
+
+[Your message here]
+
+Please let me know your thoughts.
+
+Thanks`,
+        persuasive: `Dear ${recipientName},
+
+I'm reaching out about an important matter: ${subject.toLowerCase()}.
+
+This presents a valuable opportunity that I believe deserves your immediate attention. The potential benefits are significant, and I'm confident you'll find this compelling.
+
+I would appreciate the opportunity to discuss this with you further.
+
+Best regards`
+      }
+    };
+
+    return templates[intent as keyof typeof templates]?.[tone] || templates.general[tone];
+  };
+
+  const handleUseAIContent = () => {
+    setBody(aiState.generatedContent);
+    setAiState(prev => ({ ...prev, showAIPanel: false }));
+  };
+
+  const handleRegenerateAI = () => {
+    generateAIContent(aiState.selectedTone, true);
+  };
+
+  const handleToneChange = (tone: ToneType) => {
+    setAiState(prev => ({ ...prev, selectedTone: tone }));
+  };
+
   const handleSend = async () => {
     if (!validateForm()) return;
 
@@ -251,6 +558,13 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
     setShowCc(false);
     setShowBcc(false);
     setErrors({});
+    setAiState({
+      isGenerating: false,
+      showAIPanel: false,
+      generatedContent: '',
+      selectedTone: 'professional',
+      hasGenerated: false,
+    });
     
     onClose();
   };
@@ -261,7 +575,7 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
       <div
         ref={modalRef}
-        className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col"
+        className="bg-white rounded-lg shadow-xl w-full max-w-5xl max-h-[90vh] flex flex-col"
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
@@ -421,17 +735,81 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
               </div>
             )}
 
-            {/* Subject Field */}
+            {/* Subject Field with AI Button */}
             <div className="flex items-center space-x-2">
               <label className="text-sm font-medium text-gray-700 w-12">Subject:</label>
-              <input
-                type="text"
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                placeholder="Enter subject..."
-                className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
+              <div className="flex-1 flex space-x-2">
+                <input
+                  type="text"
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  placeholder="Enter subject..."
+                  className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                {subject.trim() && (
+                  <button
+                    onClick={() => generateAIContent(aiState.selectedTone)}
+                    disabled={aiState.isGenerating}
+                    className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-400 text-white rounded-lg transition-colors text-sm"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    <span>{aiState.isGenerating ? 'Generating...' : 'Generate with AI'}</span>
+                  </button>
+                )}
+              </div>
             </div>
+
+            {/* AI Panel */}
+            {aiState.showAIPanel && (
+              <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-2">
+                    <Sparkles className="w-4 h-4 text-purple-600" />
+                    <span className="font-semibold text-gray-900">AI Generated Content</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <select
+                      value={aiState.selectedTone}
+                      onChange={(e) => handleToneChange(e.target.value as ToneType)}
+                      className="text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    >
+                      <option value="professional">Professional</option>
+                      <option value="friendly">Friendly</option>
+                      <option value="concise">Concise</option>
+                      <option value="persuasive">Persuasive</option>
+                    </select>
+                    <button
+                      onClick={handleRegenerateAI}
+                      disabled={aiState.isGenerating}
+                      className="text-purple-600 hover:text-purple-700 p-1 disabled:text-gray-400"
+                      title="Regenerate with selected tone"
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+                <div className="bg-white border border-gray-200 rounded p-3 mb-3 max-h-48 overflow-y-auto">
+                  <pre className="whitespace-pre-wrap text-gray-800 text-sm font-sans">
+                    {aiState.generatedContent}
+                  </pre>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={handleUseAIContent}
+                    className="flex items-center space-x-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors text-sm"
+                  >
+                    <Wand2 className="w-4 h-4" />
+                    <span>Use This Content</span>
+                  </button>
+                  <button
+                    onClick={() => setAiState(prev => ({ ...prev, showAIPanel: false }))}
+                    className="px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors text-sm"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Attachments */}
             {attachments.length > 0 && (
@@ -464,6 +842,15 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
 
             {/* Body Field */}
             <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-sm font-medium text-gray-700">Message:</label>
+                {body === aiState.generatedContent && aiState.generatedContent && (
+                  <div className="text-sm text-purple-600 flex items-center space-x-1">
+                    <Sparkles className="w-3 h-3" />
+                    <span>Using AI-generated content</span>
+                  </div>
+                )}
+              </div>
               <textarea
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
