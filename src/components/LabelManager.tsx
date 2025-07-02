@@ -178,16 +178,11 @@ const LabelManager: React.FC<LabelManagerProps> = ({
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
-          {/* Create New Label */}
-          <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-            <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center">
-              <Plus className="w-4 h-4 mr-2" />
-              Create New Label
-            </h3>
-            
-            <div className="space-y-3">
+          {/* Create New Label Form */}
+          <div className="mb-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Label Name *
                 </label>
                 <input
@@ -201,7 +196,7 @@ const LabelManager: React.FC<LabelManagerProps> = ({
                   }}
                   onBlur={() => validateLabelName(newLabelName)}
                   placeholder="Enter label name..."
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
                     errors.name ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'
                   }`}
                   maxLength={20}
@@ -216,6 +211,7 @@ const LabelManager: React.FC<LabelManagerProps> = ({
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Palette className="w-4 h-4 inline mr-1" />
                   Color
                 </label>
                 <ColorPicker
@@ -225,7 +221,7 @@ const LabelManager: React.FC<LabelManagerProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Description (Optional)
                 </label>
                 <input
@@ -233,40 +229,42 @@ const LabelManager: React.FC<LabelManagerProps> = ({
                   value={newLabelDescription}
                   onChange={(e) => setNewLabelDescription(e.target.value)}
                   placeholder="Brief description of this label..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                   maxLength={100}
                 />
               </div>
 
-              <button
-                onClick={handleCreateLabel}
-                disabled={!newLabelName.trim()}
-                className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Create Label</span>
-              </button>
+              <div className="flex justify-end pt-2">
+                <button
+                  onClick={handleCreateLabel}
+                  disabled={!newLabelName.trim()}
+                  className="flex items-center space-x-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg transition-colors font-medium"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Create Label</span>
+                </button>
+              </div>
             </div>
           </div>
 
           {/* Existing Labels */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-900 mb-3">
-              Existing Labels ({labels.length})
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Your Labels ({labels.length})
             </h3>
             
             {labels.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <Tag className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                <p>No labels created yet</p>
-                <p className="text-sm">Create your first label above to get started</p>
+              <div className="text-center py-12 text-gray-500">
+                <Tag className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                <h4 className="text-lg font-medium text-gray-900 mb-2">No labels yet</h4>
+                <p className="text-gray-500">Create your first label above to get started organizing your emails</p>
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {labels.map((label) => (
                   <div
                     key={label.id}
-                    className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                   >
                     {editingLabel === label.id ? (
                       <div className="flex-1 space-y-3">
@@ -282,7 +280,7 @@ const LabelManager: React.FC<LabelManagerProps> = ({
                                 }
                               }}
                               onBlur={() => validateLabelName(editName, label.id)}
-                              className={`w-full px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                                 errors.name ? 'border-red-300' : 'border-gray-300'
                               }`}
                               maxLength={20}
@@ -303,7 +301,7 @@ const LabelManager: React.FC<LabelManagerProps> = ({
                           value={editDescription}
                           onChange={(e) => setEditDescription(e.target.value)}
                           placeholder="Description..."
-                          className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                           maxLength={100}
                         />
                         
@@ -311,14 +309,14 @@ const LabelManager: React.FC<LabelManagerProps> = ({
                           <button
                             onClick={handleSaveEdit}
                             disabled={!editName.trim() || !!errors.name}
-                            className="flex items-center space-x-1 px-3 py-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded text-sm transition-colors"
+                            className="flex items-center space-x-1 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-lg text-sm transition-colors"
                           >
-                            <Check className="w-3 h-3" />
+                            <Check className="w-4 h-4" />
                             <span>Save</span>
                           </button>
                           <button
                             onClick={handleCancelEdit}
-                            className="px-3 py-1 border border-gray-300 hover:bg-gray-50 rounded text-sm transition-colors"
+                            className="px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg text-sm transition-colors"
                           >
                             Cancel
                           </button>
@@ -326,22 +324,22 @@ const LabelManager: React.FC<LabelManagerProps> = ({
                       </div>
                     ) : (
                       <>
-                        <div className="flex items-center space-x-3 flex-1">
+                        <div className="flex items-center space-x-4 flex-1">
                           <div
-                            className="w-4 h-4 rounded-full flex-shrink-0"
+                            className="w-5 h-5 rounded-full flex-shrink-0"
                             style={{ backgroundColor: label.color }}
                           />
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center space-x-2">
                               <span className="font-medium text-gray-900">{label.name}</span>
                               {label.isSystem && (
-                                <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
+                                <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full font-medium">
                                   System
                                 </span>
                               )}
                             </div>
                             {label.description && (
-                              <p className="text-sm text-gray-500 truncate">{label.description}</p>
+                              <p className="text-sm text-gray-500 mt-1">{label.description}</p>
                             )}
                           </div>
                         </div>
@@ -349,14 +347,14 @@ const LabelManager: React.FC<LabelManagerProps> = ({
                         <div className="flex items-center space-x-1">
                           <button
                             onClick={() => handleStartEdit(label)}
-                            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
+                            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                             title="Edit label"
                           >
                             <Edit2 className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => handleDeleteLabel(label.id)}
-                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                             title="Delete label"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -375,7 +373,7 @@ const LabelManager: React.FC<LabelManagerProps> = ({
         <div className="flex items-center justify-end p-6 border-t border-gray-200">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+            className="px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors font-medium"
           >
             Done
           </button>
