@@ -526,20 +526,23 @@ function App() {
                 onEmailLabelsChange={handleEmailLabelsChange}
                 onCreateLabel={handleCreateLabel}
               />
+
+              {/* Compose Panel - Renders on the right side when open */}
+              {composePanelOpen && (
+                <ComposeModal
+                  isOpen={composePanelOpen}
+                  onClose={handleComposeClose}
+                  onSend={handleSendEmail}
+                  onSaveDraft={handleSaveDraft}
+                  isPanel={true}
+                />
+              )}
             </div>
           )}
         </div>
       </div>
 
-      {/* Conditionally render ComposeModal or ComposePanel based on composePanelOpen */}
-      {composePanelOpen ? (
-          <ComposeModal
-            isOpen={composePanelOpen}
-            onClose={handleComposeClose}
-            onSend={handleSendEmail}
-            onSaveDraft={handleSaveDraft}
-          />
-      ) : null}
+      
 
       <LabelManager
         isOpen={labelManagerOpen}
