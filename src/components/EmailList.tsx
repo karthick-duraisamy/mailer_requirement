@@ -1,6 +1,7 @@
 import React from 'react';
-import { Star, Square, CheckSquare, Inbox, Send, FileText, Clock, Tag, Calendar, Megaphone, AlertTriangle, BarChart3, MessageSquare, Mail } from 'lucide-react';
-import { Email } from '../types/email';
+import { Star, Square, CheckSquare, Inbox, Send, FileText, Clock, Tag, Calendar, Megaphone, AlertTriangle, BarChart3, MessageSquare, Mail, MoreHorizontal } from 'lucide-react';
+import { Email, CustomLabel } from '../types/email';
+import EmailLabelActions from './EmailLabelActions';
 
 interface EmailListProps {
   emails: Email[];
@@ -10,6 +11,9 @@ interface EmailListProps {
   onCheckToggle: (emailId: string) => void;
   checkedEmails: Set<string>;
   activeSection: string;
+  customLabels: CustomLabel[];
+  onEmailLabelsChange: (emailIds: string[], labelIds: string[]) => void;
+  onCreateLabel: (label: Omit<CustomLabel, 'id' | 'createdAt'>) => void;
 }
 
 const EmailList: React.FC<EmailListProps> = ({
@@ -20,6 +24,9 @@ const EmailList: React.FC<EmailListProps> = ({
   onCheckToggle,
   checkedEmails,
   activeSection,
+  customLabels,
+  onEmailLabelsChange,
+  onCreateLabel,
 }) => {
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
@@ -107,7 +114,14 @@ const EmailList: React.FC<EmailListProps> = ({
       case 'label-personal': return 'Personal';
       case 'label-important': return 'Important';
       case 'label-travel': return 'Travel';
-      default: return 'Inbox';
+      default:
+        // Handle custom labels
+        if (section.startsWith('custom-label-')) {
+          const labelId = section.replace('custom-label-', '');
+          const label = customLabels.find(l => l.id === labelId);
+          return label?.name || 'Unknown Label';
+        }
+        return 'Inbox';
     }
   };
 
@@ -120,6 +134,13 @@ const EmailList: React.FC<EmailListProps> = ({
       case 'snoozed': return Clock;
       default: return Tag;
     }
+  };
+
+  const getEmailCustomLabels = (email: Email) => {
+    if (!email.customLabels) return [];
+    return email.customLabels
+      .map(labelId => customLabels.find(label => label.id === labelId))
+      .filter(Boolean) as CustomLabel[];
   };
 
   const EmptyState = ({ section }: { section: string }) => {
@@ -141,12 +162,17 @@ const EmailList: React.FC<EmailListProps> = ({
             ? 'Star important emails to find them quickly here.'
             : section === 'snoozed'
             ? 'Snoozed emails will appear here when it\'s time to deal with them.'
+            : section.startsWith('custom-label-') || section.startsWith('label-')
+            ? `Emails with the "${title}" label will appear here.`
             : `No emails available in this section yet.`
           }
         </p>
       </div>
     );
   };
+
+  const checkedEmailsArray = Array.from(checkedEmails);
+  const hasCheckedEmails = checkedEmailsArray.length > 0;
 
   if (emails.length === 0) {
     return (
@@ -162,14 +188,35 @@ const EmailList: React.FC<EmailListProps> = ({
   return (
     <div className="bg-white border-r border-gray-200">
       <div className="p-4 border-b border-gray-200">
-        <h2 className="text-lg font-semibold text-gray-900">{getSectionTitle(activeSection)}</h2>
-        <p className="text-sm text-gray-500 mt-1">{emails.length} email{emails.length !== 1 ? 's' : ''}</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">{getSectionTitle(activeSection)}</h2>
+            <p className="text-sm text-gray-500 mt-1">{emails.length} email{emails.length !== 1 ? 's' : ''}</p>
+          </div>
+          
+          {/* Bulk Actions */}
+          {hasCheckedEmails && (
+            <div className="flex items-center space-x-2">
+              <EmailLabelActions
+                emailIds={checkedEmailsArray}
+                currentLabels={[]} // For bulk actions, we don't show current labels
+                availableLabels={customLabels}
+                onLabelsChange={onEmailLabelsChange}
+                onCreateLabel={onCreateLabel}
+              />
+              <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                <MoreHorizontal className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+        </div>
       </div>
       
       <div className="divide-y divide-gray-100">
         {emails.map((email) => {
           const isSelected = selectedEmailId === email.id;
           const isChecked = checkedEmails.has(email.id);
+          const emailLabels = getEmailCustomLabels(email);
           
           return (
             <div
@@ -248,6 +295,34 @@ const EmailList: React.FC<EmailListProps> = ({
                   <p className="text-sm text-gray-500 mt-1 truncate">
                     {email.preview}
                   </p>
+
+                  {/* Custom Labels */}
+                  {emailLabels.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {emailLabels.slice(0, 3).map((label) => (
+                        <span
+                          key={label.id}
+                          className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium"
+                          style={{
+                            backgroundColor: `${label.color}15`,
+                            color: label.color,
+                            border: `1px solid ${label.color}30`,
+                          }}
+                        >
+                          <div
+                            className="w-2 h-2 rounded-full mr-1"
+                            style={{ backgroundColor: label.color }}
+                          />
+                          {label.name}
+                        </span>
+                      ))}
+                      {emailLabels.length > 3 && (
+                        <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600">
+                          +{emailLabels.length - 3} more
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

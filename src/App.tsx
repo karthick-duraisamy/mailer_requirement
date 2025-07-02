@@ -4,8 +4,10 @@ import Sidebar from './components/Sidebar';
 import EmailList from './components/EmailList';
 import ConversationThread from './components/ConversationThread';
 import ComposeModal, { ComposeEmailData } from './components/ComposeModal';
-import { Email } from './types/email';
+import LabelManager from './components/LabelManager';
+import { Email, CustomLabel } from './types/email';
 import { mockEmails } from './data/mockEmails';
+import { mockCustomLabels } from './data/mockLabels';
 import { FilterOptions } from './components/EmailFilters';
 
 function App() {
@@ -13,6 +15,7 @@ function App() {
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [emails, setEmails] = useState<Email[]>(mockEmails);
+  const [customLabels, setCustomLabels] = useState<CustomLabel[]>(mockCustomLabels);
   const [checkedEmails, setCheckedEmails] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<FilterOptions>({
@@ -30,6 +33,7 @@ function App() {
     tone: 'professional',
   });
   const [composeModalOpen, setComposeModalOpen] = useState(false);
+  const [labelManagerOpen, setLabelManagerOpen] = useState(false);
 
   // Apply filters and sorting
   const applyFilters = (emailList: Email[]) => {
@@ -159,6 +163,7 @@ function App() {
         break;
       case 'label-work':
         filtered = emails.filter(email => 
+          email.customLabels?.includes('work') ||
           email.subject.toLowerCase().includes('project') ||
           email.subject.toLowerCase().includes('meeting') ||
           email.subject.toLowerCase().includes('campaign') ||
@@ -168,22 +173,32 @@ function App() {
         break;
       case 'label-personal':
         filtered = emails.filter(email => 
+          email.customLabels?.includes('personal') ||
           email.subject.toLowerCase().includes('welcome') ||
           email.senderEmail.includes('startup.io')
         );
         break;
       case 'label-important':
         filtered = emails.filter(email => 
+          email.customLabels?.includes('important') ||
           email.subject.toLowerCase().includes('urgent') ||
           email.subject.toLowerCase().includes('important') ||
           email.isStarred
         );
         break;
       case 'label-travel':
-        // For demo, show empty travel
-        filtered = [];
+        filtered = emails.filter(email => 
+          email.customLabels?.includes('travel')
+        );
         break;
       default:
+        // Handle custom labels
+        if (activeItem.startsWith('custom-label-')) {
+          const labelId = activeItem.replace('custom-label-', '');
+          filtered = emails.filter(email => 
+            email.customLabels?.includes(labelId)
+          );
+        }
         break;
     }
 
@@ -196,7 +211,12 @@ function App() {
         email.preview.toLowerCase().includes(query) ||
         email.messages.some(message => 
           message.content.toLowerCase().includes(query)
-        )
+        ) ||
+        // Search in custom labels
+        (email.customLabels && email.customLabels.some(labelId => {
+          const label = customLabels.find(l => l.id === labelId);
+          return label?.name.toLowerCase().includes(query);
+        }))
       );
     }
 
@@ -204,7 +224,7 @@ function App() {
     filtered = applyFilters(filtered);
 
     return filtered;
-  }, [emails, activeItem, searchQuery, filters]);
+  }, [emails, activeItem, searchQuery, filters, customLabels]);
 
   const handleEmailSelect = (email: Email) => {
     setSelectedEmail(email);
@@ -254,6 +274,103 @@ function App() {
     setFilters(newFilters);
   };
 
+  const handleComposeOpen = () => {
+    setComposeModalOpen(true);
+  };
+
+  const handleComposeClose = () => {
+    setComposeModalOpen(false);
+  };
+
+  const handleSendEmail = async (emailData: ComposeEmailData) => {
+    // Simulate API call to send email
+    console.log('Sending email:', emailData);
+    
+    // In a real app, you would make an API call here
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Show success message
+    alert('Email sent successfully!');
+    
+    // Close compose modal
+    setComposeModalOpen(false);
+  };
+
+  const handleSaveDraft = async (emailData: ComposeEmailData) => {
+    // Simulate API call to save draft
+    console.log('Saving draft:', emailData);
+    
+    // In a real app, you would make an API call here
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Show success message
+    if (emailData.to.length > 0 || emailData.subject.trim() || emailData.body.trim()) {
+      alert('Draft saved successfully!');
+    }
+    
+    // Close compose modal
+    setComposeModalOpen(false);
+  };
+
+  // Label Management Functions
+  const handleCreateLabel = (labelData: Omit<CustomLabel, 'id' | 'createdAt'>) => {
+    const newLabel: CustomLabel = {
+      ...labelData,
+      id: `custom-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      createdAt: new Date().toISOString(),
+    };
+    
+    setCustomLabels(prev => [...prev, newLabel]);
+    
+    // In a real app, you would make an API call here
+    console.log('Creating label:', newLabel);
+  };
+
+  const handleUpdateLabel = (labelId: string, updates: Partial<CustomLabel>) => {
+    setCustomLabels(prev =>
+      prev.map(label =>
+        label.id === labelId ? { ...label, ...updates } : label
+      )
+    );
+    
+    // In a real app, you would make an API call here
+    console.log('Updating label:', labelId, updates);
+  };
+
+  const handleDeleteLabel = (labelId: string) => {
+    // Remove label from all emails
+    setEmails(prev =>
+      prev.map(email => ({
+        ...email,
+        customLabels: email.customLabels?.filter(id => id !== labelId) || []
+      }))
+    );
+    
+    // Remove label from labels list
+    setCustomLabels(prev => prev.filter(label => label.id !== labelId));
+    
+    // If currently viewing this label, switch to inbox
+    if (activeItem === `custom-label-${labelId}`) {
+      setActiveItem('inbox');
+    }
+    
+    // In a real app, you would make an API call here
+    console.log('Deleting label:', labelId);
+  };
+
+  const handleEmailLabelsChange = (emailIds: string[], labelIds: string[]) => {
+    setEmails(prev =>
+      prev.map(email =>
+        emailIds.includes(email.id)
+          ? { ...email, customLabels: labelIds }
+          : email
+      )
+    );
+    
+    // In a real app, you would make an API call here
+    console.log('Updating email labels:', emailIds, labelIds);
+  };
+
   const generateAiReply = async (email: Email, tone: string = 'professional') => {
     setAiReplyState(prev => ({ ...prev, isGenerating: true }));
 
@@ -300,44 +417,6 @@ function App() {
     }
   };
 
-  const handleComposeOpen = () => {
-    setComposeModalOpen(true);
-  };
-
-  const handleComposeClose = () => {
-    setComposeModalOpen(false);
-  };
-
-  const handleSendEmail = async (emailData: ComposeEmailData) => {
-    // Simulate API call to send email
-    console.log('Sending email:', emailData);
-    
-    // In a real app, you would make an API call here
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Show success message
-    alert('Email sent successfully!');
-    
-    // Close compose modal
-    setComposeModalOpen(false);
-  };
-
-  const handleSaveDraft = async (emailData: ComposeEmailData) => {
-    // Simulate API call to save draft
-    console.log('Saving draft:', emailData);
-    
-    // In a real app, you would make an API call here
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Show success message
-    if (emailData.to.length > 0 || emailData.subject.trim() || emailData.body.trim()) {
-      alert('Draft saved successfully!');
-    }
-    
-    // Close compose modal
-    setComposeModalOpen(false);
-  };
-
   return (
     <div className="h-screen flex flex-col bg-gray-50">
       <Header 
@@ -353,6 +432,8 @@ function App() {
           onItemSelect={handleSectionChange}
           isOpen={sidebarOpen}
           onComposeClick={handleComposeOpen}
+          customLabels={customLabels}
+          onManageLabels={() => setLabelManagerOpen(true)}
         />
 
         <div className="flex-1 flex min-w-0">
@@ -365,6 +446,9 @@ function App() {
               onCheckToggle={handleCheckToggle}
               checkedEmails={checkedEmails}
               activeSection={activeItem}
+              customLabels={customLabels}
+              onEmailLabelsChange={handleEmailLabelsChange}
+              onCreateLabel={handleCreateLabel}
             />
           </div>
 
@@ -374,6 +458,9 @@ function App() {
             aiReplyState={aiReplyState}
             onGenerateAiReply={generateAiReply}
             onAiReplyStateChange={setAiReplyState}
+            customLabels={customLabels}
+            onEmailLabelsChange={handleEmailLabelsChange}
+            onCreateLabel={handleCreateLabel}
           />
         </div>
       </div>
@@ -383,6 +470,15 @@ function App() {
         onClose={handleComposeClose}
         onSend={handleSendEmail}
         onSaveDraft={handleSaveDraft}
+      />
+
+      <LabelManager
+        isOpen={labelManagerOpen}
+        onClose={() => setLabelManagerOpen(false)}
+        labels={customLabels}
+        onCreateLabel={handleCreateLabel}
+        onUpdateLabel={handleUpdateLabel}
+        onDeleteLabel={handleDeleteLabel}
       />
     </div>
   );

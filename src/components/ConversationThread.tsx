@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Reply, ReplyAll, Forward, MoreHorizontal, Star, Archive, ChevronDown, ChevronUp, Sparkles, RotateCcw } from 'lucide-react';
-import { Email } from '../types/email';
+import { Reply, ReplyAll, Forward, MoreHorizontal, Star, Archive, ChevronDown, ChevronUp, Sparkles, RotateCcw, Tag } from 'lucide-react';
+import { Email, CustomLabel } from '../types/email';
+import EmailLabelActions from './EmailLabelActions';
 
 interface AiReplyState {
   isGenerating: boolean;
@@ -15,6 +16,9 @@ interface ConversationThreadProps {
   aiReplyState: AiReplyState;
   onGenerateAiReply: (email: Email, tone?: string) => void;
   onAiReplyStateChange: (state: AiReplyState) => void;
+  customLabels: CustomLabel[];
+  onEmailLabelsChange: (emailIds: string[], labelIds: string[]) => void;
+  onCreateLabel: (label: Omit<CustomLabel, 'id' | 'createdAt'>) => void;
 }
 
 const ConversationThread: React.FC<ConversationThreadProps> = ({ 
@@ -22,7 +26,10 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   onClose, 
   aiReplyState, 
   onGenerateAiReply, 
-  onAiReplyStateChange 
+  onAiReplyStateChange,
+  customLabels,
+  onEmailLabelsChange,
+  onCreateLabel
 }) => {
   const [replyText, setReplyText] = useState('');
   const [showReply, setShowReply] = useState(false);
@@ -97,24 +104,70 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     });
   };
 
+  const getEmailCustomLabels = (email: Email) => {
+    if (!email.customLabels) return [];
+    return email.customLabels
+      .map(labelId => customLabels.find(label => label.id === labelId))
+      .filter(Boolean) as CustomLabel[];
+  };
+
   // Sort messages chronologically (oldest first)
   const sortedMessages = [...email.messages].sort((a, b) => 
     new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
   );
+
+  const emailLabels = getEmailCustomLabels(email);
 
   return (
     <div className="flex-1 flex flex-col bg-white">
       {/* Header */}
       <div className="border-b border-gray-200 p-6">
         <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-semibold text-gray-900">{email.subject}</h2>
-            <p className="text-sm text-gray-500 mt-1">
-              {email.messages.length} message{email.messages.length !== 1 ? 's' : ''}
-            </p>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-2xl font-semibold text-gray-900 truncate">{email.subject}</h2>
+            <div className="flex items-center space-x-4 mt-2">
+              <p className="text-sm text-gray-500">
+                {email.messages.length} message{email.messages.length !== 1 ? 's' : ''}
+              </p>
+              
+              {/* Email Labels */}
+              {emailLabels.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {emailLabels.slice(0, 3).map((label) => (
+                    <span
+                      key={label.id}
+                      className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium"
+                      style={{
+                        backgroundColor: `${label.color}15`,
+                        color: label.color,
+                        border: `1px solid ${label.color}30`,
+                      }}
+                    >
+                      <div
+                        className="w-2 h-2 rounded-full mr-1"
+                        style={{ backgroundColor: label.color }}
+                      />
+                      {label.name}
+                    </span>
+                  ))}
+                  {emailLabels.length > 3 && (
+                    <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600">
+                      +{emailLabels.length - 3} more
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
           
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 ml-4">
+            <EmailLabelActions
+              emailIds={[email.id]}
+              currentLabels={email.customLabels || []}
+              availableLabels={customLabels}
+              onLabelsChange={onEmailLabelsChange}
+              onCreateLabel={onCreateLabel}
+            />
             <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
               <Archive className="w-5 h-5 text-gray-600" />
             </button>
@@ -174,7 +227,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                           <div>
                             <span className="font-medium text-gray-700">From:</span>
-                            <p className="text-gray-600 mt-1">{message.sender} &lt;{message.senderEmail}&gt;</p>
+                            <p className="text-gray-600 mt-1">{message.sender} <{message.senderEmail}></p>
                           </div>
                           <div>
                             <span className="font-medium text-gray-700">Subject:</span>

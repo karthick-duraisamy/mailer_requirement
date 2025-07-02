@@ -11,6 +11,7 @@ export const mockEmails: Email[] = [
     isStarred: true,
     isRead: false,
     intentLabel: 'report',
+    customLabels: ['work', 'important'],
     messages: [
       {
         id: '1-1',
@@ -95,6 +96,7 @@ Manager`,
     isStarred: false,
     isRead: false,
     intentLabel: 'announcement',
+    customLabels: ['work', 'urgent'],
     messages: [
       {
         id: '2-1',
@@ -133,6 +135,7 @@ David`,
     isStarred: true,
     isRead: true,
     intentLabel: 'announcement',
+    customLabels: ['personal'],
     messages: [
       {
         id: '3-1',
@@ -171,6 +174,7 @@ Emma`,
     isStarred: false,
     isRead: true,
     intentLabel: 'meeting',
+    customLabels: ['work', 'clients'],
     messages: [
       {
         id: '4-1',
@@ -209,6 +213,7 @@ Michael`,
     isStarred: false,
     isRead: true,
     intentLabel: 'feedback',
+    customLabels: ['work'],
     messages: [
       {
         id: '5-1',
@@ -270,6 +275,7 @@ Alex`,
     isStarred: false,
     isRead: true,
     intentLabel: 'announcement',
+    customLabels: ['newsletters'],
     messages: [
       {
         id: '6-1',
@@ -318,6 +324,7 @@ Tech Trends Team`,
     isStarred: false,
     isRead: true,
     intentLabel: 'general',
+    customLabels: ['work'],
     messages: [
       {
         id: '7-1',

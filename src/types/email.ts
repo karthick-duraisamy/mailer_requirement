@@ -9,6 +9,7 @@ export interface Email {
   isRead: boolean;
   messages: EmailMessage[];
   intentLabel?: 'meeting' | 'announcement' | 'system' | 'report' | 'feedback' | 'general';
+  customLabels?: string[]; // Array of custom label IDs
 }
 
 export interface EmailMessage {
@@ -29,4 +30,13 @@ export interface Label {
   name: string;
   color: string;
   count?: number;
+}
+
+export interface CustomLabel {
+  id: string;
+  name: string;
+  color: string;
+  description?: string;
+  createdAt: string;
+  isSystem?: boolean; // For built-in labels like Work, Personal, etc.
 }
