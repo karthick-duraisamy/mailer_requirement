@@ -271,7 +271,7 @@ const EmailList: React.FC<EmailListProps> = ({
                     <div className="flex items-center space-x-2 min-w-0">
                       <p className={`
                         text-sm truncate
-                        ${!email.isRead ? 'font-semibold text-gray-900' : 'font-medium text-gray-700'}
+                        ${!email.isRead ? 'font-bold text-black' : 'font-normal text-gray-500'}
                       `}>
                         {email.sender}
                       </p>
@@ -294,12 +294,15 @@ const EmailList: React.FC<EmailListProps> = ({
                   
                   <p className={`
                     text-sm mt-1 truncate
-                    ${!email.isRead ? 'font-medium text-gray-900' : 'text-gray-600'}
+                    ${!email.isRead ? 'font-bold text-black' : 'font-normal text-gray-500'}
                   `}>
                     {email.subject}
                   </p>
                   
-                  <p className="text-sm text-gray-500 mt-1 truncate">
+                  <p className={`
+                    text-sm mt-1 truncate
+                    ${!email.isRead ? 'text-gray-700 font-medium' : 'text-gray-400'}
+                  `}>
                     {email.preview}
                   </p>
 
