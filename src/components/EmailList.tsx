@@ -219,7 +219,7 @@ const EmailList: React.FC<EmailListProps> = ({
         </div>
       </div>
       
-      <div className="divide-y divide-gray-100">
+      <div className="divide-y divide-gray-100 overflow-y-auto max-h-[calc(100vh-8rem)] thin-scrollbar">
         {emails.map((email) => {
           const isSelected = selectedEmailId === email.id;
           const isChecked = checkedEmails.has(email.id);
