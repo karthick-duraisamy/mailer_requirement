@@ -360,6 +360,110 @@ John`,
       },
     ],
   },
+  {
+    id: '8',
+    sender: 'Alice Cooper',
+    senderEmail: 'alice.cooper@freelance.com',
+    subject: 'Collaboration Opportunity',
+    preview: 'Hi there, I came across your profile and would love to discuss a potential collaboration on an upcoming project...',
+    timestamp: '2024-01-15T10:30:00Z',
+    isStarred: false,
+    isRead: false,
+    // No intentLabel - should be assigned 'new' automatically
+    customLabels: ['work'],
+    messages: [
+      {
+        id: '8-1',
+        sender: 'Alice Cooper',
+        senderEmail: 'alice.cooper@freelance.com',
+        to: ['user@company.com'],
+        subject: 'Collaboration Opportunity',
+        content: `Hi there,
+
+I came across your profile and would love to discuss a potential collaboration on an upcoming project. I believe our skills would complement each other perfectly.
+
+Would you be interested in a quick call to discuss the details?
+
+Best regards,
+Alice`,
+        timestamp: '2024-01-15T10:30:00Z',
+        isRead: false,
+      },
+    ],
+  },
+  {
+    id: '9',
+    sender: 'Support Team',
+    senderEmail: 'support@serviceplatform.com',
+    subject: 'Your Account Status Update',
+    preview: 'We wanted to let you know that your account has been successfully updated with the new features...',
+    timestamp: '2024-01-14T15:45:00Z',
+    isStarred: false,
+    isRead: false,
+    // No intentLabel - should be assigned 'new' automatically
+    customLabels: [],
+    messages: [
+      {
+        id: '9-1',
+        sender: 'Support Team',
+        senderEmail: 'support@serviceplatform.com',
+        to: ['user@company.com'],
+        subject: 'Your Account Status Update',
+        content: `Hello,
+
+We wanted to let you know that your account has been successfully updated with the new features you requested.
+
+New features now available:
+• Enhanced dashboard analytics
+• Advanced reporting tools
+• Improved user management
+
+If you have any questions, please don't hesitate to contact us.
+
+Best regards,
+Support Team`,
+        timestamp: '2024-01-14T15:45:00Z',
+        isRead: false,
+      },
+    ],
+  },
+  {
+    id: '10',
+    sender: 'Marketing Insights',
+    senderEmail: 'insights@marketingpro.com',
+    subject: 'Industry Trends Report - Q1 2024',
+    preview: 'Get ahead of the competition with our latest industry trends analysis and market insights...',
+    timestamp: '2024-01-13T12:00:00Z',
+    isStarred: true,
+    isRead: false,
+    // No intentLabel - should be assigned 'new' automatically
+    customLabels: ['newsletters'],
+    messages: [
+      {
+        id: '10-1',
+        sender: 'Marketing Insights',
+        senderEmail: 'insights@marketingpro.com',
+        to: ['subscribers@marketingpro.com'],
+        subject: 'Industry Trends Report - Q1 2024',
+        content: `Dear Subscriber,
+
+Get ahead of the competition with our latest industry trends analysis and market insights for Q1 2024.
+
+This comprehensive report covers:
+• Emerging market opportunities
+• Consumer behavior shifts
+• Technology adoption trends
+• Competitive landscape analysis
+
+Download your copy from our subscriber portal.
+
+Best regards,
+Marketing Insights Team`,
+        timestamp: '2024-01-13T12:00:00Z',
+        isRead: false,
+      },
+    ],
+  },
 ];
 
 export const mockEmails: Email[] = ensureIntentLabel(rawEmails);
