@@ -371,7 +371,7 @@ function App() {
     console.log('Updating email labels:', emailIds, labelIds);
   };
 
-  const generateAiReply = async (email: Email, tone: string = 'professional') => {
+  const generateAiReply = async (email: Email, tone: string = 'professional', replyType: string = 'reply') => {
     setAiReplyState(prev => ({ ...prev, isGenerating: true }));
 
     // Simulate AI generation delay
@@ -380,16 +380,40 @@ function App() {
     // Generate contextual reply based on email content and tone
     const lastMessage = email.messages[email.messages.length - 1];
     let generatedReply = '';
+    
+    // Handle different reply types
+    if (replyType === 'reply-all') {
+      // Get all unique recipients for reply-all
+      const allRecipients = new Set([
+        lastMessage.senderEmail,
+        ...lastMessage.to,
+        ...(lastMessage.cc || [])
+      ]);
+      const recipientList = Array.from(allRecipients).join(', ');
+      
+      switch (tone) {
+        case 'friendly':
+          generatedReply = `Hi everyone,\n\nThanks for the email! I wanted to respond to the group with my thoughts.\n\n${getContextualResponse(email)}\n\nLooking forward to hearing from all of you!\n\nBest regards`;
+          break;
+        case 'concise':
+          generatedReply = `Hi all,\n\n${getContextualResponse(email)}\n\nBest regards`;
+          break;
+        default: // professional
+          generatedReply = `Dear team,\n\nThank you all for your input regarding ${email.subject.toLowerCase()}.\n\n${getContextualResponse(email)}\n\nPlease let me know if anyone has additional questions or concerns.\n\nBest regards`;
+      }
+    } else {
+      // Regular reply generation
 
     switch (tone) {
-      case 'friendly':
-        generatedReply = `Hi ${lastMessage.sender.split(' ')[0]},\n\nThanks for your email! I appreciate you reaching out.\n\n${getContextualResponse(email)}\n\nLooking forward to hearing from you!\n\nBest regards`;
-        break;
-      case 'concise':
-        generatedReply = `Hi,\n\n${getContextualResponse(email)}\n\nBest regards`;
-        break;
-      default: // professional
-        generatedReply = `Dear ${lastMessage.sender},\n\nThank you for your email regarding ${email.subject.toLowerCase()}.\n\n${getContextualResponse(email)}\n\nPlease let me know if you have any questions.\n\nBest regards`;
+        case 'friendly':
+          generatedReply = `Hi ${lastMessage.sender.split(' ')[0]},\n\nThanks for your email! I appreciate you reaching out.\n\n${getContextualResponse(email)}\n\nLooking forward to hearing from you!\n\nBest regards`;
+          break;
+        case 'concise':
+          generatedReply = `Hi,\n\n${getContextualResponse(email)}\n\nBest regards`;
+          break;
+        default: // professional
+          generatedReply = `Dear ${lastMessage.sender},\n\nThank you for your email regarding ${email.subject.toLowerCase()}.\n\n${getContextualResponse(email)}\n\nPlease let me know if you have any questions.\n\nBest regards`;
+      }
     }
 
     setAiReplyState(prev => ({

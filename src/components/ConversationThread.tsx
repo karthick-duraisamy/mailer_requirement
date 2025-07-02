@@ -14,7 +14,7 @@ interface ConversationThreadProps {
   email: Email | null;
   onClose: () => void;
   aiReplyState: AiReplyState;
-  onGenerateAiReply: (email: Email, tone?: string) => void;
+  onGenerateAiReply: (email: Email, tone?: string, replyType?: string) => void;
   onAiReplyStateChange: (state: AiReplyState) => void;
   customLabels: CustomLabel[];
   onEmailLabelsChange: (emailIds: string[], labelIds: string[]) => void;
@@ -72,10 +72,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
   const handleAiReplyGenerate = (isReplyAll = false) => {
     if (email) {
-      if (isReplyAll) {
-        handleReplyAll();
-      }
-      onGenerateAiReply(email, aiReplyState.tone);
+      // Pass the reply type to the AI generation function
+      onGenerateAiReply(email, aiReplyState.tone, isReplyAll ? 'reply-all' : 'reply');
     }
   };
 
