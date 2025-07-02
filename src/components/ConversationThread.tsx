@@ -92,6 +92,39 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     }
   };
 
+  const handleReplyAll = () => {
+    if (email) {
+      const lastMessage = sortedMessages[sortedMessages.length - 1];
+      // Get all unique recipients (to, cc) excluding our own email
+      const allRecipients = new Set([
+        lastMessage.senderEmail,
+        ...lastMessage.to,
+        ...(lastMessage.cc || [])
+      ]);
+      
+      // Remove our own email if present (you might want to get this from user context)
+      // allRecipients.delete('current-user@company.com');
+      
+      // Set reply text with appropriate header
+      const replyAllText = `\n\n--- Reply All ---\nTo: ${Array.from(allRecipients).join(', ')}\n\n`;
+      setReplyText(replyAllText);
+      setShowReply(true);
+      onAiReplyStateChange({ ...aiReplyState, showAiReply: false, generatedReply: '' });
+    }
+  };
+
+  const handleForward = () => {
+    if (email) {
+      const lastMessage = sortedMessages[sortedMessages.length - 1];
+      // Format the forwarded message
+      const forwardedText = `\n\n--- Forwarded Message ---\nFrom: ${lastMessage.sender} <${lastMessage.senderEmail}>\nDate: ${formatTimestamp(lastMessage.timestamp)}\nSubject: ${lastMessage.subject}\nTo: ${lastMessage.to.join(', ')}\n${lastMessage.cc ? `Cc: ${lastMessage.cc.join(', ')}\n` : ''}\n${lastMessage.content}`;
+      
+      setReplyText(forwardedText);
+      setShowReply(true);
+      onAiReplyStateChange({ ...aiReplyState, showAiReply: false, generatedReply: '' });
+    }
+  };
+
   const toggleMessageExpansion = (messageId: string) => {
     setExpandedMessages(prev => {
       const newSet = new Set(prev);
@@ -287,11 +320,17 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                               <Sparkles className="w-4 h-4" />
                               <span>{aiReplyState.isGenerating ? 'Generating...' : 'Reply with AI'}</span>
                             </button>
-                            <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors">
+                            <button 
+                              onClick={() => handleReplyAll()}
+                              className="flex items-center space-x-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
+                            >
                               <ReplyAll className="w-4 h-4" />
                               <span>Reply All</span>
                             </button>
-                            <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors">
+                            <button 
+                              onClick={() => handleForward()}
+                              className="flex items-center space-x-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
+                            >
                               <Forward className="w-4 h-4" />
                               <span>Forward</span>
                             </button>
@@ -370,8 +409,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Reply</h3>
               <div className="text-sm text-gray-600 space-y-1">
-                <p><span className="font-medium">To:</span> {email.senderEmail}</p>
-                <p><span className="font-medium">Subject:</span> Re: {email.subject}</p>
+                <p><span className="font-medium">To:</span> {replyText.includes('--- Reply All ---') ? 'Multiple recipients' : replyText.includes('--- Forwarded Message ---') ? '' : email.senderEmail}</p>
+                <p><span className="font-medium">Subject:</span> {replyText.includes('--- Forwarded Message ---') ? `Fwd: ${email.subject}` : `Re: ${email.subject}`}</p>
               </div>
             </div>
             <textarea
