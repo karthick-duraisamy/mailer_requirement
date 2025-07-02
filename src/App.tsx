@@ -40,6 +40,7 @@ function App() {
   const [composeModalOpen, setComposeModalOpen] = useState(false);
   const [labelManagerOpen, setLabelManagerOpen] = useState(false);
   const [isFullPageView, setIsFullPageView] = useState(false);
+  const [composePanelOpen, setComposePanelOpen] = useState(false);
 
   // Calculate email counts
   const emailCounts = useMemo(() => {
@@ -297,11 +298,11 @@ function App() {
   };
 
   const handleComposeOpen = () => {
-    setComposeModalOpen(true);
+    setComposePanelOpen(true);
   };
 
   const handleComposeClose = () => {
-    setComposeModalOpen(false);
+    setComposePanelOpen(false);
   };
 
   const handleSendEmail = async (emailData: ComposeEmailData) => {
@@ -314,8 +315,8 @@ function App() {
     // Show success message
     alert('Email sent successfully!');
 
-    // Close compose modal
-    setComposeModalOpen(false);
+    // Close compose panel
+    setComposePanelOpen(false);
   };
 
   const handleSaveDraft = async (emailData: ComposeEmailData) => {
@@ -330,8 +331,8 @@ function App() {
       alert('Draft saved successfully!');
     }
 
-    // Close compose modal
-    setComposeModalOpen(false);
+    // Close compose panel
+    setComposePanelOpen(false);
   };
 
   // Label Management Functions
@@ -530,12 +531,15 @@ function App() {
         </div>
       </div>
 
-      <ComposeModal
-        isOpen={composeModalOpen}
-        onClose={handleComposeClose}
-        onSend={handleSendEmail}
-        onSaveDraft={handleSaveDraft}
-      />
+      {/* Conditionally render ComposeModal or ComposePanel based on composePanelOpen */}
+      {composePanelOpen ? (
+          <ComposeModal
+            isOpen={composePanelOpen}
+            onClose={handleComposeClose}
+            onSend={handleSendEmail}
+            onSaveDraft={handleSaveDraft}
+          />
+      ) : null}
 
       <LabelManager
         isOpen={labelManagerOpen}
