@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Star, Square, CheckSquare, Inbox, Send, FileText, Clock, Tag, Calendar, Megaphone, AlertTriangle, BarChart3, MessageSquare, Mail, MoreHorizontal } from 'lucide-react';
+import React, { useState, useRef, useCallback } from 'react';
+import { Star, Square, CheckSquare, Inbox, Send, FileText, Clock, Tag, Calendar, Megaphone, AlertTriangle, BarChart3, MessageSquare, Mail, MoreHorizontal, ArrowLeftRight } from 'lucide-react';
 import { Email, CustomLabel } from '../types/email';
 import EmailLabelActions from './EmailLabelActions';
 
@@ -29,6 +29,9 @@ const EmailList: React.FC<EmailListProps> = ({
   onCreateLabel,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [width, setWidth] = useState(320); // Default width
+  const [isResizing, setIsResizing] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const handleDoubleClick = () => {
     setIsExpanded(!isExpanded);
@@ -192,14 +195,56 @@ const EmailList: React.FC<EmailListProps> = ({
   const checkedEmailsArray = Array.from(checkedEmails);
   const hasCheckedEmails = checkedEmailsArray.length > 0;
 
+  const handleResizeStart = useCallback(() => {
+    setIsResizing(true);
+  }, []);
+
+  const handleResize = useCallback(
+    (e: MouseEvent) => {
+      if (!isResizing) return;
+
+      setWidth((prevWidth) => {
+        const newWidth = prevWidth + e.movementX;
+        // Define your min/max width if needed
+        return Math.max(240, Math.min(newWidth, 800));
+      });
+    },
+    [isResizing]
+  );
+
+  const handleResizeStop = useCallback(() => {
+    setIsResizing(false);
+  }, []);
+
+  React.useEffect(() => {
+    if (isResizing) {
+      document.addEventListener('mousemove', handleResize);
+      document.addEventListener('mouseup', handleResizeStop);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleResize);
+      document.removeEventListener('mouseup', handleResizeStop);
+    };
+  }, [isResizing, handleResize, handleResizeStop]);
+
   if (emails.length === 0) {
     return (
       <div 
         className={`bg-white border-r border-gray-200 transition-all duration-300 ${
           isExpanded ? 'w-[600px]' : 'w-80'
-        }`}
+        } relative`}
         onDoubleClick={handleDoubleClick}
+        ref={containerRef}
+        style={{ width: `${width}px` }}
       >
+         {/* Resizer */}
+         <div
+            className="absolute top-0 right-0 h-full w-2 cursor-col-resize flex items-center justify-center"
+            onMouseDown={handleResizeStart}
+          >
+            <div className="bg-gray-300 h-6 w-0.5 rounded-full opacity-0 hover:opacity-100" />
+          </div>
         <div className="p-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900">{getSectionTitle(activeSection)}</h2>
         </div>
@@ -210,11 +255,18 @@ const EmailList: React.FC<EmailListProps> = ({
 
   return (
     <div 
-      className={`bg-white border-r border-gray-200 transition-all duration-300 ${
-        isExpanded ? 'w-[600px]' : 'w-80'
-      }`}
+      className={`bg-white border-r border-gray-200 transition-all duration-300 relative`}
       onDoubleClick={handleDoubleClick}
+      ref={containerRef}
+      style={{ width: `${width}px` }}
     >
+       {/* Resizer */}
+       <div
+          className="absolute top-0 right-0 h-full w-2 cursor-col-resize flex items-center justify-center"
+          onMouseDown={handleResizeStart}
+        >
+          <div className="bg-gray-300 h-6 w-0.5 rounded-full opacity-0 hover:opacity-100" />
+        </div>
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <div>
