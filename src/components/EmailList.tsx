@@ -28,14 +28,11 @@ const EmailList: React.FC<EmailListProps> = ({
   onEmailLabelsChange,
   onCreateLabel,
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
   const [width, setWidth] = useState(320); // Default width
   const [isResizing, setIsResizing] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-
-  const handleDoubleClick = () => {
-    setIsExpanded(!isExpanded);
-  };
+  const startXRef = useRef<number>(0);
+  const startWidthRef = useRef<number>(320);
 
   const handleEmailDoubleClick = (email: Email, event: React.MouseEvent) => {
     event.stopPropagation();
@@ -195,18 +192,29 @@ const EmailList: React.FC<EmailListProps> = ({
   const checkedEmailsArray = Array.from(checkedEmails);
   const hasCheckedEmails = checkedEmailsArray.length > 0;
 
-  const handleResizeStart = useCallback(() => {
+  const handleResizeStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
     setIsResizing(true);
-  }, []);
+    startXRef.current = e.clientX;
+    startWidthRef.current = width;
+    
+    // Add cursor style to body to prevent cursor flickering
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  }, [width]);
 
   const handleResize = useCallback(
     (e: MouseEvent) => {
       if (!isResizing) return;
-
-      setWidth((prevWidth) => {
-        const newWidth = prevWidth + e.movementX;
-        // Define your min/max width if needed
-        return Math.max(240, Math.min(newWidth, 800));
+      
+      e.preventDefault();
+      const deltaX = e.clientX - startXRef.current;
+      const newWidth = startWidthRef.current + deltaX;
+      const clampedWidth = Math.max(240, Math.min(newWidth, 800));
+      
+      // Use requestAnimationFrame for smoother updates
+      requestAnimationFrame(() => {
+        setWidth(clampedWidth);
       });
     },
     [isResizing]
@@ -214,36 +222,39 @@ const EmailList: React.FC<EmailListProps> = ({
 
   const handleResizeStop = useCallback(() => {
     setIsResizing(false);
+    // Reset cursor styles
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
   }, []);
 
   React.useEffect(() => {
     if (isResizing) {
-      document.addEventListener('mousemove', handleResize);
+      document.addEventListener('mousemove', handleResize, { passive: false });
       document.addEventListener('mouseup', handleResizeStop);
     }
 
     return () => {
       document.removeEventListener('mousemove', handleResize);
       document.removeEventListener('mouseup', handleResizeStop);
+      // Cleanup cursor styles on unmount
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
     };
   }, [isResizing, handleResize, handleResizeStop]);
 
   if (emails.length === 0) {
     return (
       <div 
-        className={`bg-white border-r border-gray-200 transition-all duration-300 ${
-          isExpanded ? 'w-[600px]' : 'w-80'
-        } relative`}
-        onDoubleClick={handleDoubleClick}
+        className="bg-white border-r border-gray-200 relative"
         ref={containerRef}
-        style={{ width: `${width}px` }}
+        style={{ width: `${width}px`, minWidth: '240px', maxWidth: '800px' }}
       >
          {/* Resizer */}
          <div
-            className="absolute top-0 right-0 h-full w-2 cursor-col-resize flex items-center justify-center"
+            className="absolute top-0 right-0 h-full w-2 cursor-col-resize flex items-center justify-center hover:bg-blue-50 transition-colors group z-10"
             onMouseDown={handleResizeStart}
           >
-            <div className="bg-gray-300 h-6 w-0.5 rounded-full opacity-0 hover:opacity-100" />
+            <div className="bg-gray-300 group-hover:bg-blue-400 h-6 w-0.5 rounded-full transition-colors" />
           </div>
         <div className="p-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900">{getSectionTitle(activeSection)}</h2>
@@ -255,17 +266,16 @@ const EmailList: React.FC<EmailListProps> = ({
 
   return (
     <div 
-      className={`bg-white border-r border-gray-200 transition-all duration-300 relative`}
-      onDoubleClick={handleDoubleClick}
+      className="bg-white border-r border-gray-200 relative"
       ref={containerRef}
-      style={{ width: `${width}px` }}
+      style={{ width: `${width}px`, minWidth: '240px', maxWidth: '800px' }}
     >
        {/* Resizer */}
        <div
-          className="absolute top-0 right-0 h-full w-2 cursor-col-resize flex items-center justify-center"
+          className="absolute top-0 right-0 h-full w-2 cursor-col-resize flex items-center justify-center hover:bg-blue-50 transition-colors group z-10"
           onMouseDown={handleResizeStart}
         >
-          <div className="bg-gray-300 h-6 w-0.5 rounded-full opacity-0 hover:opacity-100" />
+          <div className="bg-gray-300 group-hover:bg-blue-400 h-6 w-0.5 rounded-full transition-colors" />
         </div>
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
