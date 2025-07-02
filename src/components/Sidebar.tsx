@@ -20,6 +20,7 @@ interface SidebarProps {
   onComposeClick: () => void;
   customLabels: CustomLabel[];
   onManageLabels: () => void;
+  emailCounts: Record<string, number>;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ 
@@ -28,16 +29,17 @@ const Sidebar: React.FC<SidebarProps> = ({
   isOpen, 
   onComposeClick,
   customLabels,
-  onManageLabels
+  onManageLabels,
+  emailCounts
 }) => {
   const [labelsExpanded, setLabelsExpanded] = useState(true);
 
   const navigationItems = [
-    { id: 'inbox', label: 'Inbox', icon: Inbox, count: 12 },
-    { id: 'sent', label: 'Sent', icon: Send },
-    { id: 'drafts', label: 'Drafts', icon: FileText, count: 3 },
-    { id: 'starred', label: 'Starred', icon: Star },
-    { id: 'snoozed', label: 'Snoozed', icon: Clock, count: 1 },
+    { id: 'inbox', label: 'Inbox', icon: Inbox, count: emailCounts.inbox },
+    { id: 'sent', label: 'Sent', icon: Send, count: emailCounts.sent },
+    { id: 'drafts', label: 'Drafts', icon: FileText, count: emailCounts.drafts },
+    { id: 'starred', label: 'Starred', icon: Star, count: emailCounts.starred },
+    { id: 'snoozed', label: 'Snoozed', icon: Clock, count: emailCounts.snoozed },
   ];
 
   // Separate system and custom labels
@@ -45,16 +47,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const userLabels = customLabels.filter(label => !label.isSystem);
 
   const getLabelCount = (labelId: string) => {
-    // In a real app, this would be calculated from the emails
-    const counts: Record<string, number> = {
-      'work': 8,
-      'personal': 5,
-      'important': 2,
-      'urgent': 3,
-      'clients': 4,
-      'newsletters': 6,
-    };
-    return counts[labelId];
+    return emailCounts[`label-${labelId}`] || emailCounts[`custom-label-${labelId}`] || 0;
   };
 
   const handleLabelClick = (labelId: string, isSystem: boolean) => {
@@ -111,7 +104,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     <Icon className="w-5 h-5" />
                     <span>{item.label}</span>
                   </div>
-                  {item.count && (
+                  {item.count > 0 && (
                     <span className={`
                       px-2 py-1 text-xs rounded-full
                       ${isActive ? 'bg-blue-200 text-blue-800' : 'bg-gray-200 text-gray-600'}
