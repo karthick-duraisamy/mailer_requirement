@@ -16,9 +16,10 @@ interface SidebarProps {
   activeItem: string;
   onItemSelect: (item: string) => void;
   isOpen: boolean;
+  onComposeClick: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activeItem, onItemSelect, isOpen }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activeItem, onItemSelect, isOpen, onComposeClick }) => {
   const [labelsExpanded, setLabelsExpanded] = useState(true);
 
   const navigationItems = [
@@ -52,7 +53,10 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem, onItemSelect, isOpen }) =
       `}>
         <div className="flex flex-col h-full">
           <div className="p-4">
-            <button className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2">
+            <button 
+              onClick={onComposeClick}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2"
+            >
               <Plus className="w-4 h-4" />
               <span>Compose</span>
             </button>

@@ -3,6 +3,7 @@ import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import EmailList from './components/EmailList';
 import ConversationThread from './components/ConversationThread';
+import ComposeModal, { ComposeEmailData } from './components/ComposeModal';
 import { Email } from './types/email';
 import { mockEmails } from './data/mockEmails';
 import { FilterOptions } from './components/EmailFilters';
@@ -28,6 +29,7 @@ function App() {
     generatedReply: '',
     tone: 'professional',
   });
+  const [composeModalOpen, setComposeModalOpen] = useState(false);
 
   // Apply filters and sorting
   const applyFilters = (emailList: Email[]) => {
@@ -298,6 +300,44 @@ function App() {
     }
   };
 
+  const handleComposeOpen = () => {
+    setComposeModalOpen(true);
+  };
+
+  const handleComposeClose = () => {
+    setComposeModalOpen(false);
+  };
+
+  const handleSendEmail = async (emailData: ComposeEmailData) => {
+    // Simulate API call to send email
+    console.log('Sending email:', emailData);
+    
+    // In a real app, you would make an API call here
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Show success message
+    alert('Email sent successfully!');
+    
+    // Close compose modal
+    setComposeModalOpen(false);
+  };
+
+  const handleSaveDraft = async (emailData: ComposeEmailData) => {
+    // Simulate API call to save draft
+    console.log('Saving draft:', emailData);
+    
+    // In a real app, you would make an API call here
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Show success message
+    if (emailData.to.length > 0 || emailData.subject.trim() || emailData.body.trim()) {
+      alert('Draft saved successfully!');
+    }
+    
+    // Close compose modal
+    setComposeModalOpen(false);
+  };
+
   return (
     <div className="h-screen flex flex-col bg-gray-50">
       <Header 
@@ -312,6 +352,7 @@ function App() {
           activeItem={activeItem} 
           onItemSelect={handleSectionChange}
           isOpen={sidebarOpen}
+          onComposeClick={handleComposeOpen}
         />
 
         <div className="flex-1 flex min-w-0">
@@ -328,14 +369,21 @@ function App() {
           </div>
 
           <ConversationThread 
-              email={selectedEmail} 
-              onClose={() => setSelectedEmail(null)}
-              aiReplyState={aiReplyState}
-              onGenerateAiReply={generateAiReply}
-              onAiReplyStateChange={setAiReplyState}
-            />
+            email={selectedEmail} 
+            onClose={() => setSelectedEmail(null)}
+            aiReplyState={aiReplyState}
+            onGenerateAiReply={generateAiReply}
+            onAiReplyStateChange={setAiReplyState}
+          />
         </div>
       </div>
+
+      <ComposeModal
+        isOpen={composeModalOpen}
+        onClose={handleComposeClose}
+        onSend={handleSendEmail}
+        onSaveDraft={handleSaveDraft}
+      />
     </div>
   );
 }
