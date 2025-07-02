@@ -110,6 +110,7 @@ const EmailList: React.FC<EmailListProps> = ({
       case 'drafts': return 'Drafts';
       case 'starred': return 'Starred';
       case 'snoozed': return 'Snoozed';
+      case 'uncategorized': return 'Uncategorized';
       case 'label-work': return 'Work';
       case 'label-personal': return 'Personal';
       case 'label-important': return 'Important';
@@ -132,6 +133,7 @@ const EmailList: React.FC<EmailListProps> = ({
       case 'drafts': return FileText;
       case 'starred': return Star;
       case 'snoozed': return Clock;
+      case 'uncategorized': return FileText;
       default: return Tag;
     }
   };
@@ -162,6 +164,8 @@ const EmailList: React.FC<EmailListProps> = ({
             ? 'Star important emails to find them quickly here.'
             : section === 'snoozed'
             ? 'Snoozed emails will appear here when it\'s time to deal with them.'
+            : section === 'uncategorized'
+            ? 'Emails without proper categorization or intent labels will appear here.'
             : section.startsWith('custom-label-') || section.startsWith('label-')
             ? `Emails with the "${title}" label will appear here.`
             : `No emails available in this section yet.`

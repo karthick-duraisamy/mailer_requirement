@@ -11,7 +11,7 @@ import {
   Tag,
   Settings
 } from 'lucide-react';
-import { Label, CustomLabel } from '../types/email';
+import { Label, CustomLabel, Email } from '../types/email';
 
 interface SidebarProps {
   activeItem: string;
@@ -20,6 +20,7 @@ interface SidebarProps {
   onComposeClick: () => void;
   customLabels: CustomLabel[];
   onManageLabels: () => void;
+  emails?: Email[];
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ 
@@ -28,16 +29,28 @@ const Sidebar: React.FC<SidebarProps> = ({
   isOpen, 
   onComposeClick,
   customLabels,
-  onManageLabels
+  onManageLabels,
+  emails = []
 }) => {
   const [labelsExpanded, setLabelsExpanded] = useState(true);
 
+  const getUncategorizedCount = () => {
+    const validIntents = ['meeting', 'announcement', 'system', 'report', 'feedback', 'general'];
+    return emails.filter(email => 
+      !email.intentLabel || 
+      !validIntents.includes(email.intentLabel) ||
+      (email.intentLabel === 'general' && !email.customLabels?.length)
+    ).length;
+  };
+
+  const uncategorizedCount = getUncategorizedCount();
   const navigationItems = [
     { id: 'inbox', label: 'Inbox', icon: Inbox, count: 12 },
     { id: 'sent', label: 'Sent', icon: Send },
     { id: 'drafts', label: 'Drafts', icon: FileText, count: 3 },
     { id: 'starred', label: 'Starred', icon: Star },
     { id: 'snoozed', label: 'Snoozed', icon: Clock, count: 1 },
+    { id: 'uncategorized', label: 'Uncategorized', icon: FileText, count: uncategorizedCount > 0 ? uncategorizedCount : undefined },
   ];
 
   // Separate system and custom labels
