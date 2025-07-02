@@ -227,7 +227,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                           <div>
                             <span className="font-medium text-gray-700">From:</span>
-                            <p className="text-gray-600 mt-1">{message.sender} <{message.senderEmail}></p>
+                            <p className="text-gray-600 mt-1">{`${message.sender} <${message.senderEmail}>`}</p>
                           </div>
                           <div>
                             <span className="font-medium text-gray-700">Subject:</span>
