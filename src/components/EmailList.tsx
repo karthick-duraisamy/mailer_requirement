@@ -286,9 +286,35 @@ const EmailList: React.FC<EmailListProps> = ({
         </div>
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">{getSectionTitle(activeSection)}</h2>
-            <p className="text-sm text-gray-500 mt-1">{emails.length} email{emails.length !== 1 ? 's' : ''}</p>
+          <div className="flex items-center space-x-3">
+            {/* Master Checkbox for Select All/Unselect All */}
+            <button
+              onClick={() => {
+                if (checkedEmails.size === emails.length) {
+                  onUnselectAll();
+                } else {
+                  onSelectAll();
+                }
+              }}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+              title={checkedEmails.size === emails.length ? "Unselect all" : "Select all"}
+            >
+              {checkedEmails.size === emails.length && emails.length > 0 ? (
+                <CheckSquare className="w-4 h-4 text-blue-600" />
+              ) : checkedEmails.size > 0 ? (
+                <Square className="w-4 h-4 text-blue-600 fill-blue-100" />
+              ) : (
+                <Square className="w-4 h-4" />
+              )}
+            </button>
+            
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">{getSectionTitle(activeSection)}</h2>
+              <p className="text-sm text-gray-500 mt-1">
+                {checkedEmails.size > 0 ? `${checkedEmails.size} of ${emails.length}` : emails.length} email{emails.length !== 1 ? 's' : ''}
+                {checkedEmails.size > 0 ? ' selected' : ''}
+              </p>
+            </div>
           </div>
 
           {/* Bulk Actions */}
