@@ -518,10 +518,37 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                   )}
 
                   {/* Collapsed Message Preview */}
-                  {!isExpanded && !isLastMessage && (
-                    <div className="text-sm text-gray-500 truncate">
-                      {message.content.substring(0, 100)}...
-                    </div>
+                  {!isExpanded && (
+                    <>
+                      <div className="text-sm text-gray-500 truncate mb-3">
+                        {message.content.substring(0, 100)}...
+                      </div>
+                      
+                      {/* Quick Action Buttons for Collapsed Messages */}
+                      <div className="flex items-center space-x-2 pt-2 border-t border-gray-100">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowReply(!showReply);
+                          }}
+                          className="flex items-center space-x-1 px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
+                        >
+                          <Reply className="w-3 h-3" />
+                          <span>Reply</span>
+                        </button>
+                        
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleReplyAll();
+                          }}
+                          className="flex items-center space-x-1 px-3 py-1 text-xs border border-gray-300 hover:bg-gray-50 rounded transition-colors"
+                        >
+                          <ReplyAll className="w-3 h-3" />
+                          <span>Reply All</span>
+                        </button>
+                      </div>
+                    </>
                   )}
                 </div>
               </div>
