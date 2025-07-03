@@ -32,12 +32,7 @@ function App() {
     dateRange: { from: '', to: '' },
     intent: 'all',
   });
-  const [aiReplyState, setAiReplyState] = useState({
-    isGenerating: false,
-    showAiReply: false,
-    generatedReply: '',
-    tone: 'professional',
-  });
+  const [aiReplyStates, setAiReplyStates] = useState<Map<string, AiReplyState>>(new Map());
   const [composeModalOpen, setComposeModalOpen] = useState(false);
   const [labelManagerOpen, setLabelManagerOpen] = useState(false);
   const [isFullPageView, setIsFullPageView] = useState(false);
@@ -556,10 +551,10 @@ function App() {
 
     // Move email to deleted emails
     setDeletedEmails(prev => [...prev, emailToDelete]);
-    
+
     // Remove from active emails
     setEmails(prev => prev.filter(email => email.id !== emailId));
-    
+
     // Clear selection if this email was selected
     if (selectedEmail && selectedEmail.id === emailId) {
       setSelectedEmail(null);
@@ -599,8 +594,29 @@ function App() {
     console.log('Undid last action');
   };
 
+  // Helper function to get AI reply state for specific email
+  const getAiReplyState = (emailId: string): AiReplyState => {
+    return aiReplyStates.get(emailId) || {
+      isGenerating: false,
+      showAiReply: false,
+      generatedReply: '',
+      tone: 'professional'
+    };
+  };
+
+  // Helper function to update AI reply state for specific email
+  const updateAiReplyState = (emailId: string, newState: AiReplyState) => {
+    setAiReplyStates(prev => new Map(prev.set(emailId, newState)));
+  };
+
   const generateAiReply = async (email: Email, tone: string = 'professional', replyType: string = 'reply') => {
-    setAiReplyState(prev => ({ ...prev, isGenerating: true }));
+    const currentState = getAiReplyState(email.id);
+    updateAiReplyState(email.id, {
+      ...currentState,
+      isGenerating: true,
+      showAiReply: false,
+      replyType: replyType as any
+    });
 
     // Simulate AI generation delay
     await new Promise(resolve => setTimeout(resolve, 2000));
@@ -644,13 +660,13 @@ function App() {
       }
     }
 
-    setAiReplyState(prev => ({
-      ...prev,
+    updateAiReplyState(email.id, {
+      ...currentState,
       isGenerating: false,
       showAiReply: true,
       generatedReply,
       tone: tone as any
-    }));
+    });
   };
 
   const getContextualResponse = (email: Email) => {
@@ -703,9 +719,9 @@ function App() {
               onClose={() => setSelectedEmail(null)}
               onBack={handleBackToList}
               isFullPage={true}
-              aiReplyState={aiReplyState}
+              aiReplyState={getAiReplyState(selectedEmail?.id || '')}
               onGenerateAiReply={generateAiReply}
-              onAiReplyStateChange={setAiReplyState}
+              onAiReplyStateChange={(newState) => selectedEmail?.id && updateAiReplyState(selectedEmail.id, newState)}
               customLabels={customLabels}
               onEmailLabelsChange={handleEmailLabelsChange}
               onCreateLabel={handleCreateLabel}
@@ -736,9 +752,9 @@ function App() {
                 email={selectedEmail} 
                 onClose={() => setSelectedEmail(null)}
                 isFullPage={false}
-                aiReplyState={aiReplyState}
+                aiReplyState={getAiReplyState(selectedEmail?.id || '')}
                 onGenerateAiReply={generateAiReply}
-                onAiReplyStateChange={setAiReplyState}
+                onAiReplyStateChange={(newState) => selectedEmail?.id && updateAiReplyState(selectedEmail.id, newState)}
                 customLabels={customLabels}
                 onEmailLabelsChange={handleEmailLabelsChange}
                 onCreateLabel={handleCreateLabel}
