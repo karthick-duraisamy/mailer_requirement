@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Reply, ReplyAll, Forward, MoreHorizontal, Star, Archive, ChevronDown, ChevronUp, Sparkles, RotateCcw, Tag, ArrowLeft, Loader2, Trash2, Eye, X } from 'lucide-react';
+import { Reply, ReplyAll, Forward, MoreHorizontal, Star, Archive, ChevronDown, ChevronUp, Sparkles, RotateCcw, Tag, ArrowLeft, Loader2, Trash2 } from 'lucide-react';
 import { Email, CustomLabel } from '../types/email';
 import EmailLabelActions from './EmailLabelActions';
 import EntitiesDisplay from './EntitiesDisplay';
@@ -42,8 +42,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   const [replyText, setReplyText] = useState('');
   const [showReply, setShowReply] = useState(false);
   const [expandedMessages, setExpandedMessages] = useState<Set<string>>(new Set());
-  const [showEntitiesPopover, setShowEntitiesPopover] = useState(false);
-  const entitiesButtonRef = useRef<HTMLButtonElement>(null);
   
   // Refs for auto-scrolling
   const aiReplyRef = useRef<HTMLDivElement>(null);
@@ -246,131 +244,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     </div>
   );
 
-  // Format entity key for display
-  const formatEntityKey = (key: string) => {
-    return key
-      .split('_')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
-  };
-
-  // Get entity icon based on key
-  const getEntityIcon = (key: string) => {
-    const lowerKey = key.toLowerCase();
-    if (lowerKey.includes('date') || lowerKey.includes('time')) return '📅';
-    if (lowerKey.includes('destination') || lowerKey.includes('origin') || lowerKey.includes('location')) return '📍';
-    if (lowerKey.includes('name') || lowerKey.includes('traveler') || lowerKey.includes('user')) return '👤';
-    if (lowerKey.includes('company') || lowerKey.includes('team') || lowerKey.includes('department')) return '🏢';
-    if (lowerKey.includes('meeting') || lowerKey.includes('event')) return '⏰';
-    return '🏷️';
-  };
-
   return (
-    <>
-      {/* Entities Popover */}
-      {showEntitiesPopover && email?.entities && (
-        <>
-          <div 
-            className="fixed inset-0 z-40" 
-            onClick={() => setShowEntitiesPopover(false)}
-          />
-          <div 
-            className="absolute z-50 mt-2 w-[420px] bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden animate-in slide-in-from-top-2 duration-300"
-            style={{
-              left: entitiesButtonRef.current ? 
-                Math.min(
-                  entitiesButtonRef.current.getBoundingClientRect().left,
-                  window.innerWidth - 440
-                ) : 0,
-              top: entitiesButtonRef.current ? 
-                entitiesButtonRef.current.getBoundingClientRect().bottom + 8 : 0
-            }}
-          >
-            {/* Header with gradient background */}
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
-                    <Eye className="w-4 h-4 text-white" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-white">Email Entities</h3>
-                </div>
-                <button
-                  onClick={() => setShowEntitiesPopover(false)}
-                  className="p-2 hover:bg-white/20 rounded-lg transition-colors text-white"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-              <p className="text-blue-100 text-sm mt-1">
-                {Object.keys(email.entities).length} entities extracted from this email
-              </p>
-            </div>
-            
-            {/* Content */}
-            <div className="p-4 max-h-96 overflow-y-auto bg-gray-50/50">
-              <div className="space-y-3">
-                {Object.entries(email.entities).map(([key, value], index) => (
-                  <div 
-                    key={key} 
-                    className="group bg-white border border-gray-100 rounded-lg p-4 hover:shadow-md hover:border-blue-200 transition-all duration-200 hover:-translate-y-0.5"
-                    style={{ animationDelay: `${index * 50}ms` }}
-                  >
-                    <div className="flex items-start space-x-3">
-                      <div className="flex-shrink-0">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-lg shadow-sm">
-                          {getEntityIcon(key)}
-                        </div>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
-                            {formatEntityKey(key)}
-                          </h4>
-                          <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-full">
-                            {key.toLowerCase().replace('_', ' ')}
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-700 leading-relaxed break-words bg-gray-50 rounded-md p-2 border-l-2 border-blue-500">
-                          {value}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              {Object.keys(email.entities).length === 0 && (
-                <div className="text-center py-12">
-                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Eye className="w-8 h-8 text-gray-400" />
-                  </div>
-                  <h4 className="text-lg font-medium text-gray-900 mb-2">No entities found</h4>
-                  <p className="text-sm text-gray-500">This email doesn't contain any extracted entities</p>
-                </div>
-              )}
-            </div>
-
-            {/* Footer */}
-            <div className="bg-white border-t border-gray-100 p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2 text-xs text-gray-500">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                  <span>Powered by AI entity extraction</span>
-                </div>
-                <button
-                  onClick={() => setShowEntitiesPopover(false)}
-                  className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-
-      <div ref={containerRef} className="flex-1 flex flex-col bg-white">
+    <div ref={containerRef} className="flex-1 flex flex-col bg-white">
       {/* Header */}
       <div className="border-b border-gray-200 p-6">
         <div className="flex items-center justify-between">
@@ -420,29 +295,9 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                 )}
               </div>
               
-              {/* View Entities Button */}
-              {email.entities && Object.keys(email.entities).length > 0 && (
-                <div className="relative">
-                  <button
-                    ref={entitiesButtonRef}
-                    onClick={() => setShowEntitiesPopover(!showEntitiesPopover)}
-                    className={`inline-flex items-center px-4 py-2 mt-3 text-sm font-medium rounded-xl transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 ${
-                      showEntitiesPopover 
-                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white border-transparent' 
-                        : 'text-blue-600 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 hover:from-blue-100 hover:to-purple-100'
-                    }`}
-                  >
-                    <Eye className="w-4 h-4 mr-2" />
-                    <span className="font-semibold">View Entities</span>
-                    <span className={`ml-2 px-2 py-0.5 text-xs font-bold rounded-full ${
-                      showEntitiesPopover 
-                        ? 'bg-white/20 text-white' 
-                        : 'bg-blue-600 text-white'
-                    }`}>
-                      {Object.keys(email.entities).length}
-                    </span>
-                  </button>
-                </div>
+              {/* Entities Display */}
+              {email.entities && (
+                <EntitiesDisplay entities={email.entities} />
               )}
             </div>
           </div>
@@ -793,7 +648,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
         </div>
       )}
     </div>
-    </>
   );
 };
 
