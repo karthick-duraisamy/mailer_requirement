@@ -317,35 +317,10 @@ const EmailList: React.FC<EmailListProps> = ({
             </div>
           </div>
 
-          {/* Bulk Actions */}
-          {hasCheckedEmails && (
-            <div className="flex items-center space-x-2">
-              <div className="flex items-center space-x-1">
-                <button
-                  onClick={() => onBulkMarkAsRead(checkedEmailsArray, true)}
-                  className="flex items-center space-x-1 px-2 py-1 text-xs bg-green-600 hover:bg-green-700 text-white rounded transition-colors"
-                  title="Mark as Read"
-                >
-                  <span>Read</span>
-                </button>
-                
-                <button
-                  onClick={() => onBulkMarkAsRead(checkedEmailsArray, false)}
-                  className="flex items-center space-x-1 px-2 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
-                  title="Mark as Unread"
-                >
-                  <span>Unread</span>
-                </button>
-                
-                <button
-                  onClick={() => onBulkDelete(checkedEmailsArray)}
-                  className="flex items-center space-x-1 px-2 py-1 text-xs bg-red-600 hover:bg-red-700 text-white rounded transition-colors"
-                  title="Delete"
-                >
-                  <span>Delete</span>
-                </button>
-              </div>
-
+          {/* Actions Menu */}
+          <div className="flex items-center space-x-2">
+            {/* Label Actions - only show when emails are selected */}
+            {hasCheckedEmails && (
               <EmailLabelActions
                 emailIds={checkedEmailsArray}
                 currentLabels={[]} // For bulk actions, we don't show current labels
@@ -353,56 +328,9 @@ const EmailList: React.FC<EmailListProps> = ({
                 onLabelsChange={onEmailLabelsChange}
                 onCreateLabel={onCreateLabel}
               />
+            )}
 
-              <div className="relative">
-                <button 
-                  onClick={() => setShowMoreActions(!showMoreActions)}
-                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <MoreHorizontal className="w-4 h-4" />
-                </button>
-                
-                {showMoreActions && (
-                  <div className="absolute top-full right-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-                    <div className="p-1">
-                      <button
-                        onClick={() => {
-                          onSelectAll();
-                          setShowMoreActions(false);
-                        }}
-                        className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors"
-                      >
-                        Select All
-                      </button>
-                      <button
-                        onClick={() => {
-                          onUnselectAll();
-                          setShowMoreActions(false);
-                        }}
-                        className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors"
-                      >
-                        Unselect All
-                      </button>
-                      {onUndo && (
-                        <button
-                          onClick={() => {
-                            onUndo();
-                            setShowMoreActions(false);
-                          }}
-                          className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors"
-                        >
-                          Undo Last Action
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Quick Actions when no emails selected */}
-          {!hasCheckedEmails && (
+            {/* More Actions Menu */}
             <div className="relative">
               <button 
                 onClick={() => setShowMoreActions(!showMoreActions)}
@@ -415,6 +343,7 @@ const EmailList: React.FC<EmailListProps> = ({
               {showMoreActions && (
                 <div className="absolute top-full right-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
                   <div className="p-1">
+                    {/* Selection Actions */}
                     <button
                       onClick={() => {
                         onSelectAll();
@@ -424,22 +353,70 @@ const EmailList: React.FC<EmailListProps> = ({
                     >
                       Select All
                     </button>
+                    <button
+                      onClick={() => {
+                        onUnselectAll();
+                        setShowMoreActions(false);
+                      }}
+                      className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors"
+                    >
+                      Unselect All
+                    </button>
+                    
+                    {/* Bulk Actions - only show when emails are selected */}
+                    {hasCheckedEmails && (
+                      <>
+                        <div className="border-t border-gray-100 my-1"></div>
+                        <button
+                          onClick={() => {
+                            onBulkMarkAsRead(checkedEmailsArray, true);
+                            setShowMoreActions(false);
+                          }}
+                          className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors"
+                        >
+                          Mark as Read
+                        </button>
+                        <button
+                          onClick={() => {
+                            onBulkMarkAsRead(checkedEmailsArray, false);
+                            setShowMoreActions(false);
+                          }}
+                          className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors"
+                        >
+                          Mark as Unread
+                        </button>
+                        <button
+                          onClick={() => {
+                            onBulkDelete(checkedEmailsArray);
+                            setShowMoreActions(false);
+                          }}
+                          className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded transition-colors"
+                        >
+                          Delete
+                        </button>
+                      </>
+                    )}
+                    
+                    {/* Undo Action */}
                     {onUndo && (
-                      <button
-                        onClick={() => {
-                          onUndo();
-                          setShowMoreActions(false);
-                        }}
-                        className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors"
-                      >
-                        Undo Last Action
-                      </button>
+                      <>
+                        <div className="border-t border-gray-100 my-1"></div>
+                        <button
+                          onClick={() => {
+                            onUndo();
+                            setShowMoreActions(false);
+                          }}
+                          className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors"
+                        >
+                          Undo Last Action
+                        </button>
+                      </>
                     )}
                   </div>
                 </div>
               )}
             </div>
-          )}
+          </div>
         </div>
       </div>
 
