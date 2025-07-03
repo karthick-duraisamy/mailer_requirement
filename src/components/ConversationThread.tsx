@@ -319,7 +319,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
             <button 
               onClick={handleDeleteEmail}
               className="p-2 hover:bg-red-100 rounded-lg transition-colors"
-              title="Move to Bin"
+              title="Delete email"
             >
               <Trash2 className="w-5 h-5 text-red-600" />
             </button>
