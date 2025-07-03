@@ -383,9 +383,9 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
               ref={entitiesButtonRef}
               onClick={() => setShowEntitiesPopover(!showEntitiesPopover)}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              title="Entities"
             >
-              <FileText className="w-4 h-4 text-gray-600" />
+              <FileText className="w-4 h-4 mr-1" />
+              <span className="text-sm text-gray-600 hover:text-gray-800">Entities</span>
             </button>
             <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
               <Archive className="w-5 h-5 text-gray-600" />
