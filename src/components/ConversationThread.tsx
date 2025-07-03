@@ -121,7 +121,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   const handleAiReplyGenerate = () => {
     if (email) {
       const useReplyAll = shouldUseReplyAll(email);
-      onGenerateAiReply(email, aiReplyState.tone, useReplyAll ? 'reply-all' : 'reply');
+      // Always use professional tone
+      onGenerateAiReply(email, 'professional', useReplyAll ? 'reply-all' : 'reply');
     }
   };
 
@@ -138,7 +139,34 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   const handleRegenerateAi = () => {
     if (email) {
       const useReplyAll = shouldUseReplyAll(email);
-      onGenerateAiReply(email, aiReplyState.tone, useReplyAll ? 'reply-all' : 'reply');
+      // Always use professional tone
+      onGenerateAiReply(email, 'professional', useReplyAll ? 'reply-all' : 'reply');
+    }
+  };
+
+  // Handle AI Reply button click
+  const handleAiReply = () => {
+    setReplyText(aiReplyState.generatedReply);
+    setShowReply(true);
+    onAiReplyStateChange({ ...aiReplyState, showAiReply: false });
+  };
+
+  // Handle AI Reply All button click
+  const handleAiReplyAll = () => {
+    if (email) {
+      const lastMessage = sortedMessages[sortedMessages.length - 1];
+      // Get all unique recipients (to, cc) excluding our own email
+      const allRecipients = new Set([
+        lastMessage.senderEmail,
+        ...lastMessage.to,
+        ...(lastMessage.cc || [])
+      ]);
+
+      // Set reply text with appropriate header
+      const replyAllText = `\n\n--- Reply All ---\nTo: ${Array.from(allRecipients).join(', ')}\n\n${aiReplyState.generatedReply}`;
+      setReplyText(replyAllText);
+      setShowReply(true);
+      onAiReplyStateChange({ ...aiReplyState, showAiReply: false });
     }
   };
 
@@ -151,9 +179,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
         ...lastMessage.to,
         ...(lastMessage.cc || [])
       ]);
-
-      // Remove our own email if present (you might want to get this from user context)
-      // allRecipients.delete('current-user@company.com');
 
       // Set reply text with appropriate header
       const replyAllText = `\n\n--- Reply All ---\nTo: ${Array.from(allRecipients).join(', ')}\n\n`;
@@ -428,15 +453,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                                   </span>
                                 </div>
                                 <div className="flex items-center space-x-2">
-                                  <select
-                                    value={aiReplyState.tone}
-                                    onChange={(e) => handleToneChange(e.target.value as any)}
-                                    className="text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                  >
-                                    <option value="professional">Professional</option>
-                                    <option value="friendly">Friendly</option>
-                                    <option value="concise">Concise</option>
-                                  </select>
                                   <button
                                     onClick={handleRegenerateAi}
                                     disabled={aiReplyState.isGenerating}
@@ -458,10 +474,18 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                               </div>
                               <div className="flex items-center space-x-2">
                                 <button
-                                  onClick={handleUseAiReply}
-                                  className="flex items-center space-x-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors text-sm"
+                                  onClick={handleAiReply}
+                                  className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm"
                                 >
-                                  <span>Use This Reply</span>
+                                  <Reply className="w-4 h-4" />
+                                  <span>Reply</span>
+                                </button>
+                                <button
+                                  onClick={handleAiReplyAll}
+                                  className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors text-sm"
+                                >
+                                  <ReplyAll className="w-4 h-4" />
+                                  <span>Reply All</span>
                                 </button>
                                 <button
                                   onClick={() => onAiReplyStateChange({ ...aiReplyState, showAiReply: false, replyType: undefined })}
