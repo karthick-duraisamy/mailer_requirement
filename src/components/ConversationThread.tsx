@@ -201,14 +201,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
   const emailLabels = getEmailCustomLabels(email);
 
-  // Determine the AI button text based on context
-  const getAiButtonText = () => {
-    if (aiReplyState.isGenerating) return 'Generating...';
-    
-    const useReplyAll = shouldUseReplyAll(email);
-    return useReplyAll ? 'Reply All with AI' : 'Reply with AI';
-  };
-
   // Loading indicator component
   const LoadingIndicator = () => (
     <div className="flex items-center space-x-2">
@@ -400,7 +392,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                               ) : (
                                 <>
                                   <Sparkles className="w-4 h-4" />
-                                  <span>{getAiButtonText()}</span>
+                                  <span>Reply with AI</span>
                                 </>
                               )}
                             </button>
