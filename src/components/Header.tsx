@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Settings, Menu, User, Bell, LogOut, UserCircle } from 'lucide-react';
+import { Search, Settings, Menu, User, Bell, LogOut, UserCircle, Database } from 'lucide-react';
 import EmailFilters, { FilterOptions } from './EmailFilters';
 
 interface HeaderProps {
@@ -7,9 +7,32 @@ interface HeaderProps {
   onSearch: (query: string) => void;
   onFiltersChange: (filters: FilterOptions) => void;
   filters: FilterOptions;
+  checkedEmails: Set<string>;
+  onBulkMarkAsRead: (emailIds: string[], isRead: boolean) => void;
+  onBulkDelete: (emailIds: string[]) => void;
+  onSelectAll: () => void;
+  onUnselectAll: () => void;
+  onUndo: () => void;
+  hasSelection: boolean;
+  onEntitiesToggle: () => void;
+  entitiesPanelOpen: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ onMenuToggle, onSearch, onFiltersChange, filters }) => {
+const Header: React.FC<HeaderProps> = ({ 
+  onMenuToggle, 
+  onSearch, 
+  onFiltersChange, 
+  filters,
+  checkedEmails,
+  onBulkMarkAsRead,
+  onBulkDelete,
+  onSelectAll,
+  onUnselectAll,
+  onUndo,
+  hasSelection,
+  onEntitiesToggle,
+  entitiesPanelOpen
+}) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);

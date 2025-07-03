@@ -5,6 +5,7 @@ import EmailList from './components/EmailList';
 import ConversationThread from './components/ConversationThread';
 import ComposeModal, { ComposeEmailData } from './components/ComposeModal';
 import LabelManager from './components/LabelManager';
+import EntitiesPanel from './components/EntitiesPanel';
 import { Email, CustomLabel } from './types/email';
 import { mockEmails } from './data/mockEmails';
 import { mockCustomLabels } from './data/mockLabels';
@@ -41,6 +42,7 @@ function App() {
   const [labelManagerOpen, setLabelManagerOpen] = useState(false);
   const [isFullPageView, setIsFullPageView] = useState(false);
   const [composePanelOpen, setComposePanelOpen] = useState(false);
+  const [entitiesPanelOpen, setEntitiesPanelOpen] = useState(false);
   const [lastAction, setLastAction] = useState<any>(null);
 
   // Calculate email counts for each section
@@ -423,6 +425,10 @@ function App() {
     setComposePanelOpen(false);
   };
 
+  const handleEntitiesToggle = () => {
+    setEntitiesPanelOpen(!entitiesPanelOpen);
+  };
+
   // Label Management Functions
   const handleCreateLabel = (labelData: Omit<CustomLabel, 'id' | 'createdAt'>) => {
     const newLabel: CustomLabel = {
@@ -655,6 +661,8 @@ function App() {
         onUnselectAll={handleUnselectAll}
         onUndo={handleUndo}
         hasSelection={checkedEmails.size > 0}
+        onEntitiesToggle={handleEntitiesToggle}
+        entitiesPanelOpen={entitiesPanelOpen}
       />
 
       <div className="flex-1 flex overflow-hidden">
@@ -740,6 +748,12 @@ function App() {
           isPanel={true}
         />
       )}
+
+      {/* Entities Panel - Fixed overlay on the right side */}
+      <EntitiesPanel
+        isOpen={entitiesPanelOpen}
+        onClose={() => setEntitiesPanelOpen(false)}
+      />
     </div>
   );
 }
