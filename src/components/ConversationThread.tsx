@@ -75,10 +75,21 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     }
   };
 
-  const handleAiReplyGenerate = (isReplyAll = false) => {
+  // Determine if this should be a reply-all based on email context
+  const shouldUseReplyAll = (email: Email): boolean => {
+    const lastMessage = sortedMessages[sortedMessages.length - 1];
+    
+    // Check if there are multiple recipients (to + cc)
+    const totalRecipients = lastMessage.to.length + (lastMessage.cc?.length || 0);
+    
+    // Use reply-all if there are multiple recipients or if the email has CC recipients
+    return totalRecipients > 1 || (lastMessage.cc && lastMessage.cc.length > 0);
+  };
+
+  const handleAiReplyGenerate = () => {
     if (email) {
-      // Pass the reply type to the AI generation function
-      onGenerateAiReply(email, aiReplyState.tone, isReplyAll ? 'reply-all' : 'reply');
+      const useReplyAll = shouldUseReplyAll(email);
+      onGenerateAiReply(email, aiReplyState.tone, useReplyAll ? 'reply-all' : 'reply');
     }
   };
 
@@ -94,7 +105,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
   const handleRegenerateAi = () => {
     if (email) {
-      onGenerateAiReply(email, aiReplyState.tone);
+      const useReplyAll = shouldUseReplyAll(email);
+      onGenerateAiReply(email, aiReplyState.tone, useReplyAll ? 'reply-all' : 'reply');
     }
   };
 
@@ -156,6 +168,14 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   );
 
   const emailLabels = getEmailCustomLabels(email);
+
+  // Determine the AI button text based on context
+  const getAiButtonText = () => {
+    if (aiReplyState.isGenerating) return 'Generating...';
+    
+    const useReplyAll = shouldUseReplyAll(email);
+    return useReplyAll ? 'Reply All with AI' : 'Reply with AI';
+  };
 
   return (
     <div className="flex-1 flex flex-col bg-white">
@@ -329,32 +349,26 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                               <Reply className="w-4 h-4" />
                               <span>Reply</span>
                             </button>
+                            
                             <button 
-                              onClick={() => handleAiReplyGenerate(false)}
+                              onClick={handleAiReplyGenerate}
                               disabled={aiReplyState.isGenerating}
                               className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-400 text-white rounded-lg transition-colors"
                             >
                               <Sparkles className="w-4 h-4" />
-                              <span>{aiReplyState.isGenerating ? 'Generating...' : 'Reply with AI'}</span>
+                              <span>{getAiButtonText()}</span>
                             </button>
+                            
                             <button 
-                              onClick={() => handleReplyAll()}
+                              onClick={handleReplyAll}
                               className="flex items-center space-x-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
                             >
                               <ReplyAll className="w-4 h-4" />
                               <span>Reply All</span>
                             </button>
+                            
                             <button 
-                              onClick={() => handleAiReplyGenerate(true)}
-                              disabled={aiReplyState.isGenerating}
-                              className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-400 text-white rounded-lg transition-colors"
-                            >
-                              <ReplyAll className="w-4 h-4" />
-                              <Sparkles className="w-4 h-4" />
-                              <span>{aiReplyState.isGenerating ? 'Generating...' : 'Reply All with AI'}</span>
-                            </button>
-                            <button 
-                              onClick={() => handleForward()}
+                              onClick={handleForward}
                               className="flex items-center space-x-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
                             >
                               <Forward className="w-4 h-4" />
@@ -368,7 +382,9 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                               <div className="flex items-center justify-between mb-3">
                                 <div className="flex items-center space-x-2">
                                   <Sparkles className="w-4 h-4 text-purple-600" />
-                                  <span className="font-semibold text-gray-900">AI Generated Reply</span>
+                                  <span className="font-semibold text-gray-900">
+                                    AI Generated {shouldUseReplyAll(email) ? 'Reply All' : 'Reply'}
+                                  </span>
                                 </div>
                                 <div className="flex items-center space-x-2">
                                   <select
@@ -490,7 +506,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                 {/* Show AI generate button if not already using AI reply */}
                 {replyText !== aiReplyState.generatedReply && !aiReplyState.showAiReply && (
                   <button
-                    onClick={() => handleAiReplyGenerate(replyText.includes('--- Reply All ---'))}
+                    onClick={handleAiReplyGenerate}
                     disabled={aiReplyState.isGenerating}
                     className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-400 text-white rounded-lg transition-colors"
                   >
