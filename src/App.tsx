@@ -241,9 +241,22 @@ function App() {
     }).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
   }, [emails]);
 
-  // Filtering logic
+  // Filter emails based on active section and filters
   const filteredEmails = useMemo(() => {
-    let filtered = conversations;
+    // If bin section is active, show deleted emails
+    if (activeItem === 'bin') {
+      return deletedEmails.filter(email => {
+        if (searchQuery) {
+          const query = searchQuery.toLowerCase();
+          return email.subject.toLowerCase().includes(query) ||
+                 email.sender.toLowerCase().includes(query) ||
+                 email.preview.toLowerCase().includes(query);
+        }
+        return true;
+      });
+    }
+
+    let result = emails;
 
     // Filter by section
     switch (activeItem) {
@@ -327,7 +340,7 @@ function App() {
     filtered = applyFilters(filtered);
 
     return filtered;
-  }, [emails, activeItem, searchQuery, filters, customLabels, conversations]);
+  }, [emails, deletedEmails, activeItem, filters, searchQuery, customLabels, conversations]);
 
   const handleEmailSelect = (email: Email, fullPage: boolean = false) => {
     setSelectedEmail(email);
@@ -527,6 +540,13 @@ function App() {
       previousState,
     });
 
+    // Find the emails to delete
+    const emailsToDelete = emails.filter(email => emailIds.includes(email.id));
+
+    // Move emails to deleted emails
+    setDeletedEmails(prev => [...prev, ...emailsToDelete]);
+
+    // Remove from active emails
     setEmails(prevEmails =>
       prevEmails.filter(email => !emailIds.includes(email.id))
     );
@@ -556,10 +576,10 @@ function App() {
 
     // Move email to deleted emails
     setDeletedEmails(prev => [...prev, emailToDelete]);
-    
+
     // Remove from active emails
     setEmails(prev => prev.filter(email => email.id !== emailId));
-    
+
     // Clear selection if this email was selected
     if (selectedEmail && selectedEmail.id === emailId) {
       setSelectedEmail(null);
