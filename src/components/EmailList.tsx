@@ -14,6 +14,11 @@ interface EmailListProps {
   customLabels: CustomLabel[];
   onEmailLabelsChange: (emailIds: string[], labelIds: string[]) => void;
   onCreateLabel: (label: Omit<CustomLabel, 'id' | 'createdAt'>) => void;
+  onBulkMarkAsRead: (emailIds: string[], isRead: boolean) => void;
+  onBulkDelete: (emailIds: string[]) => void;
+  onSelectAll: () => void;
+  onUnselectAll: () => void;
+  onUndo?: () => void;
 }
 
 const EmailList: React.FC<EmailListProps> = ({
@@ -27,9 +32,15 @@ const EmailList: React.FC<EmailListProps> = ({
   customLabels,
   onEmailLabelsChange,
   onCreateLabel,
+  onBulkMarkAsRead,
+  onBulkDelete,
+  onSelectAll,
+  onUnselectAll,
+  onUndo,
 }) => {
   const [width, setWidth] = useState(320); // Default width
   const [isResizing, setIsResizing] = useState(false);
+  const [showMoreActions, setShowMoreActions] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const startXRef = useRef<number>(0);
   const startWidthRef = useRef<number>(320);
@@ -283,6 +294,32 @@ const EmailList: React.FC<EmailListProps> = ({
           {/* Bulk Actions */}
           {hasCheckedEmails && (
             <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-1">
+                <button
+                  onClick={() => onBulkMarkAsRead(checkedEmailsArray, true)}
+                  className="flex items-center space-x-1 px-2 py-1 text-xs bg-green-600 hover:bg-green-700 text-white rounded transition-colors"
+                  title="Mark as Read"
+                >
+                  <span>Read</span>
+                </button>
+                
+                <button
+                  onClick={() => onBulkMarkAsRead(checkedEmailsArray, false)}
+                  className="flex items-center space-x-1 px-2 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
+                  title="Mark as Unread"
+                >
+                  <span>Unread</span>
+                </button>
+                
+                <button
+                  onClick={() => onBulkDelete(checkedEmailsArray)}
+                  className="flex items-center space-x-1 px-2 py-1 text-xs bg-red-600 hover:bg-red-700 text-white rounded transition-colors"
+                  title="Delete"
+                >
+                  <span>Delete</span>
+                </button>
+              </div>
+
               <EmailLabelActions
                 emailIds={checkedEmailsArray}
                 currentLabels={[]} // For bulk actions, we don't show current labels
@@ -290,9 +327,91 @@ const EmailList: React.FC<EmailListProps> = ({
                 onLabelsChange={onEmailLabelsChange}
                 onCreateLabel={onCreateLabel}
               />
-              <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+
+              <div className="relative">
+                <button 
+                  onClick={() => setShowMoreActions(!showMoreActions)}
+                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <MoreHorizontal className="w-4 h-4" />
+                </button>
+                
+                {showMoreActions && (
+                  <div className="absolute top-full right-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                    <div className="p-1">
+                      <button
+                        onClick={() => {
+                          onSelectAll();
+                          setShowMoreActions(false);
+                        }}
+                        className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors"
+                      >
+                        Select All
+                      </button>
+                      <button
+                        onClick={() => {
+                          onUnselectAll();
+                          setShowMoreActions(false);
+                        }}
+                        className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors"
+                      >
+                        Unselect All
+                      </button>
+                      {onUndo && (
+                        <button
+                          onClick={() => {
+                            onUndo();
+                            setShowMoreActions(false);
+                          }}
+                          className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors"
+                        >
+                          Undo Last Action
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Quick Actions when no emails selected */}
+          {!hasCheckedEmails && (
+            <div className="relative">
+              <button 
+                onClick={() => setShowMoreActions(!showMoreActions)}
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                title="More actions"
+              >
                 <MoreHorizontal className="w-4 h-4" />
               </button>
+              
+              {showMoreActions && (
+                <div className="absolute top-full right-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                  <div className="p-1">
+                    <button
+                      onClick={() => {
+                        onSelectAll();
+                        setShowMoreActions(false);
+                      }}
+                      className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors"
+                    >
+                      Select All
+                    </button>
+                    {onUndo && (
+                      <button
+                        onClick={() => {
+                          onUndo();
+                          setShowMoreActions(false);
+                        }}
+                        className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors"
+                      >
+                        Undo Last Action
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

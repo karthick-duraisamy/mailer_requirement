@@ -41,6 +41,7 @@ function App() {
   const [labelManagerOpen, setLabelManagerOpen] = useState(false);
   const [isFullPageView, setIsFullPageView] = useState(false);
   const [composePanelOpen, setComposePanelOpen] = useState(false);
+  const [lastAction, setLastAction] = useState<any>(null);
 
   // Calculate email counts
   const emailCounts = useMemo(() => {
@@ -285,6 +286,18 @@ function App() {
   };
 
   const handleStarToggle = (emailId: string) => {
+    // Store previous state for undo
+    const email = emails.find(email => email.id === emailId);
+    if (!email) return;
+
+    const previousState = [{ id: email.id, isStarred: email.isStarred }];
+
+    setLastAction({
+      type: 'star',
+      emailIds: [emailId],
+      previousState,
+    });
+
     setEmails(prevEmails =>
       prevEmails.map(email =>
         email.id === emailId ? { ...email, isStarred: !email.isStarred } : email
@@ -407,8 +420,8 @@ function App() {
   };
 
   const handleEmailLabelsChange = (emailIds: string[], labelIds: string[]) => {
-    setEmails(prev =>
-      prev.map(email =>
+    setEmails(prevEmails =>
+      prevEmails.map(email =>
         emailIds.includes(email.id)
           ? { ...email, customLabels: labelIds }
           : email
@@ -417,6 +430,95 @@ function App() {
 
     // In a real app, you would make an API call here
     console.log('Updating email labels:', emailIds, labelIds);
+  };
+
+  const handleBulkMarkAsRead = (emailIds: string[], isRead: boolean) => {
+    // Store previous state for undo
+    const previousState = emails
+      .filter(email => emailIds.includes(email.id))
+      .map(email => ({ id: email.id, isRead: email.isRead }));
+
+    setLastAction({
+      type: 'markAsRead',
+      emailIds,
+      previousState,
+    });
+
+    setEmails(prevEmails =>
+      prevEmails.map(email =>
+        emailIds.includes(email.id)
+          ? { ...email, isRead }
+          : email
+      )
+    );
+
+    // Clear checked emails after action
+    setCheckedEmails(new Set());
+
+    console.log(`Marked ${emailIds.length} emails as ${isRead ? 'read' : 'unread'}`);
+  };
+
+  const handleBulkDelete = (emailIds: string[]) => {
+    // Store previous state for undo
+    const previousState = emails.filter(email => emailIds.includes(email.id));
+
+    setLastAction({
+      type: 'delete',
+      emailIds,
+      previousState,
+    });
+
+    setEmails(prevEmails =>
+      prevEmails.filter(email => !emailIds.includes(email.id))
+    );
+
+    // Clear checked emails and selected email if deleted
+    setCheckedEmails(new Set());
+    if (selectedEmail && emailIds.includes(selectedEmail.id)) {
+      setSelectedEmail(null);
+    }
+
+    console.log(`Deleted ${emailIds.length} emails`);
+  };
+
+  const handleSelectAll = () => {
+    const allEmailIds = filteredEmails.map(email => email.id);
+    setCheckedEmails(new Set(allEmailIds));
+  };
+
+  const handleUnselectAll = () => {
+    setCheckedEmails(new Set());
+  };
+
+  const handleUndo = () => {
+    if (!lastAction) return;
+
+    switch (lastAction.type) {
+      case 'markAsRead':
+        setEmails(prevEmails =>
+          prevEmails.map(email => {
+            const prevState = lastAction.previousState.find((state: any) => state.id === email.id);
+            return prevState ? { ...email, isRead: prevState.isRead } : email;
+          })
+        );
+        break;
+
+      case 'delete':
+        setEmails(prevEmails => [...prevEmails, ...lastAction.previousState]);
+        break;
+
+      case 'star':
+        setEmails(prevEmails =>
+          prevEmails.map(email => {
+            const prevState = lastAction.previousState.find((state: any) => state.id === email.id);
+            return prevState ? { ...email, isStarred: prevState.isStarred } : email;
+          })
+        );
+        break;
+    }
+
+    setLastAction(null);
+    console.log('Undid last action');
   };
 
   const generateAiReply = async (email: Email, tone: string = 'professional', replyType: string = 'reply') => {
@@ -496,6 +598,13 @@ function App() {
         onSearch={handleSearch}
         onFiltersChange={handleFiltersChange}
         filters={filters}
+        checkedEmails={checkedEmails}
+        onBulkMarkAsRead={handleBulkMarkAsRead}
+        onBulkDelete={handleBulkDelete}
+        onSelectAll={handleSelectAll}
+        onUnselectAll={handleUnselectAll}
+        onUndo={handleUndo}
+        hasSelection={checkedEmails.size > 0}
       />
 
       <div className="flex-1 flex overflow-hidden">
@@ -537,6 +646,10 @@ function App() {
                   customLabels={customLabels}
                   onEmailLabelsChange={handleEmailLabelsChange}
                   onCreateLabel={handleCreateLabel}
+                  onBulkMarkAsRead={handleBulkMarkAsRead}
+                  onBulkDelete={handleBulkDelete}
+                  onSelectAll={handleSelectAll}
+                  onUnselectAll={handleUnselectAll}
                 />
               </div>
 
