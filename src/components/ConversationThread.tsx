@@ -411,109 +411,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                         </div>
                       </div>
 
-                      {/* Action Buttons - Only show for the last message */}
-                      {isLastMessage && (
-                        <div className="space-y-4 pt-4 border-t border-gray-100">
-                          <div className="flex items-center space-x-2 flex-wrap gap-2">
-                            <button 
-                              onClick={() => setShowReply(!showReply)}
-                              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                            >
-                              <Reply className="w-4 h-4" />
-                              <span>Reply</span>
-                            </button>
-                            
-                            <button 
-                              onClick={handleAiReplyGenerate}
-                              disabled={aiReplyState.isGenerating}
-                              className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-400 text-white rounded-lg transition-colors"
-                            >
-                              {aiReplyState.isGenerating ? (
-                                <LoadingIndicator />
-                              ) : (
-                                <>
-                                  <Sparkles className="w-4 h-4" />
-                                  <span>Reply with AI</span>
-                                </>
-                              )}
-                            </button>
-                            
-                            <button 
-                              onClick={handleReplyAll}
-                              className="flex items-center space-x-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
-                            >
-                              <ReplyAll className="w-4 h-4" />
-                              <span>Reply All</span>
-                            </button>
-                            
-                            <button 
-                              onClick={handleForward}
-                              className="flex items-center space-x-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
-                            >
-                              <Forward className="w-4 h-4" />
-                              <span>Forward</span>
-                            </button>
-                          </div>
-
-                          {/* AI Reply Preview */}
-                          {aiReplyState.showAiReply && (
-                            <div 
-                              ref={aiReplyRef}
-                              className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-4 animate-in slide-in-from-top-2 duration-300"
-                            >
-                              <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center space-x-2">
-                                  <Sparkles className="w-4 h-4 text-purple-600" />
-                                  <span className="font-semibold text-gray-900">
-                                    AI Generated {shouldUseReplyAll(email) ? 'Reply All' : 'Reply'}
-                                  </span>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                  <button
-                                    onClick={handleRegenerateAi}
-                                    disabled={aiReplyState.isGenerating}
-                                    className="text-purple-600 hover:text-purple-700 p-1 disabled:text-gray-400"
-                                    title="Regenerate"
-                                  >
-                                    {aiReplyState.isGenerating ? (
-                                      <Loader2 className="w-4 h-4 animate-spin" />
-                                    ) : (
-                                      <RotateCcw className="w-4 h-4" />
-                                    )}
-                                  </button>
-                                </div>
-                              </div>
-                              <div className="bg-white border border-gray-200 rounded p-3 mb-3">
-                                <pre className="whitespace-pre-wrap text-gray-800 text-sm font-sans">
-                                  {aiReplyState.generatedReply}
-                                </pre>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <button
-                                  onClick={handleAiReply}
-                                  className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm"
-                                >
-                                  <Reply className="w-4 h-4" />
-                                  <span>Reply</span>
-                                </button>
-                                <button
-                                  onClick={handleAiReplyAll}
-                                  className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors text-sm"
-                                >
-                                  <ReplyAll className="w-4 h-4" />
-                                  <span>Reply All</span>
-                                </button>
-                                <button
-                                  onClick={() => onAiReplyStateChange({ ...aiReplyState, showAiReply: false, replyType: undefined })}
-                                  className="px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors text-sm"
-                                >
-                                  Dismiss
-                                </button>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      )}
+                      
                     </>
                   )}
 
@@ -524,36 +422,117 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                         {message.content.substring(0, 100)}...
                       </div>
                       
-                      {/* Quick Action Buttons for Collapsed Messages */}
-                      <div className="flex items-center space-x-2 pt-2 border-t border-gray-100">
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setShowReply(!showReply);
-                          }}
-                          className="flex items-center space-x-1 px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
-                        >
-                          <Reply className="w-3 h-3" />
-                          <span>Reply</span>
-                        </button>
-                        
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleReplyAll();
-                          }}
-                          className="flex items-center space-x-1 px-3 py-1 text-xs border border-gray-300 hover:bg-gray-50 rounded transition-colors"
-                        >
-                          <ReplyAll className="w-3 h-3" />
-                          <span>Reply All</span>
-                        </button>
-                      </div>
+                      
                     </>
                   )}
                 </div>
               </div>
             );
           })}
+        </div>
+      </div>
+
+      {/* Action Buttons - Always visible */}
+      <div className="border-t border-gray-200 p-6 bg-gray-50">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex items-center space-x-2 flex-wrap gap-2">
+            <button 
+              onClick={() => setShowReply(!showReply)}
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+            >
+              <Reply className="w-4 h-4" />
+              <span>Reply</span>
+            </button>
+            
+            <button 
+              onClick={handleAiReplyGenerate}
+              disabled={aiReplyState.isGenerating}
+              className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-400 text-white rounded-lg transition-colors"
+            >
+              {aiReplyState.isGenerating ? (
+                <LoadingIndicator />
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4" />
+                  <span>Reply with AI</span>
+                </>
+              )}
+            </button>
+            
+            <button 
+              onClick={handleReplyAll}
+              className="flex items-center space-x-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
+            >
+              <ReplyAll className="w-4 h-4" />
+              <span>Reply All</span>
+            </button>
+            
+            <button 
+              onClick={handleForward}
+              className="flex items-center space-x-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
+            >
+              <Forward className="w-4 h-4" />
+              <span>Forward</span>
+            </button>
+          </div>
+
+          {/* AI Reply Preview */}
+          {aiReplyState.showAiReply && (
+            <div 
+              ref={aiReplyRef}
+              className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-4 animate-in slide-in-from-top-2 duration-300 mt-4"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-2">
+                  <Sparkles className="w-4 h-4 text-purple-600" />
+                  <span className="font-semibold text-gray-900">
+                    AI Generated {shouldUseReplyAll(email) ? 'Reply All' : 'Reply'}
+                  </span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={handleRegenerateAi}
+                    disabled={aiReplyState.isGenerating}
+                    className="text-purple-600 hover:text-purple-700 p-1 disabled:text-gray-400"
+                    title="Regenerate"
+                  >
+                    {aiReplyState.isGenerating ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <RotateCcw className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+              <div className="bg-white border border-gray-200 rounded p-3 mb-3">
+                <pre className="whitespace-pre-wrap text-gray-800 text-sm font-sans">
+                  {aiReplyState.generatedReply}
+                </pre>
+              </div>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={handleAiReply}
+                  className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm"
+                >
+                  <Reply className="w-4 h-4" />
+                  <span>Reply</span>
+                </button>
+                <button
+                  onClick={handleAiReplyAll}
+                  className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors text-sm"
+                >
+                  <ReplyAll className="w-4 h-4" />
+                  <span>Reply All</span>
+                </button>
+                <button
+                  onClick={() => onAiReplyStateChange({ ...aiReplyState, showAiReply: false, replyType: undefined })}
+                  className="px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors text-sm"
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
