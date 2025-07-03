@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Email, CustomLabel } from "../types/email";
 import EmailLabelActions from "./EmailLabelActions";
+import EntitiesPopover from "./EntitiesPopover";
 
 interface AiReplyState {
   isGenerating: boolean;
@@ -66,11 +67,13 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     new Set(),
   );
   const [isAiReplyExpanded, setIsAiReplyExpanded] = useState(false);
+  const [showEntitiesPopover, setShowEntitiesPopover] = useState(false);
 
   // Refs for auto-scrolling
   const aiReplyRef = useRef<HTMLDivElement>(null);
   const replyBoxRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const entitiesButtonRef = useRef<HTMLButtonElement>(null);
 
   // Auto-scroll to AI reply when it becomes available
   useEffect(() => {
@@ -375,7 +378,11 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
               onLabelsChange={onEmailLabelsChange}
               onCreateLabel={onCreateLabel}
             />
-            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+            <button 
+              ref={entitiesButtonRef}
+              onClick={() => setShowEntitiesPopover(!showEntitiesPopover)}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
               <span className="text-sm text-gray-600 hover:text-gray-800">Entities</span>
             </button>
             <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
@@ -821,6 +828,13 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
           </div>
         </div>
       )}
+
+      {/* Entities Popover */}
+      <EntitiesPopover
+        isOpen={showEntitiesPopover}
+        onClose={() => setShowEntitiesPopover(false)}
+        triggerRef={entitiesButtonRef}
+      />
     </div>
   );
 };
