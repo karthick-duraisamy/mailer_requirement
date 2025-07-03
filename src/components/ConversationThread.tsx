@@ -42,7 +42,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   const [replyText, setReplyText] = useState('');
   const [showReply, setShowReply] = useState(false);
   const [expandedMessages, setExpandedMessages] = useState<Set<string>>(new Set());
-  const [showEntitiesModal, setShowEntitiesModal] = useState(false);
+  const [showEntitiesPopover, setShowEntitiesPopover] = useState(false);
+  const entitiesButtonRef = useRef<HTMLButtonElement>(null);
   
   // Refs for auto-scrolling
   const aiReplyRef = useRef<HTMLDivElement>(null);
@@ -266,55 +267,48 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
   return (
     <>
-      {/* Entities Modal */}
-      {showEntitiesModal && email?.entities && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Email Entities</h3>
+      {/* Entities Popover */}
+      {showEntitiesPopover && email?.entities && (
+        <>
+          <div 
+            className="fixed inset-0 z-40" 
+            onClick={() => setShowEntitiesPopover(false)}
+          />
+          <div className="absolute z-50 mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
+              <h3 className="text-sm font-semibold text-gray-900">Email Entities</h3>
               <button
-                onClick={() => setShowEntitiesModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                onClick={() => setShowEntitiesPopover(false)}
+                className="p-1 hover:bg-gray-200 rounded transition-colors"
               >
-                <X className="w-5 h-5 text-gray-500" />
+                <X className="w-4 h-4 text-gray-500" />
               </button>
             </div>
             
-            <div className="p-6 overflow-y-auto max-h-[60vh]">
-              <div className="space-y-4">
+            <div className="p-4 max-h-80 overflow-y-auto">
+              <div className="space-y-3">
                 {Object.entries(email.entities).map(([key, value]) => (
-                  <div key={key} className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg border">
-                    <div className="text-2xl">{getEntityIcon(key)}</div>
+                  <div key={key} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+                    <div className="text-lg">{getEntityIcon(key)}</div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center space-x-2 mb-1">
-                        <h4 className="text-sm font-medium text-gray-900">
-                          {formatEntityKey(key)}
-                        </h4>
-                      </div>
-                      <p className="text-sm text-gray-600 break-words">{value}</p>
+                      <h4 className="text-xs font-medium text-gray-900 uppercase tracking-wide mb-1">
+                        {formatEntityKey(key)}
+                      </h4>
+                      <p className="text-sm text-gray-700 break-words">{value}</p>
                     </div>
                   </div>
                 ))}
               </div>
               
               {Object.keys(email.entities).length === 0 && (
-                <div className="text-center py-8">
-                  <div className="text-4xl mb-2">🤖</div>
-                  <p className="text-gray-500">No entities found in this email</p>
+                <div className="text-center py-6">
+                  <div className="text-2xl mb-2">🤖</div>
+                  <p className="text-sm text-gray-500">No entities found in this email</p>
                 </div>
               )}
             </div>
-            
-            <div className="flex justify-end p-6 border-t border-gray-200">
-              <button
-                onClick={() => setShowEntitiesModal(false)}
-                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
-              >
-                Close
-              </button>
-            </div>
           </div>
-        </div>
+        </>
       )}
 
       <div ref={containerRef} className="flex-1 flex flex-col bg-white">
@@ -369,13 +363,16 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
               
               {/* View Entities Button */}
               {email.entities && Object.keys(email.entities).length > 0 && (
-                <button
-                  onClick={() => setShowEntitiesModal(true)}
-                  className="inline-flex items-center px-3 py-2 mt-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
-                >
-                  <Eye className="w-4 h-4 mr-2" />
-                  View Entities ({Object.keys(email.entities).length})
-                </button>
+                <div className="relative">
+                  <button
+                    ref={entitiesButtonRef}
+                    onClick={() => setShowEntitiesPopover(!showEntitiesPopover)}
+                    className="inline-flex items-center px-3 py-2 mt-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
+                  >
+                    <Eye className="w-4 h-4 mr-2" />
+                    View Entities ({Object.keys(email.entities).length})
+                  </button>
+                </div>
               )}
             </div>
           </div>
