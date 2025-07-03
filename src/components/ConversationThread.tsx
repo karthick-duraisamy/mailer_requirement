@@ -330,26 +330,26 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
           </div>
         )}
 
-          <div className="flex items-center space-x-2 ml-4">
-            <EmailLabelActions
-              emailIds={[email.id]}
-              currentLabels={email.customLabels || []}
-              availableLabels={customLabels}
-              onLabelsChange={onEmailLabelsChange}
-              onCreateLabel={onCreateLabel}
-            />
-            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-              <Archive className="w-5 h-5 text-gray-600" />
-            </button>
-            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-              <Star className={`w-5 h-5 ${email.isStarred ? 'text-yellow-500 fill-yellow-500' : 'text-gray-600'}`} />
-            </button>
-            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-              <MoreHorizontal className="w-5 h-5 text-gray-600" />
-            </button>
-          </div>
+        <div className="flex items-center space-x-2 ml-4">
+          <EmailLabelActions
+            emailIds={[email.id]}
+            currentLabels={email.customLabels || []}
+            availableLabels={customLabels}
+            onLabelsChange={onEmailLabelsChange}
+            onCreateLabel={onCreateLabel}
+          />
+          <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+            <Archive className="w-5 h-5 text-gray-600" />
+          </button>
+          <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+            <Star className={`w-5 h-5 ${email.isStarred ? 'text-yellow-500 fill-yellow-500' : 'text-gray-600'}`} />
+          </button>
+          <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+            <MoreHorizontal className="w-5 h-5 text-gray-600" />
+          </button>
         </div>
       </div>
+    </div>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto">
