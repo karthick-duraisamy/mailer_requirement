@@ -10,6 +10,14 @@ export interface Email {
   messages: EmailMessage[];
   intentLabel?: 'meeting' | 'announcement' | 'system' | 'report' | 'feedback' | 'general' | 'new';
   customLabels?: string[]; // Array of custom label IDs
+  entities?: EmailEntity[]; // Associated entities
+}
+
+export interface EmailEntity {
+  id: string;
+  ayprcId: string;
+  pnr: string;
+  bookingMode: string;
 }
 
 export interface EmailMessage {

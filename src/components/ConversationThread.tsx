@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Reply, ReplyAll, Forward, MoreHorizontal, Star, Archive, ChevronDown, ChevronUp, Sparkles, RotateCcw, Tag, ArrowLeft, Loader2 } from 'lucide-react';
+import { Reply, ReplyAll, Forward, MoreHorizontal, Star, Archive, ChevronDown, ChevronUp, Sparkles, RotateCcw, Tag, ArrowLeft, Loader2, Database } from 'lucide-react';
 import { Email, CustomLabel } from '../types/email';
 import EmailLabelActions from './EmailLabelActions';
 
@@ -282,8 +282,53 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                     </span>
                   )}
                 </div>
-                )}
+              )}
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Entities Section */}
+        {email.entities && email.entities.length > 0 && (
+          <div className="border-b border-gray-200 px-6 py-4 bg-gray-50">
+            <div className="flex items-center space-x-2 mb-3">
+              <Database className="w-4 h-4 text-blue-600" />
+              <h3 className="text-sm font-semibold text-gray-900">Related Entities</h3>
+              <span className="text-xs text-gray-500">({email.entities.length})</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {email.entities.map((entity) => (
+                <div
+                  key={entity.id}
+                  className="bg-white rounded-lg p-3 border border-gray-200 hover:border-blue-300 transition-colors"
+                >
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs font-medium text-gray-600">AYPRC ID:</span>
+                      <span className="text-xs font-semibold text-gray-900">{entity.ayprcId}</span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs font-medium text-gray-600">PNR:</span>
+                      <span className="text-xs font-semibold text-gray-900">{entity.pnr}</span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs font-medium text-gray-600">MODE:</span>
+                      <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                        entity.bookingMode === 'AIR' ? 'bg-blue-100 text-blue-800' :
+                        entity.bookingMode === 'RAIL' ? 'bg-green-100 text-green-800' :
+                        'bg-orange-100 text-orange-800'
+                      }`}>
+                        {entity.bookingMode}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
             </div>
           </div>
 

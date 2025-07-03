@@ -14,8 +14,6 @@ interface HeaderProps {
   onUnselectAll: () => void;
   onUndo: () => void;
   hasSelection: boolean;
-  onEntitiesToggle: () => void;
-  entitiesPanelOpen: boolean;
 }
 
 const Header: React.FC<HeaderProps> = ({ 
@@ -29,9 +27,7 @@ const Header: React.FC<HeaderProps> = ({
   onSelectAll,
   onUnselectAll,
   onUndo,
-  hasSelection,
-  onEntitiesToggle,
-  entitiesPanelOpen
+  hasSelection
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
@@ -115,19 +111,6 @@ const Header: React.FC<HeaderProps> = ({
       </div>
 
       <div className="flex items-center space-x-2">
-        {/* Entities Button */}
-        <button
-          onClick={onEntitiesToggle}
-          className={`p-2 rounded-lg transition-colors ${
-            entitiesPanelOpen 
-              ? 'bg-blue-100 text-blue-600' 
-              : 'hover:bg-gray-100 text-gray-600'
-          }`}
-          title="Entities"
-        >
-          <Database className="w-5 h-5" />
-        </button>
-
         {/* Settings Dropdown */}
         <div className="relative" ref={settingsRef}>
           <button 

@@ -42,7 +42,24 @@ I've attached the detailed report and analytics spreadsheet for your review. Let
 Best regards,
 Sarah`,
         timestamp: '2024-01-15T14:30:00Z',
+        isStarred: true,
         isRead: false,
+        intentLabel: 'meeting',
+        customLabels: ['work'],
+        entities: [
+          {
+            id: 'e1',
+            ayprcId: 'AYP1243',
+            pnr: 'ANHP87',
+            bookingMode: 'AIR'
+          },
+          {
+            id: 'e2',
+            ayprcId: 'AYP1244',
+            pnr: 'BNHP88',
+            bookingMode: 'RAIL'
+          }
+        ],
       },
       {
         id: '1-2',
@@ -371,6 +388,14 @@ John`,
     isRead: false,
     // No intentLabel - should be assigned 'new' automatically
     customLabels: ['work'],
+    entities: [
+      {
+        id: 'e3',
+        ayprcId: 'AYP1245',
+        pnr: 'CNHP89',
+        bookingMode: 'BUS'
+      }
+    ],
     messages: [
       {
         id: '8-1',

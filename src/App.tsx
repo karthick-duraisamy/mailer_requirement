@@ -661,8 +661,6 @@ function App() {
         onUnselectAll={handleUnselectAll}
         onUndo={handleUndo}
         hasSelection={checkedEmails.size > 0}
-        onEntitiesToggle={handleEntitiesToggle}
-        entitiesPanelOpen={entitiesPanelOpen}
       />
 
       <div className="flex-1 flex overflow-hidden">
