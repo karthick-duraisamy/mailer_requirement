@@ -9,6 +9,7 @@ interface AiReplyState {
   generatedReply: string;
   tone: 'professional' | 'friendly' | 'concise';
   replyType?: 'reply' | 'reply-all' | undefined;
+  isExpanded?: boolean;
 }
 
 interface ConversationThreadProps {
@@ -41,6 +42,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   const [replyText, setReplyText] = useState('');
   const [showReply, setShowReply] = useState(false);
   const [expandedMessages, setExpandedMessages] = useState<Set<string>>(new Set());
+  const [isAiReplyExpanded, setIsAiReplyExpanded] = useState(false);
   
   // Refs for auto-scrolling
   const aiReplyRef = useRef<HTMLDivElement>(null);
@@ -144,6 +146,10 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       // Always use professional tone
       onGenerateAiReply(email, 'professional', useReplyAll ? 'reply-all' : 'reply');
     }
+  };
+
+  const handleToggleAiReplyExpand = () => {
+    setIsAiReplyExpanded(!isAiReplyExpanded);
   };
 
   // Handle AI Reply button click
@@ -496,7 +502,9 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
           {aiReplyState.showAiReply && (
             <div 
               ref={aiReplyRef}
-              className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-4 animate-in slide-in-from-top-2 duration-300 mt-4"
+              className={`bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-4 animate-in slide-in-from-top-2 duration-300 mt-4 transition-all ${
+                isAiReplyExpanded ? 'fixed inset-4 z-50 bg-white shadow-2xl' : ''
+              }`}
             >
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center space-x-2">
@@ -506,6 +514,17 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                   </span>
                 </div>
                 <div className="flex items-center space-x-2">
+                  <button
+                    onClick={handleToggleAiReplyExpand}
+                    className="text-purple-600 hover:text-purple-700 p-1"
+                    title={isAiReplyExpanded ? "Collapse" : "Expand"}
+                  >
+                    {isAiReplyExpanded ? (
+                      <ChevronDown className="w-4 h-4" />
+                    ) : (
+                      <ChevronUp className="w-4 h-4" />
+                    )}
+                  </button>
                   <button
                     onClick={handleRegenerateAi}
                     disabled={aiReplyState.isGenerating}
@@ -518,14 +537,25 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                       <RotateCcw className="w-4 h-4" />
                     )}
                   </button>
+                  {isAiReplyExpanded && (
+                    <button
+                      onClick={() => setIsAiReplyExpanded(false)}
+                      className="text-gray-500 hover:text-gray-700 p-1"
+                      title="Close"
+                    >
+                      ×
+                    </button>
+                  )}
                 </div>
               </div>
-              <div className="bg-white border border-gray-200 rounded p-3 mb-3">
+              <div className={`bg-white border border-gray-200 rounded p-3 mb-3 ${
+                isAiReplyExpanded ? 'flex-1 overflow-y-auto max-h-96' : ''
+              }`}>
                 <pre className="whitespace-pre-wrap text-gray-800 text-sm font-sans">
                   {aiReplyState.generatedReply}
                 </pre>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 flex-wrap">
                 <button
                   onClick={handleAiReply}
                   className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm"
