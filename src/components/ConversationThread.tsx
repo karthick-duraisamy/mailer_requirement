@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Reply, ReplyAll, Forward, MoreHorizontal, Star, Archive, ChevronDown, ChevronUp, Sparkles, RotateCcw, Tag, ArrowLeft, Loader2, Trash2 } from 'lucide-react';
+import { Reply, ReplyAll, Forward, MoreHorizontal, Star, Archive, ChevronDown, ChevronUp, Sparkles, RotateCcw, Tag, ArrowLeft, Loader2, Trash2, Expand, Minimize } from 'lucide-react';
 import { Email, CustomLabel } from '../types/email';
 import EmailLabelActions from './EmailLabelActions';
 
@@ -520,9 +520,9 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                     title={isAiReplyExpanded ? "Collapse" : "Expand"}
                   >
                     {isAiReplyExpanded ? (
-                      <ChevronDown className="w-4 h-4" />
+                      <Minimize className="w-4 h-4" />
                     ) : (
-                      <ChevronUp className="w-4 h-4" />
+                      <Expand className="w-4 h-4" />
                     )}
                   </button>
                   <button
