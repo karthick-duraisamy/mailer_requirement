@@ -503,7 +503,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
             <div 
               ref={aiReplyRef}
               className={`bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-4 animate-in slide-in-from-top-2 duration-300 mt-4 transition-all ${
-                isAiReplyExpanded ? 'fixed inset-4 z-50 bg-white shadow-2xl' : ''
+                isAiReplyExpanded ? 'fixed inset-4 z-50 bg-white shadow-2xl flex flex-col' : ''
               }`}
             >
               <div className="flex items-center justify-between mb-3">
@@ -549,8 +549,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                 </div>
               </div>
               <div className={`bg-white border border-gray-200 rounded p-3 mb-3 ${
-                isAiReplyExpanded ? 'flex-1 overflow-y-auto max-h-96' : ''
-              }`}>
+                isAiReplyExpanded ? 'flex-1 overflow-y-auto' : ''
+              }`} style={isAiReplyExpanded ? { minHeight: '550px' } : {}}>
                 <pre className="whitespace-pre-wrap text-gray-800 text-sm font-sans">
                   {aiReplyState.generatedReply}
                 </pre>
