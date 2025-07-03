@@ -43,13 +43,63 @@ function App() {
   const [composePanelOpen, setComposePanelOpen] = useState(false);
   const [lastAction, setLastAction] = useState<any>(null);
 
-  // Calculate email counts
+  // Calculate email counts for each section
   const emailCounts = useMemo(() => {
-    const unreadCount = emails.filter(email => !email.isRead).length;
-    return {
-      inbox: unreadCount,
-    };
-  }, [emails]);
+    const counts: Record<string, number> = {};
+
+    // Basic sections - show unread count
+    counts.inbox = emails.filter(email => !email.isRead).length;
+    counts.starred = emails.filter(email => email.isStarred && !email.isRead).length;
+    counts.snoozed = 0; // Mock data doesn't have snoozed emails
+
+    // Custom labels - show unread count
+    customLabels.forEach(label => {
+      if (label.isSystem) {
+        // System labels
+        let labelEmails: Email[] = [];
+        switch (label.id) {
+          case 'work':
+            labelEmails = emails.filter(email => 
+              email.customLabels?.includes('work') || 
+              email.senderEmail.includes('company.com') ||
+              email.senderEmail.includes('techcorp.com') ||
+              email.senderEmail.includes('consulting.com') ||
+              email.senderEmail.includes('design.studio')
+            );
+            break;
+          case 'personal':
+            labelEmails = emails.filter(email => 
+              email.customLabels?.includes('personal') ||
+              email.subject.toLowerCase().includes('welcome') ||
+              email.senderEmail.includes('startup.io')
+            );
+            break;
+          case 'important':
+            labelEmails = emails.filter(email => 
+              email.customLabels?.includes('important') ||
+              email.subject.toLowerCase().includes('urgent') ||
+              email.subject.toLowerCase().includes('important') ||
+              email.isStarred
+            );
+            break;
+          case 'travel':
+            labelEmails = emails.filter(email => 
+              email.customLabels?.includes('travel')
+            );
+            break;
+        }
+        counts[`label-${label.id}`] = labelEmails.filter(email => !email.isRead).length;
+      } else {
+        // Custom labels
+        const labelEmails = emails.filter(email => 
+          email.customLabels?.includes(label.id)
+        );
+        counts[`custom-label-${label.id}`] = labelEmails.filter(email => !email.isRead).length;
+      }
+    });
+
+    return counts;
+  }, [emails, customLabels]);
 
   // Apply filters and sorting
   const applyFilters = (emailList: Email[]) => {

@@ -159,7 +159,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                         />
                         <span>{label.name}</span>
                       </div>
-                      {getLabelCount(label.id) && (
+                      {getLabelCount(label.id) > 0 && (
                         <span className={`
                           px-2 py-1 text-xs rounded-full
                           ${activeItem === `label-${label.id}` ? 'bg-blue-200 text-blue-800' : 'bg-gray-200 text-gray-600'}
@@ -195,7 +195,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                         />
                         <span>{label.name}</span>
                       </div>
-                      {getLabelCount(label.id) && (
+                      {getLabelCount(label.id) > 0 && (
                         <span className={`
                           px-2 py-1 text-xs rounded-full
                           ${activeItem === `custom-label-${label.id}` ? 'bg-blue-200 text-blue-800' : 'bg-gray-200 text-gray-600'}
