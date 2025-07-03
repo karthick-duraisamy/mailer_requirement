@@ -33,21 +33,23 @@ interface ConversationThreadProps {
   email: Email | null;
   onClose: () => void;
   onBack?: () => void;
-  isFullPage: boolean;
+  isFullPage?: boolean;
   aiReplyState: AiReplyState;
-  onGenerateAiReply: (email: Email, tone?: string, replyType?: string) => void;
-  onAiReplyStateChange: (state: AiReplyState) => void;
+  onGenerateAiReply: (email: Email, tone: string, replyType: string) => void;
+  onAiReplyStateChange: (newState: AiReplyState) => void;
   customLabels: CustomLabel[];
   onEmailLabelsChange: (emailIds: string[], labelIds: string[]) => void;
-  onCreateLabel: (label: Omit<CustomLabel, "id" | "createdAt">) => void;
-  onDeleteEmail: (emailId: string) => void;
+  onCreateLabel: (labelData: Omit<CustomLabel, 'id' | 'createdAt'>) => void;
+  onDeleteEmail?: (emailId: string) => void;
+  onRestoreEmail?: (emailId: string) => void;
+  activeSection?: string;
 }
 
 const ConversationThread: React.FC<ConversationThreadProps> = ({
   email,
   onClose,
   onBack,
-  isFullPage,
+  isFullPage = false,
   aiReplyState,
   onGenerateAiReply,
   onAiReplyStateChange,
@@ -55,6 +57,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   onEmailLabelsChange,
   onCreateLabel,
   onDeleteEmail,
+  onRestoreEmail,
+  activeSection,
 }) => {
   const [replyText, setReplyText] = useState("");
   const [showReply, setShowReply] = useState(false);
@@ -266,6 +270,13 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     }
   };
 
+  const handleRestoreEmail = () => {
+    if (email && onRestoreEmail) {
+      onRestoreEmail(email.id);
+      onClose();
+    }
+  };
+
   const toggleMessageExpansion = (messageId: string) => {
     setExpandedMessages((prev) => {
       const newSet = new Set(prev);
@@ -372,13 +383,23 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                 className={`w-5 h-5 ${email.isStarred ? "text-yellow-500 fill-yellow-500" : "text-gray-600"}`}
               />
             </button>
-            <button
-              onClick={handleDeleteEmail}
-              className="p-2 hover:bg-red-100 rounded-lg transition-colors"
-              title="Delete email"
-            >
-              <Trash2 className="w-5 h-5 text-red-600" />
-            </button>
+            {activeSection === 'bin' && onRestoreEmail ? (
+                <button
+                  onClick={() => onRestoreEmail(email.id)}
+                  className="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                  title="Restore conversation"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                </button>
+              ) : onDeleteEmail && (
+                <button
+                  onClick={() => onDeleteEmail(email.id)}
+                  className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  title="Delete conversation"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              )}
             <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
               <MoreHorizontal className="w-5 h-5 text-gray-600" />
             </button>

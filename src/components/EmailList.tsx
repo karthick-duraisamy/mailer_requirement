@@ -13,9 +13,10 @@ interface EmailListProps {
   activeSection: string;
   customLabels: CustomLabel[];
   onEmailLabelsChange: (emailIds: string[], labelIds: string[]) => void;
-  onCreateLabel: (label: Omit<CustomLabel, 'id' | 'createdAt'>) => void;
+  onCreateLabel: (labelData: Omit<CustomLabel, 'id' | 'createdAt'>) => void;
   onBulkMarkAsRead: (emailIds: string[], isRead: boolean) => void;
   onBulkDelete: (emailIds: string[]) => void;
+  onBulkRestore?: (emailIds: string[]) => void;
   onSelectAll: () => void;
   onUnselectAll: () => void;
   onUndo?: () => void;
@@ -34,6 +35,7 @@ const EmailList: React.FC<EmailListProps> = ({
   onCreateLabel,
   onBulkMarkAsRead,
   onBulkDelete,
+  onBulkRestore,
   onSelectAll,
   onUnselectAll,
   onUndo,

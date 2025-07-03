@@ -563,6 +563,44 @@ function App() {
     console.log(`Email moved to bin: ${emailToDelete.subject}`);
   };
 
+  const handleRestoreEmail = (emailId: string) => {
+    // Find the email to restore
+    const emailToRestore = deletedEmails.find(email => email.id === emailId);
+    if (!emailToRestore) return;
+
+    // Move email back to active emails
+    setEmails(prev => [...prev, emailToRestore]);
+
+    // Remove from deleted emails
+    setDeletedEmails(prev => prev.filter(email => email.id !== emailId));
+
+    // Clear selection if this email was selected
+    if (selectedEmail && selectedEmail.id === emailId) {
+      setSelectedEmail(null);
+    }
+
+    console.log(`Email restored from bin: ${emailToRestore.subject}`);
+  };
+
+  const handleBulkRestore = (emailIds: string[]) => {
+    // Find emails to restore
+    const emailsToRestore = deletedEmails.filter(email => emailIds.includes(email.id));
+    
+    // Move emails back to active emails
+    setEmails(prev => [...prev, ...emailsToRestore]);
+
+    // Remove from deleted emails
+    setDeletedEmails(prev => prev.filter(email => !emailIds.includes(email.id)));
+
+    // Clear checked emails and selected email if restored
+    setCheckedEmails(new Set());
+    if (selectedEmail && emailIds.includes(selectedEmail.id)) {
+      setSelectedEmail(null);
+    }
+
+    console.log(`Restored ${emailIds.length} emails from bin`);
+  };
+
   const handleUndo = () => {
     if (!lastAction) return;
 
@@ -726,6 +764,8 @@ function App() {
               onEmailLabelsChange={handleEmailLabelsChange}
               onCreateLabel={handleCreateLabel}
               onDeleteEmail={handleDeleteEmail}
+              onRestoreEmail={handleRestoreEmail}
+              activeSection={activeItem}
             />
           ) : (
             <div className="flex flex-1 h-full">
@@ -743,6 +783,7 @@ function App() {
                   onCreateLabel={handleCreateLabel}
                   onBulkMarkAsRead={handleBulkMarkAsRead}
                   onBulkDelete={handleBulkDelete}
+                  onBulkRestore={handleBulkRestore}
                   onSelectAll={handleSelectAll}
                   onUnselectAll={handleUnselectAll}
                 />
@@ -759,6 +800,8 @@ function App() {
                 onEmailLabelsChange={handleEmailLabelsChange}
                 onCreateLabel={handleCreateLabel}
                 onDeleteEmail={handleDeleteEmail}
+                onRestoreEmail={handleRestoreEmail}
+                activeSection={activeItem}
               />
             </div>
           )}
