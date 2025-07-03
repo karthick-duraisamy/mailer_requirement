@@ -309,11 +309,10 @@ const EmailList: React.FC<EmailListProps> = ({
             </button>
             
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">{getSectionTitle(activeSection)}</h2>
-              <p className="text-sm text-gray-500 mt-1">
-                {checkedEmails.size > 0 ? `${checkedEmails.size} of ${emails.length}` : emails.length} email{emails.length !== 1 ? 's' : ''}
-                {checkedEmails.size > 0 ? ' selected' : ''}
-              </p>
+              <h2 className="text-lg font-semibold text-gray-900">
+                {getSectionTitle(activeSection)}
+                {checkedEmails.size > 0 ? `(${checkedEmails.size}/${emails.length})` : `(${emails.length})`}
+              </h2>
             </div>
           </div>
 
@@ -343,30 +342,9 @@ const EmailList: React.FC<EmailListProps> = ({
               {showMoreActions && (
                 <div className="absolute top-full right-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
                   <div className="p-1">
-                    {/* Selection Actions */}
-                    <button
-                      onClick={() => {
-                        onSelectAll();
-                        setShowMoreActions(false);
-                      }}
-                      className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors"
-                    >
-                      Select All
-                    </button>
-                    <button
-                      onClick={() => {
-                        onUnselectAll();
-                        setShowMoreActions(false);
-                      }}
-                      className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors"
-                    >
-                      Unselect All
-                    </button>
-                    
                     {/* Bulk Actions - only show when emails are selected */}
-                    {hasCheckedEmails && (
+                    {hasCheckedEmails ? (
                       <>
-                        <div className="border-t border-gray-100 my-1"></div>
                         <button
                           onClick={() => {
                             onBulkMarkAsRead(checkedEmailsArray, true);
@@ -395,6 +373,10 @@ const EmailList: React.FC<EmailListProps> = ({
                           Delete
                         </button>
                       </>
+                    ) : (
+                      <div className="px-3 py-2 text-sm text-gray-500">
+                        Select emails to see actions
+                      </div>
                     )}
                     
                     {/* Undo Action */}
