@@ -312,7 +312,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-5xl mx-auto">
           {sortedMessages.map((message, index) => {
-            const isExpanded = expandedMessages.has(message.id) || index === sortedMessages.length - 1;
+            const isExpanded = expandedMessages.has(message.id) || (index === sortedMessages.length - 1 && !expandedMessages.has(`collapsed-${message.id}`));
             const isLastMessage = index === sortedMessages.length - 1;
             const isFromCurrentUser = message.senderEmail === 'john.doe@company.com';
 
@@ -321,8 +321,23 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                 <div className={`p-6 ${isFromCurrentUser ? 'bg-blue-50' : 'bg-white'}`}>
                   {/* Message Header */}
                   <div 
-                    className={`cursor-pointer ${!isLastMessage ? 'hover:bg-gray-50 -m-2 p-2 rounded-lg' : ''}`}
-                    onClick={() => !isLastMessage && toggleMessageExpansion(message.id)}
+                    className="cursor-pointer hover:bg-gray-50 -m-2 p-2 rounded-lg"
+                    onClick={() => {
+                      if (isLastMessage) {
+                        // For last message, use a special collapsed state
+                        if (isExpanded) {
+                          setExpandedMessages(prev => new Set([...prev, `collapsed-${message.id}`]));
+                        } else {
+                          setExpandedMessages(prev => {
+                            const newSet = new Set(prev);
+                            newSet.delete(`collapsed-${message.id}`);
+                            return newSet;
+                          });
+                        }
+                      } else {
+                        toggleMessageExpansion(message.id);
+                      }
+                    }}
                   >
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center space-x-3">
@@ -336,15 +351,13 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                             <p className="font-semibold text-gray-900">
                               {isFromCurrentUser ? 'You' : message.sender}
                             </p>
-                            {!isLastMessage && (
-                              <button className="text-gray-400 hover:text-gray-600">
-                                {isExpanded ? (
-                                  <ChevronUp className="w-4 h-4" />
-                                ) : (
-                                  <ChevronDown className="w-4 h-4" />
-                                )}
-                              </button>
-                            )}
+                            <button className="text-gray-400 hover:text-gray-600">
+                              {isExpanded ? (
+                                <ChevronUp className="w-4 h-4" />
+                              ) : (
+                                <ChevronDown className="w-4 h-4" />
+                              )}
+                            </button>
                           </div>
                           <p className="text-sm text-gray-500">{formatTimestamp(message.timestamp)}</p>
                         </div>
