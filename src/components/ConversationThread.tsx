@@ -16,6 +16,7 @@ import {
   Trash2,
   Expand,
   Minimize,
+  FileText,
 } from "lucide-react";
 import { Email, CustomLabel } from "../types/email";
 import EmailLabelActions from "./EmailLabelActions";
@@ -383,6 +384,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
               onClick={() => setShowEntitiesPopover(!showEntitiesPopover)}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
+              <FileText className="w-4 h-4 mr-1" />
               <span className="text-sm text-gray-600 hover:text-gray-800">Entities</span>
             </button>
             <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
