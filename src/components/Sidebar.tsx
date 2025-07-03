@@ -35,9 +35,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [labelsExpanded, setLabelsExpanded] = useState(true);
 
   const navigationItems = [
-    { id: 'inbox', label: 'Inbox', icon: Inbox, count: emailCounts.inbox },
-    { id: 'sent', label: 'Sent', icon: Send, count: emailCounts.sent },
-    { id: 'drafts', label: 'Drafts', icon: FileText, count: emailCounts.drafts },
+    { id: 'inbox', label: 'All Conversations', icon: Inbox, count: emailCounts.inbox },
     { id: 'starred', label: 'Starred', icon: Star, count: emailCounts.starred },
     { id: 'snoozed', label: 'Snoozed', icon: Clock, count: emailCounts.snoozed },
   ];

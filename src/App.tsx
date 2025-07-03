@@ -152,35 +152,60 @@ function App() {
     return filtered;
   };
 
-  // Filter emails based on active section, search query, and filters
+  // Group emails into conversations
+  const conversations = useMemo(() => {
+    const conversationMap = new Map<string, Email[]>();
+
+    emails.forEach(email => {
+      // Create a conversation key based on participants (normalize for bidirectional conversations)
+      const participants = [email.senderEmail, ...email.messages[0].to].sort();
+      const conversationKey = participants.join(',');
+
+      if (!conversationMap.has(conversationKey)) {
+        conversationMap.set(conversationKey, []);
+      }
+      conversationMap.get(conversationKey)!.push(email);
+    });
+
+    // Convert conversations to email format (showing the latest email from each conversation)
+    return Array.from(conversationMap.values()).map(conversationEmails => {
+      // Sort by timestamp and return the latest email as the conversation representative
+      const sortedEmails = conversationEmails.sort((a, b) => 
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
+
+      const latestEmail = sortedEmails[0];
+
+      // Combine all messages from the conversation into the latest email
+      const allMessages = conversationEmails.flatMap(email => email.messages)
+        .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+      return {
+        ...latestEmail,
+        messages: allMessages,
+        conversationEmails: sortedEmails // Store original emails for reference
+      };
+    }).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  }, [emails]);
+
+  // Filtering logic
   const filteredEmails = useMemo(() => {
-    let filtered = emails;
+    let filtered = conversations;
 
     // Filter by section
     switch (activeItem) {
       case 'inbox':
-        // For demo purposes, show all emails in inbox
-        break;
-      case 'sent':
-        // Filter sent emails (for demo, we'll show emails from current user)
-        filtered = emails.filter(email => 
-          email.senderEmail === 'john.doe@company.com' || 
-          email.sender === 'John Doe'
-        );
-        break;
-      case 'drafts':
-        // For demo, show empty drafts
-        filtered = [];
+        // Show all conversations
         break;
       case 'starred':
-        filtered = emails.filter(email => email.isStarred);
+        filtered = conversations.filter(email => email.isStarred);
         break;
       case 'snoozed':
         // For demo, show empty snoozed
         filtered = [];
         break;
       case 'label-work':
-        filtered = emails.filter(email => 
+        filtered = conversations.filter(email => 
           email.customLabels?.includes('work') ||
           email.subject.toLowerCase().includes('project') ||
           email.subject.toLowerCase().includes('meeting') ||
@@ -190,14 +215,14 @@ function App() {
         );
         break;
       case 'label-personal':
-        filtered = emails.filter(email => 
+        filtered = conversations.filter(email => 
           email.customLabels?.includes('personal') ||
           email.subject.toLowerCase().includes('welcome') ||
           email.senderEmail.includes('startup.io')
         );
         break;
       case 'label-important':
-        filtered = emails.filter(email => 
+        filtered = conversations.filter(email => 
           email.customLabels?.includes('important') ||
           email.subject.toLowerCase().includes('urgent') ||
           email.subject.toLowerCase().includes('important') ||
@@ -205,7 +230,7 @@ function App() {
         );
         break;
       case 'label-travel':
-        filtered = emails.filter(email => 
+        filtered = conversations.filter(email => 
           email.customLabels?.includes('travel')
         );
         break;
@@ -213,7 +238,7 @@ function App() {
         // Handle custom labels
         if (activeItem.startsWith('custom-label-')) {
           const labelId = activeItem.replace('custom-label-', '');
-          filtered = emails.filter(email => 
+          filtered = conversations.filter(email => 
             email.customLabels?.includes(labelId)
           );
         }
@@ -242,7 +267,7 @@ function App() {
     filtered = applyFilters(filtered);
 
     return filtered;
-  }, [emails, activeItem, searchQuery, filters, customLabels]);
+  }, [emails, activeItem, searchQuery, filters, customLabels, conversations]);
 
   const handleEmailSelect = (email: Email, fullPage: boolean = false) => {
     setSelectedEmail(email);
@@ -531,7 +556,7 @@ function App() {
         </div>
       </div>
 
-      
+
 
       <LabelManager
         isOpen={labelManagerOpen}

@@ -172,17 +172,13 @@ const EmailList: React.FC<EmailListProps> = ({
         </div>
         <h3 className="text-lg font-medium text-gray-900 mb-2">No emails in {title}</h3>
         <p className="text-gray-500 max-w-sm">
-          {section === 'drafts' 
-            ? 'Your draft emails will appear here when you save them.'
-            : section === 'sent'
-            ? 'Emails you send will appear here.'
-            : section === 'starred'
-            ? 'Star important emails to find them quickly here.'
+          {section === 'starred'
+            ? 'Star important conversations to find them quickly here.'
             : section === 'snoozed'
-            ? 'Snoozed emails will appear here when it\'s time to deal with them.'
+            ? 'Snoozed conversations will appear here when it\'s time to deal with them.'
             : section.startsWith('custom-label-') || section.startsWith('label-')
-            ? `Emails with the "${title}" label will appear here.`
-            : `No emails available in this section yet.`
+            ? `Conversations with the "${title}" label will appear here.`
+            : `No conversations available yet.`
           }
         </p>
       </div>
@@ -197,7 +193,7 @@ const EmailList: React.FC<EmailListProps> = ({
     setIsResizing(true);
     startXRef.current = e.clientX;
     startWidthRef.current = width;
-    
+
     // Add cursor style to body to prevent cursor flickering
     document.body.style.cursor = 'col-resize';
     document.body.style.userSelect = 'none';
@@ -206,12 +202,12 @@ const EmailList: React.FC<EmailListProps> = ({
   const handleResize = useCallback(
     (e: MouseEvent) => {
       if (!isResizing) return;
-      
+
       e.preventDefault();
       const deltaX = e.clientX - startXRef.current;
       const newWidth = startWidthRef.current + deltaX;
       const clampedWidth = Math.max(240, Math.min(newWidth, 800));
-      
+
       // Use requestAnimationFrame for smoother updates
       requestAnimationFrame(() => {
         setWidth(clampedWidth);

@@ -253,7 +253,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
               <h2 className="text-2xl font-semibold text-gray-900 truncate">{email.subject}</h2>
             <div className="flex items-center space-x-4 mt-2">
                 <p className="text-sm text-gray-500">
-                  {email.messages.length} message{email.messages.length !== 1 ? 's' : ''}
+                  {email.messages.length} message{email.messages.length !== 1 ? 's' : ''} • Conversation
                 </p>
 
               {/* Email Labels */}
@@ -314,10 +314,11 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
           {sortedMessages.map((message, index) => {
             const isExpanded = expandedMessages.has(message.id) || index === sortedMessages.length - 1;
             const isLastMessage = index === sortedMessages.length - 1;
+            const isFromCurrentUser = message.senderEmail === 'john.doe@company.com';
 
             return (
-              <div key={message.id} className="border-b border-gray-100 last:border-b-0">
-                <div className="p-6">
+              <div key={message.id} className="last:border-b-0">
+                <div className={`p-6 ${isFromCurrentUser ? 'bg-blue-50' : 'bg-white'}`}>
                   {/* Message Header */}
                   <div 
                     className={`cursor-pointer ${!isLastMessage ? 'hover:bg-gray-50 -m-2 p-2 rounded-lg' : ''}`}
@@ -325,14 +326,16 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                   >
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                        <div className={`w-10 h-10 ${isFromCurrentUser ? 'bg-gradient-to-br from-green-500 to-green-600' : 'bg-gradient-to-br from-blue-500 to-purple-600'} rounded-full flex items-center justify-center flex-shrink-0`}>
                           <span className="text-white font-semibold text-sm">
                             {message.sender.charAt(0).toUpperCase()}
                           </span>
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center space-x-2">
-                            <p className="font-semibold text-gray-900">{message.sender}</p>
+                            <p className="font-semibold text-gray-900">
+                              {isFromCurrentUser ? 'You' : message.sender}
+                            </p>
                             {!isLastMessage && (
                               <button className="text-gray-400 hover:text-gray-600">
                                 {isExpanded ? (
