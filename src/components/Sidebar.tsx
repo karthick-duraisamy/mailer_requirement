@@ -1,5 +1,21 @@
 import React, { useState } from 'react';
-import { Mail, Star, Clock, Send, Tag, Settings, Plus, Inbox, Archive, AlertCircle, Calendar, Megaphone, BarChart3, MessageSquare, FileText, Trash2 } from 'lucide-react';
+import { 
+  Inbox, 
+  Star, 
+  Clock, 
+  Trash2, 
+  Settings, 
+  Plus, 
+  Tag,
+  Mail,
+  Users,
+  Calendar,
+  Bell,
+  Megaphone,
+  HelpCircle,
+  Folder,
+  ChevronDown
+} from 'lucide-react';
 import { Label, CustomLabel } from '../types/email';
 
 interface SidebarProps {
