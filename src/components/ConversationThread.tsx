@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Reply, ReplyAll, Forward, MoreHorizontal, Star, Archive, ChevronDown, ChevronUp, Sparkles, RotateCcw, Tag, ArrowLeft, Loader2, Trash2 } from 'lucide-react';
+import { Reply, ReplyAll, Forward, MoreHorizontal, Star, Archive, ChevronDown, ChevronUp, Sparkles, RotateCcw, Tag, ArrowLeft, Loader2, Trash2, Eye, X } from 'lucide-react';
 import { Email, CustomLabel } from '../types/email';
 import EmailLabelActions from './EmailLabelActions';
 import EntitiesDisplay from './EntitiesDisplay';
@@ -42,6 +42,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   const [replyText, setReplyText] = useState('');
   const [showReply, setShowReply] = useState(false);
   const [expandedMessages, setExpandedMessages] = useState<Set<string>>(new Set());
+  const [showEntitiesModal, setShowEntitiesModal] = useState(false);
   
   // Refs for auto-scrolling
   const aiReplyRef = useRef<HTMLDivElement>(null);
@@ -244,8 +245,79 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     </div>
   );
 
+  // Format entity key for display
+  const formatEntityKey = (key: string) => {
+    return key
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
+  // Get entity icon based on key
+  const getEntityIcon = (key: string) => {
+    const lowerKey = key.toLowerCase();
+    if (lowerKey.includes('date') || lowerKey.includes('time')) return '📅';
+    if (lowerKey.includes('destination') || lowerKey.includes('origin') || lowerKey.includes('location')) return '📍';
+    if (lowerKey.includes('name') || lowerKey.includes('traveler') || lowerKey.includes('user')) return '👤';
+    if (lowerKey.includes('company') || lowerKey.includes('team') || lowerKey.includes('department')) return '🏢';
+    if (lowerKey.includes('meeting') || lowerKey.includes('event')) return '⏰';
+    return '🏷️';
+  };
+
   return (
-    <div ref={containerRef} className="flex-1 flex flex-col bg-white">
+    <>
+      {/* Entities Modal */}
+      {showEntitiesModal && email?.entities && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">Email Entities</h3>
+              <button
+                onClick={() => setShowEntitiesModal(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto max-h-[60vh]">
+              <div className="space-y-4">
+                {Object.entries(email.entities).map(([key, value]) => (
+                  <div key={key} className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg border">
+                    <div className="text-2xl">{getEntityIcon(key)}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center space-x-2 mb-1">
+                        <h4 className="text-sm font-medium text-gray-900">
+                          {formatEntityKey(key)}
+                        </h4>
+                      </div>
+                      <p className="text-sm text-gray-600 break-words">{value}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              {Object.keys(email.entities).length === 0 && (
+                <div className="text-center py-8">
+                  <div className="text-4xl mb-2">🤖</div>
+                  <p className="text-gray-500">No entities found in this email</p>
+                </div>
+              )}
+            </div>
+            
+            <div className="flex justify-end p-6 border-t border-gray-200">
+              <button
+                onClick={() => setShowEntitiesModal(false)}
+                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div ref={containerRef} className="flex-1 flex flex-col bg-white">
       {/* Header */}
       <div className="border-b border-gray-200 p-6">
         <div className="flex items-center justify-between">
@@ -295,9 +367,15 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                 )}
               </div>
               
-              {/* Entities Display */}
-              {email.entities && (
-                <EntitiesDisplay entities={email.entities} />
+              {/* View Entities Button */}
+              {email.entities && Object.keys(email.entities).length > 0 && (
+                <button
+                  onClick={() => setShowEntitiesModal(true)}
+                  className="inline-flex items-center px-3 py-2 mt-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
+                >
+                  <Eye className="w-4 h-4 mr-2" />
+                  View Entities ({Object.keys(email.entities).length})
+                </button>
               )}
             </div>
           </div>
@@ -648,6 +726,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
         </div>
       )}
     </div>
+    </>
   );
 };
 
