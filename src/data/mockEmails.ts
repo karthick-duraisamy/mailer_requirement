@@ -183,6 +183,12 @@ Emma`,
     isRead: true,
     intentLabel: 'meeting',
     customLabels: ['work', 'clients'],
+    entities: {
+      meeting_time: '3:00 PM',
+      meeting_date: 'Tomorrow',
+      meeting_type: 'Project Review',
+      attendees: 'Development Team'
+    },
     messages: [
       {
         id: '4-1',
@@ -460,6 +466,85 @@ Download your copy from our subscriber portal.
 Best regards,
 Marketing Insights Team`,
         timestamp: '2024-01-13T12:00:00Z',
+        isRead: false,
+      },
+    ],
+  },
+  {
+    id: '11',
+    sender: 'Travel Agent',
+    senderEmail: 'agent@travels.com',
+    subject: 'Your Travel Itinerary',
+    preview: 'Dear Vijay, find your travel itinerary',
+    timestamp: '2024-01-16T10:00:00Z',
+    isStarred: false,
+    isRead: false,
+    intentLabel: 'general',
+    customLabels: ['personal'],
+    entities: {
+      departure_date: '19th Jun',
+      destination: 'Ahmedabad',
+      traveler_name: 'Vijay Magar',
+      origin: 'Mumbai'
+    },
+    messages: [
+      {
+        id: '11-1',
+        sender: 'Travel Agent',
+        senderEmail: 'agent@travels.com',
+        to: ['vijay@company.com'],
+        subject: 'Your Travel Itinerary',
+        content: `Dear Vijay,
+
+        Find your travel itinerary.
+        
+        From: Mumbai
+        To: Ahmedabad
+        Date: 19th Jun
+        
+        Thanks,
+        Travel Agent`,
+        timestamp: '2024-01-16T10:00:00Z',
+        isRead: false,
+      },
+    ],
+  },
+  {
+    id: '12',
+    sender: 'System Alert',
+    senderEmail: 'alert@system.com',
+    subject: 'Security Alert',
+    preview: 'Dear user, security alert',
+    timestamp: '2024-01-16T11:00:00Z',
+    isStarred: false,
+    isRead: false,
+    intentLabel: 'system',
+    customLabels: ['important'],
+    entities: {
+      alert_type: 'Security Alert',
+      affected_systems: 'User Authentication',
+      severity: 'High',
+      action_required: 'Password Reset'
+    },
+    messages: [
+      {
+        id: '12-1',
+        sender: 'System Alert',
+        senderEmail: 'alert@system.com',
+        to: ['user@company.com'],
+        subject: 'Security Alert',
+        content: `Dear user,
+
+        Security alert.
+        
+        Alert Type: Security Alert
+        Affected Systems: User Authentication
+        Severity: High
+        Action Required: Password Reset
+        
+        Thanks,
+        System Alert`,
+        timestamp: '2024-01-16T11:00:00Z',
         isRead: false,
       },
     ],
