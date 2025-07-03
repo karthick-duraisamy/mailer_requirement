@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Reply, ReplyAll, Forward, MoreHorizontal, Star, Archive, ChevronDown, ChevronUp, Sparkles, RotateCcw, Tag, ArrowLeft } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Reply, ReplyAll, Forward, MoreHorizontal, Star, Archive, ChevronDown, ChevronUp, Sparkles, RotateCcw, Tag, ArrowLeft, Loader2 } from 'lucide-react';
 import { Email, CustomLabel } from '../types/email';
 import EmailLabelActions from './EmailLabelActions';
 
@@ -39,6 +39,38 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   const [replyText, setReplyText] = useState('');
   const [showReply, setShowReply] = useState(false);
   const [expandedMessages, setExpandedMessages] = useState<Set<string>>(new Set());
+  
+  // Refs for auto-scrolling
+  const aiReplyRef = useRef<HTMLDivElement>(null);
+  const replyBoxRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to AI reply when it becomes available
+  useEffect(() => {
+    if (aiReplyState.showAiReply && aiReplyRef.current) {
+      // Small delay to ensure the content is rendered
+      setTimeout(() => {
+        aiReplyRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center',
+          inline: 'nearest'
+        });
+      }, 100);
+    }
+  }, [aiReplyState.showAiReply]);
+
+  // Auto-scroll to reply box when AI reply is used
+  useEffect(() => {
+    if (showReply && replyText === aiReplyState.generatedReply && replyBoxRef.current) {
+      setTimeout(() => {
+        replyBoxRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center',
+          inline: 'nearest'
+        });
+      }, 100);
+    }
+  }, [showReply, replyText, aiReplyState.generatedReply]);
 
   if (!email) {
     return (
@@ -177,8 +209,16 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     return useReplyAll ? 'Reply All with AI' : 'Reply with AI';
   };
 
+  // Loading indicator component
+  const LoadingIndicator = () => (
+    <div className="flex items-center space-x-2">
+      <Loader2 className="w-4 h-4 animate-spin" />
+      <span>Generating...</span>
+    </div>
+  );
+
   return (
-    <div className="flex-1 flex flex-col bg-white">
+    <div ref={containerRef} className="flex-1 flex flex-col bg-white">
       {/* Header */}
       <div className="border-b border-gray-200 p-6">
         <div className="flex items-center justify-between">
@@ -355,8 +395,14 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                               disabled={aiReplyState.isGenerating}
                               className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-400 text-white rounded-lg transition-colors"
                             >
-                              <Sparkles className="w-4 h-4" />
-                              <span>{getAiButtonText()}</span>
+                              {aiReplyState.isGenerating ? (
+                                <LoadingIndicator />
+                              ) : (
+                                <>
+                                  <Sparkles className="w-4 h-4" />
+                                  <span>{getAiButtonText()}</span>
+                                </>
+                              )}
                             </button>
                             
                             <button 
@@ -378,7 +424,10 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
                           {/* AI Reply Preview */}
                           {aiReplyState.showAiReply && (
-                            <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-4">
+                            <div 
+                              ref={aiReplyRef}
+                              className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-4 animate-in slide-in-from-top-2 duration-300"
+                            >
                               <div className="flex items-center justify-between mb-3">
                                 <div className="flex items-center space-x-2">
                                   <Sparkles className="w-4 h-4 text-purple-600" />
@@ -398,10 +447,15 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                                   </select>
                                   <button
                                     onClick={handleRegenerateAi}
-                                    className="text-purple-600 hover:text-purple-700 p-1"
+                                    disabled={aiReplyState.isGenerating}
+                                    className="text-purple-600 hover:text-purple-700 p-1 disabled:text-gray-400"
                                     title="Regenerate"
                                   >
-                                    <RotateCcw className="w-4 h-4" />
+                                    {aiReplyState.isGenerating ? (
+                                      <Loader2 className="w-4 h-4 animate-spin" />
+                                    ) : (
+                                      <RotateCcw className="w-4 h-4" />
+                                    )}
                                   </button>
                                 </div>
                               </div>
@@ -446,7 +500,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
       {/* Reply Box */}
       {showReply && (
-        <div className="border-t border-gray-200 p-6 bg-gray-50">
+        <div ref={replyBoxRef} className="border-t border-gray-200 p-6 bg-gray-50">
           <div className="max-w-5xl mx-auto">
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -510,8 +564,14 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                     disabled={aiReplyState.isGenerating}
                     className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-400 text-white rounded-lg transition-colors"
                   >
-                    <Sparkles className="w-4 h-4" />
-                    <span>{aiReplyState.isGenerating ? 'Generating...' : 'Generate with AI'}</span>
+                    {aiReplyState.isGenerating ? (
+                      <LoadingIndicator />
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4" />
+                        <span>Generate with AI</span>
+                      </>
+                    )}
                   </button>
                 )}
                 <button
