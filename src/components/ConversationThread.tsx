@@ -558,51 +558,53 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
         </div>
       </div>
 
-      {/* Action Buttons - Always visible */}
-      <div className="border-t border-gray-200 p-6 bg-gray-50">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex items-center space-x-2 flex-wrap gap-2">
-            <button
-              onClick={() => setShowReply(!showReply)}
-              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-            >
-              <Reply className="w-4 h-4" />
-              <span>Reply</span>
-            </button>
+      {/* Action Buttons - Hidden when AI reply is active */}
+      {!aiReplyState.showAiReply && (
+        <div className="border-t border-gray-200 p-6 bg-gray-50">
+          <div className="max-w-5xl mx-auto">
+            <div className="flex items-center space-x-2 flex-wrap gap-2">
+              <button
+                onClick={() => setShowReply(!showReply)}
+                className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+              >
+                <Reply className="w-4 h-4" />
+                <span>Reply</span>
+              </button>
 
-            <button
-              onClick={handleAiReplyGenerate}
-              disabled={aiReplyState.isGenerating}
-              className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-400 text-white rounded-lg transition-colors"
-            >
-              {aiReplyState.isGenerating ? (
-                <LoadingIndicator />
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4" />
-                  <span>Reply with AI</span>
-                </>
-              )}
-            </button>
+              <button
+                onClick={handleAiReplyGenerate}
+                disabled={aiReplyState.isGenerating}
+                className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-400 text-white rounded-lg transition-colors"
+              >
+                {aiReplyState.isGenerating ? (
+                  <LoadingIndicator />
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4" />
+                    <span>Reply with AI</span>
+                  </>
+                )}
+              </button>
 
-            <button
-              onClick={handleReplyAll}
-              className="flex items-center space-x-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
-            >
-              <ReplyAll className="w-4 h-4" />
-              <span>Reply All</span>
-            </button>
+              <button
+                onClick={handleReplyAll}
+                className="flex items-center space-x-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
+              >
+                <ReplyAll className="w-4 h-4" />
+                <span>Reply All</span>
+              </button>
 
-            <button
-              onClick={handleForward}
-              className="flex items-center space-x-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
-            >
-              <Forward className="w-4 h-4" />
-              <span>Forward</span>
-            </button>
+              <button
+                onClick={handleForward}
+                className="flex items-center space-x-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
+              >
+                <Forward className="w-4 h-4" />
+                <span>Forward</span>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* AI Reply Preview - Always positioned properly */}
       {aiReplyState.showAiReply && (
