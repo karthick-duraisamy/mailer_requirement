@@ -511,10 +511,18 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
               </div>
               <div className="flex items-center space-x-2">
                 <button
-                  onClick={handleUseAiReply}
-                  className="flex items-center space-x-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors text-sm"
+                  onClick={handleAiReply}
+                  className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm"
                 >
-                  <span>Use This Reply</span>
+                  <Reply className="w-4 h-4" />
+                  <span>Reply</span>
+                </button>
+                <button
+                  onClick={handleAiReplyAll}
+                  className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors text-sm"
+                >
+                  <ReplyAll className="w-4 h-4" />
+                  <span>Reply All</span>
                 </button>
                 <button
                   onClick={() => onAiReplyStateChange({ ...aiReplyState, showAiReply: false, replyType: undefined })}
