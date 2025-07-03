@@ -1,6 +1,5 @@
-
-import React, { useState, useRef, useEffect } from 'react';
-import { X, Plane, Ticket, FileText, XCircle, CheckCircle } from 'lucide-react';
+import React, { useState, useRef, useEffect } from "react";
+import { X, Plane, Ticket, FileText, XCircle, CheckCircle } from "lucide-react";
 
 interface EntitiesPopoverProps {
   isOpen: boolean;
@@ -20,15 +19,15 @@ const EntitiesPopover: React.FC<EntitiesPopoverProps> = ({
     if (isOpen && triggerRef.current && popoverRef.current) {
       const triggerRect = triggerRef.current.getBoundingClientRect();
       const popoverRect = popoverRef.current.getBoundingClientRect();
-      
+
       // Position the popover below and aligned to the left of the trigger
       const top = triggerRect.bottom + 8;
       const left = triggerRect.left;
-      
+
       // Ensure popover doesn't go off screen
       const maxLeft = window.innerWidth - popoverRect.width - 16;
       const adjustedLeft = Math.min(left, maxLeft);
-      
+
       setPosition({ top, left: adjustedLeft });
     }
   }, [isOpen, triggerRef]);
@@ -46,17 +45,17 @@ const EntitiesPopover: React.FC<EntitiesPopoverProps> = ({
     };
 
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         onClose();
       }
     };
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('keydown', handleEscape);
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleEscape);
       return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-        document.removeEventListener('keydown', handleEscape);
+        document.removeEventListener("mousedown", handleClickOutside);
+        document.removeEventListener("keydown", handleEscape);
       };
     }
   }, [isOpen, onClose, triggerRef]);
@@ -67,7 +66,7 @@ const EntitiesPopover: React.FC<EntitiesPopoverProps> = ({
     <>
       {/* Backdrop */}
       <div className="fixed inset-0 z-40" />
-      
+
       {/* Popover */}
       <div
         ref={popoverRef}
@@ -78,8 +77,8 @@ const EntitiesPopover: React.FC<EntitiesPopoverProps> = ({
         }}
       >
         {/* Arrow pointing up */}
-        <div className="absolute -top-2 left-4 w-4 h-4 bg-white border-l border-t border-gray-200 transform rotate-45"></div>
-        
+        <div className="absolute -top-2 left-9 w-4 h-4 bg-white border-l border-t border-gray-200 transform rotate-45"></div>
+
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900">
@@ -98,19 +97,23 @@ const EntitiesPopover: React.FC<EntitiesPopoverProps> = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Plane className="w-4 h-4 text-blue-600" />
-              <span className="text-sm font-medium text-gray-700">Airline:</span>
+              <span className="text-sm font-medium text-gray-700">
+                Airline:
+              </span>
             </div>
             <span className="text-sm text-gray-900">Delta Airlines</span>
           </div>
-          
+
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Ticket className="w-4 h-4 text-green-600" />
-              <span className="text-sm font-medium text-gray-700">Ticket Type:</span>
+              <span className="text-sm font-medium text-gray-700">
+                Ticket Type:
+              </span>
             </div>
             <span className="text-sm text-gray-900">Round Trip</span>
           </div>
-          
+
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <FileText className="w-4 h-4 text-purple-600" />
@@ -118,21 +121,25 @@ const EntitiesPopover: React.FC<EntitiesPopoverProps> = ({
             </div>
             <span className="text-sm text-gray-900 font-mono">ABC123XYZ</span>
           </div>
-          
+
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <XCircle className="w-4 h-4 text-red-600" />
-              <span className="text-sm font-medium text-gray-700">Cancellation:</span>
+              <span className="text-sm font-medium text-gray-700">
+                Cancellation:
+              </span>
             </div>
             <span className="text-sm text-gray-900">Allowed</span>
           </div>
-          
+
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <CheckCircle className="w-4 h-4 text-green-600" />
               <span className="text-sm font-medium text-gray-700">Status:</span>
             </div>
-            <span className="text-sm text-green-800 bg-green-100 px-2 py-1 rounded-full">Confirmed</span>
+            <span className="text-sm text-green-800 bg-green-100 px-2 py-1 rounded-full">
+              Confirmed
+            </span>
           </div>
         </div>
       </div>

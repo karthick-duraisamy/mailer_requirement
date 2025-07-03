@@ -41,7 +41,7 @@ interface ConversationThreadProps {
   onAiReplyStateChange: (newState: AiReplyState) => void;
   customLabels: CustomLabel[];
   onEmailLabelsChange: (emailIds: string[], labelIds: string[]) => void;
-  onCreateLabel: (labelData: Omit<CustomLabel, 'id' | 'createdAt'>) => void;
+  onCreateLabel: (labelData: Omit<CustomLabel, "id" | "createdAt">) => void;
   onDeleteEmail?: (emailId: string) => void;
   onRestoreEmail?: (emailId: string) => void;
   activeSection?: string;
@@ -379,31 +379,34 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
               onLabelsChange={onEmailLabelsChange}
               onCreateLabel={onCreateLabel}
             />
-            <button 
+            <button
               ref={entitiesButtonRef}
               onClick={() => setShowEntitiesPopover(!showEntitiesPopover)}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <FileText className="w-4 h-4 mr-1" />
-              <span className="text-sm text-gray-600 hover:text-gray-800">Entities</span>
+              <span className="text-sm text-gray-600 hover:text-gray-800">
+                Entities
+              </span>
             </button>
-            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+            {/* <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
               <Archive className="w-5 h-5 text-gray-600" />
-            </button>
+            </button> */}
             <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
               <Star
                 className={`w-5 h-5 ${email.isStarred ? "text-yellow-500 fill-yellow-500" : "text-gray-600"}`}
               />
             </button>
-            {activeSection === 'bin' && onRestoreEmail ? (
-                <button
-                  onClick={() => onRestoreEmail(email.id)}
-                  className="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                  title="Restore conversation"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                </button>
-              ) : onDeleteEmail && (
+            {activeSection === "bin" && onRestoreEmail ? (
+              <button
+                onClick={() => onRestoreEmail(email.id)}
+                className="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                title="Restore conversation"
+              >
+                <RotateCcw className="w-4 h-4" />
+              </button>
+            ) : (
+              onDeleteEmail && (
                 <button
                   onClick={() => onDeleteEmail(email.id)}
                   className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
@@ -411,7 +414,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
-              )}
+              )
+            )}
             <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
               <MoreHorizontal className="w-5 h-5 text-gray-600" />
             </button>
