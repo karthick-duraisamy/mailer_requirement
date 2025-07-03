@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Reply, ReplyAll, Forward, MoreHorizontal, Star, Archive, ChevronDown, ChevronUp, Sparkles, RotateCcw, Tag, ArrowLeft, Loader2 } from 'lucide-react';
+import { Reply, ReplyAll, Forward, MoreHorizontal, Star, Archive, ChevronDown, ChevronUp, Sparkles, RotateCcw, Tag, ArrowLeft, Loader2, Trash2 } from 'lucide-react';
 import { Email, CustomLabel } from '../types/email';
 import EmailLabelActions from './EmailLabelActions';
 
@@ -22,6 +22,7 @@ interface ConversationThreadProps {
   customLabels: CustomLabel[];
   onEmailLabelsChange: (emailIds: string[], labelIds: string[]) => void;
   onCreateLabel: (label: Omit<CustomLabel, 'id' | 'createdAt'>) => void;
+  onDeleteEmail: (emailId: string) => void;
 }
 
 const ConversationThread: React.FC<ConversationThreadProps> = ({ 
@@ -34,7 +35,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   onAiReplyStateChange,
   customLabels,
   onEmailLabelsChange,
-  onCreateLabel
+  onCreateLabel,
+  onDeleteEmail
 }) => {
   const [replyText, setReplyText] = useState('');
   const [showReply, setShowReply] = useState(false);
@@ -200,6 +202,13 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     }
   };
 
+  const handleDeleteEmail = () => {
+    if (email) {
+      onDeleteEmail(email.id);
+      onClose(); // Close the conversation thread after deletion
+    }
+  };
+
   const toggleMessageExpansion = (messageId: string) => {
     setExpandedMessages(prev => {
       const newSet = new Set(prev);
@@ -300,6 +309,13 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
             </button>
             <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
               <Star className={`w-5 h-5 ${email.isStarred ? 'text-yellow-500 fill-yellow-500' : 'text-gray-600'}`} />
+            </button>
+            <button 
+              onClick={handleDeleteEmail}
+              className="p-2 hover:bg-red-100 rounded-lg transition-colors"
+              title="Delete email"
+            >
+              <Trash2 className="w-5 h-5 text-red-600" />
             </button>
             <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
               <MoreHorizontal className="w-5 h-5 text-gray-600" />

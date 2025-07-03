@@ -1,16 +1,5 @@
 import React, { useState } from 'react';
-import { 
-  Inbox, 
-  Send, 
-  FileText, 
-  Star, 
-  Clock, 
-  ChevronDown, 
-  ChevronRight,
-  Plus,
-  Tag,
-  Settings
-} from 'lucide-react';
+import { Mail, Star, Clock, Send, Tag, Settings, Plus, Inbox, Archive, AlertCircle, Calendar, Megaphone, BarChart3, MessageSquare, FileText, Trash2 } from 'lucide-react';
 import { Label, CustomLabel } from '../types/email';
 
 interface SidebarProps {
@@ -65,7 +54,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           onClick={() => {}}
         />
       )}
-      
+
       <aside className={`
         fixed md:static inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
@@ -85,7 +74,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             {navigationItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeItem === item.id;
-              
+
               return (
                 <button
                   key={item.id}

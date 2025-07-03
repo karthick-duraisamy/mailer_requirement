@@ -20,6 +20,7 @@ function App() {
       intentLabel: email.intentLabel || 'new'
     }))
   );
+  const [deletedEmails, setDeletedEmails] = useState<Email[]>([]);
   const [customLabels, setCustomLabels] = useState<CustomLabel[]>(mockCustomLabels);
   const [checkedEmails, setCheckedEmails] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
@@ -51,6 +52,7 @@ function App() {
     counts.inbox = emails.filter(email => !email.isRead).length;
     counts.starred = emails.filter(email => email.isStarred && !email.isRead).length;
     counts.snoozed = 0; // Mock data doesn't have snoozed emails
+    counts.bin = deletedEmails.length;
 
     // Custom labels - show unread count
     customLabels.forEach(label => {
@@ -254,6 +256,13 @@ function App() {
       case 'snoozed':
         // For demo, show empty snoozed
         filtered = [];
+        break;
+      case 'bin':
+        // Show deleted emails
+        filtered = deletedEmails.map(email => ({
+          ...email,
+          messages: email.messages || []
+        }));
         break;
       case 'label-work':
         filtered = conversations.filter(email => 
@@ -540,6 +549,25 @@ function App() {
     setCheckedEmails(new Set());
   };
 
+  const handleDeleteEmail = (emailId: string) => {
+    // Find the email to delete
+    const emailToDelete = emails.find(email => email.id === emailId);
+    if (!emailToDelete) return;
+
+    // Move email to deleted emails
+    setDeletedEmails(prev => [...prev, emailToDelete]);
+    
+    // Remove from active emails
+    setEmails(prev => prev.filter(email => email.id !== emailId));
+    
+    // Clear selection if this email was selected
+    if (selectedEmail && selectedEmail.id === emailId) {
+      setSelectedEmail(null);
+    }
+
+    console.log(`Email moved to bin: ${emailToDelete.subject}`);
+  };
+
   const handleUndo = () => {
     if (!lastAction) return;
 
@@ -681,6 +709,7 @@ function App() {
               customLabels={customLabels}
               onEmailLabelsChange={handleEmailLabelsChange}
               onCreateLabel={handleCreateLabel}
+              onDeleteEmail={handleDeleteEmail}
             />
           ) : (
             <div className="flex flex-1 h-full">
@@ -713,6 +742,7 @@ function App() {
                 customLabels={customLabels}
                 onEmailLabelsChange={handleEmailLabelsChange}
                 onCreateLabel={handleCreateLabel}
+                onDeleteEmail={handleDeleteEmail}
               />
             </div>
           )}
