@@ -376,6 +376,9 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
               onCreateLabel={onCreateLabel}
             />
             <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+              <span className="text-sm text-gray-600 hover:text-gray-800">Entities</span>
+            </button>
+            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
               <Archive className="w-5 h-5 text-gray-600" />
             </button>
             <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
