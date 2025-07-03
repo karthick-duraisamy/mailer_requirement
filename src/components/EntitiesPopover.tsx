@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, Plane, Ticket, FileText, XCircle, CheckCircle } from 'lucide-react';
 
 interface EntitiesPopoverProps {
   isOpen: boolean;
@@ -94,25 +94,45 @@ const EntitiesPopover: React.FC<EntitiesPopoverProps> = ({
         </div>
 
         {/* Content */}
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <span className="text-sm font-medium text-gray-700">Assigned to:</span>
-            <span className="text-sm text-gray-900">Joel Feldman</span>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Plane className="w-4 h-4 text-blue-600" />
+              <span className="text-sm font-medium text-gray-700">Airline:</span>
+            </div>
+            <span className="text-sm text-gray-900">Delta Airlines</span>
           </div>
           
-          <div className="flex justify-between items-center">
-            <span className="text-sm font-medium text-gray-700">Company:</span>
-            <span className="text-sm text-gray-900">ZXL Construction</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Ticket className="w-4 h-4 text-green-600" />
+              <span className="text-sm font-medium text-gray-700">Ticket Type:</span>
+            </div>
+            <span className="text-sm text-gray-900">Round Trip</span>
           </div>
           
-          <div className="flex justify-between items-center">
-            <span className="text-sm font-medium text-gray-700">Date Initiated:</span>
-            <span className="text-sm text-gray-900">Feb 2, 2021</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <FileText className="w-4 h-4 text-purple-600" />
+              <span className="text-sm font-medium text-gray-700">PNR:</span>
+            </div>
+            <span className="text-sm text-gray-900 font-mono">ABC123XYZ</span>
           </div>
           
-          <div className="flex justify-between items-center">
-            <span className="text-sm font-medium text-gray-700">Due:</span>
-            <span className="text-sm text-gray-900">May 12, 2021</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <XCircle className="w-4 h-4 text-red-600" />
+              <span className="text-sm font-medium text-gray-700">Cancellation:</span>
+            </div>
+            <span className="text-sm text-gray-900">Allowed</span>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <CheckCircle className="w-4 h-4 text-green-600" />
+              <span className="text-sm font-medium text-gray-700">Status:</span>
+            </div>
+            <span className="text-sm text-green-800 bg-green-100 px-2 py-1 rounded-full">Confirmed</span>
           </div>
         </div>
       </div>
