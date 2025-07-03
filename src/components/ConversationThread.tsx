@@ -601,12 +601,16 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
               <span>Forward</span>
             </button>
           </div>
+        </div>
+      </div>
 
-          {/* AI Reply Preview */}
-          {aiReplyState.showAiReply && (
+      {/* AI Reply Preview - Always positioned properly */}
+      {aiReplyState.showAiReply && (
+        <div className="border-t border-gray-200 p-6 bg-gray-50">
+          <div className="max-w-5xl mx-auto">
             <div
               ref={aiReplyRef}
-              className={`bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-4 animate-in slide-in-from-top-2 duration-300 mt-4 transition-all ${
+              className={`bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-4 animate-in slide-in-from-top-2 duration-300 transition-all ${
                 isAiReplyExpanded
                   ? "fixed inset-4 z-50 bg-white shadow-2xl flex flex-col"
                   : ""
@@ -694,9 +698,9 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                 </button>
               </div>
             </div>
-          )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Reply Box */}
       {showReply && (
