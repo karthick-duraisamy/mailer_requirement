@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { Star, Square, CheckSquare, Inbox, Send, FileText, Clock, Tag, Calendar, Megaphone, AlertTriangle, BarChart3, MessageSquare, Mail, MoreHorizontal, ArrowLeftRight } from 'lucide-react';
+import { Star, Square, CheckSquare, Inbox, Send, FileText, Clock, Tag, Calendar, Megaphone, AlertTriangle, BarChart3, MessageSquare, Mail, MoreHorizontal, ArrowLeftRight, Trash2 } from 'lucide-react';
 import { Email, CustomLabel } from '../types/email';
 import EmailLabelActions from './EmailLabelActions';
 
@@ -307,7 +307,7 @@ const EmailList: React.FC<EmailListProps> = ({
                 <Square className="w-4 h-4" />
               )}
             </button>
-            
+
             <div>
               <h2 className="text-lg font-semibold text-gray-900">
                 {getSectionTitle(activeSection)}
@@ -338,7 +338,7 @@ const EmailList: React.FC<EmailListProps> = ({
               >
                 <MoreHorizontal className="w-4 h-4" />
               </button>
-              
+
               {showMoreActions && (
                 <div className="absolute top-full right-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
                   <div className="p-1">
@@ -378,7 +378,7 @@ const EmailList: React.FC<EmailListProps> = ({
                         Select emails to see actions
                       </div>
                     )}
-                    
+
                     {/* Undo Action */}
                     {onUndo && (
                       <>

@@ -14,7 +14,8 @@ import {
   Megaphone,
   HelpCircle,
   Folder,
-  ChevronDown
+  ChevronDown,
+  ChevronRight
 } from 'lucide-react';
 import { Label, CustomLabel } from '../types/email';
 
@@ -43,6 +44,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     { id: 'inbox', label: 'All Conversations', icon: Inbox, count: emailCounts.inbox },
     { id: 'starred', label: 'Starred', icon: Star, count: emailCounts.starred },
     { id: 'snoozed', label: 'Snoozed', icon: Clock, count: emailCounts.snoozed },
+    { id: 'bin', label: 'Bin', icon: Trash2, count: emailCounts.bin },
   ];
 
   // Separate system and custom labels
