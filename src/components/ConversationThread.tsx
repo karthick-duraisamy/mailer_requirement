@@ -117,18 +117,14 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   // Handle click outside for more menu
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        moreMenuRef.current &&
-        !moreMenuRef.current.contains(event.target as Node)
-      ) {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) {
         setShowMoreMenu(false);
       }
     };
 
     if (showMoreMenu) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () =>
-        document.removeEventListener("mousedown", handleClickOutside);
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
     }
   }, [showMoreMenu]);
 
@@ -324,62 +320,61 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
   const handleAddToCalendar = () => {
     if (!email) return;
-
+    
     // Extract meeting details from the email content
     const lastMessage = sortedMessages[sortedMessages.length - 1];
     const content = lastMessage.content;
-
+    
     // Create calendar event details
     const eventTitle = `Meeting: ${email.subject}`;
     const eventDetails = `Original email from: ${lastMessage.sender}\n\n${content}`;
-
+    
     // Try to extract date/time from content (basic pattern matching)
     const datePattern = /(\d{1,2}\/\d{1,2}\/\d{4}|\d{4}-\d{2}-\d{2})/;
     const timePattern = /(\d{1,2}:\d{2}\s*(AM|PM|am|pm))/;
-
+    
     const dateMatch = content.match(datePattern);
     const timeMatch = content.match(timePattern);
-
+    
     let startDate = new Date();
     if (dateMatch) {
       startDate = new Date(dateMatch[0]);
     }
-
+    
     if (timeMatch) {
       // Parse time and set it
       const timeStr = timeMatch[0];
       const [time, meridiem] = timeStr.split(/\s+/);
-      const [hours, minutes] = time.split(":").map(Number);
+      const [hours, minutes] = time.split(':').map(Number);
       let adjustedHours = hours;
-
-      if (meridiem?.toLowerCase() === "pm" && hours !== 12) {
+      
+      if (meridiem?.toLowerCase() === 'pm' && hours !== 12) {
         adjustedHours += 12;
-      } else if (meridiem?.toLowerCase() === "am" && hours === 12) {
+      } else if (meridiem?.toLowerCase() === 'am' && hours === 12) {
         adjustedHours = 0;
       }
-
+      
       startDate.setHours(adjustedHours, minutes, 0, 0);
     }
-
+    
     // Format dates for calendar
     const formatDateForCalendar = (date: Date) => {
-      return date.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+      return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
     };
-
+    
     const startDateTime = formatDateForCalendar(startDate);
     const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // 1 hour later
     const endDateTime = formatDateForCalendar(endDate);
-
+    
     // Create Google Calendar URL
-    const calendarUrl =
-      `https://calendar.google.com/calendar/render?action=TEMPLATE` +
+    const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE` +
       `&text=${encodeURIComponent(eventTitle)}` +
       `&dates=${startDateTime}/${endDateTime}` +
       `&details=${encodeURIComponent(eventDetails)}` +
-      `&location=${encodeURIComponent("To be determined")}`;
-
+      `&location=${encodeURIComponent('To be determined')}`;
+    
     // Open calendar in new tab
-    window.open(calendarUrl, "_blank");
+    window.open(calendarUrl, '_blank');
     setShowMoreMenu(false);
   };
 
@@ -390,28 +385,24 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
   const handleReportSpam = () => {
     if (!email) return;
-
+    
     // Mark email as spam and move to appropriate section
     // In a real app, this would make an API call to mark as spam
     console.log("Reporting spam for email:", email.id);
-
+    
     // Show confirmation
-    if (
-      window.confirm(
-        `Report "${email.subject}" as spam? This conversation will be moved to spam folder.`,
-      )
-    ) {
+    if (window.confirm(`Report "${email.subject}" as spam? This conversation will be moved to spam folder.`)) {
       // TODO: In a real implementation, you would:
       // 1. Call API to mark as spam
       // 2. Move email to spam folder
       // 3. Update email status
-
+      
       alert("Email reported as spam successfully");
-
+      
       // Close the conversation and go back to list
       onClose();
     }
-
+    
     setShowMoreMenu(false);
   };
 
@@ -561,29 +552,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
           </div>
 
           <div className="flex items-center space-x-2 ml-4">
-            {/* Star Button */}
-            {onStarToggle && (
-              <button
-                onClick={handleStarToggle}
-                className={`p-2 rounded-lg transition-all duration-300 ${
-                  email.isStarred
-                    ? "text-yellow-500 hover:text-yellow-600 hover:bg-yellow-50"
-                    : "text-gray-400 hover:text-yellow-500 hover:bg-yellow-50"
-                } ${starAnimation ? "scale-125" : "scale-100"}`}
-                title={
-                  email.isStarred ? "Remove from starred" : "Add to starred"
-                }
-              >
-                <Star
-                  className={`w-5 h-5 transition-all duration-200 ${
-                    email.isStarred
-                      ? "fill-yellow-500 text-yellow-500"
-                      : "text-gray-400"
-                  } ${starAnimation ? "animate-pulse" : ""}`}
-                />
-              </button>
-            )}
-
             <EmailLabelActions
               emailIds={[email.id]}
               currentLabels={email.customLabels || []}
@@ -621,7 +589,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
               )
             )}
             <div className="relative" ref={moreMenuRef}>
-              <button
+              <button 
                 onClick={() => setShowMoreMenu(!showMoreMenu)}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
@@ -638,28 +606,16 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                     }}
                     className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
                   >
-                    <Star
-                      className={`w-4 h-4 ${email.isStarred ? "fill-yellow-400 text-yellow-400" : ""}`}
-                    />
-                    <span>{email.isStarred ? "Remove star" : "Add star"}</span>
+                    <Star className={`w-4 h-4 ${email.isStarred ? 'fill-yellow-400 text-yellow-400' : ''}`} />
+                    <span>{email.isStarred ? 'Remove star' : 'Add star'}</span>
                   </button>
 
                   <button
                     onClick={handleAddToCalendar}
                     className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
                   >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                     <span>Add to calendar</span>
                   </button>
@@ -668,18 +624,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                     onClick={handlePrintEmail}
                     className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
                   >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
-                      />
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                     </svg>
                     <span>Print</span>
                   </button>
@@ -690,18 +636,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                     onClick={handleReportSpam}
                     className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
                   >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z"
-                      />
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z" />
                     </svg>
                     <span>Report spam</span>
                   </button>
@@ -710,18 +646,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                     onClick={handleBlockSender}
                     className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
                   >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L5.636 5.636"
-                      />
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L5.636 5.636" />
                     </svg>
                     <span>Block {email.sender}</span>
                   </button>
