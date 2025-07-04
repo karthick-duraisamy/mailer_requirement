@@ -358,9 +358,7 @@ const EmailList: React.FC<EmailListProps> = ({
             <div>
               <h2 className="text-lg font-semibold text-gray-900">
                 {getSectionTitle(activeSection)}
-                {checkedEmails.size > 0
-                  ? ` (${checkedEmails.size}/${emails.length} selected)`
-                  : ` (${emails.filter(email => !email.isRead).length}/${emails.length})`}
+                {` (${emails.filter(email => !email.isRead).length}/${emails.length})`}
               </h2>
             </div>
           </div>
