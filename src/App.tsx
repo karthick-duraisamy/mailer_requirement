@@ -45,7 +45,7 @@ function App() {
 
     // Basic sections - show unread count
     counts.inbox = emails.filter(email => !email.isRead).length;
-    counts.starred = emails.filter(email => email.isStarred && !email.isRead).length;
+    counts.starred = emails.filter(email => email.isStarred).length;
     counts.snoozed = 0; // Mock data doesn't have snoozed emails
     counts.bin = deletedEmails.length;
 
@@ -360,7 +360,7 @@ function App() {
 
     // If we're currently in the starred section and the email is being unstarred,
     // clear the selection to avoid showing an email that's no longer in this section
-    if (activeItem === 'starred' && email.isStarred) {
+    if (activeItem === 'starred' && email.isStarred && selectedEmail?.id === emailId) {
       setSelectedEmail(null);
     }
   };
