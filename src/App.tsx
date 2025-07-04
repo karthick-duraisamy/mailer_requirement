@@ -39,64 +39,39 @@ function App() {
   const [composePanelOpen, setComposePanelOpen] = useState(false);
   const [lastAction, setLastAction] = useState<any>(null);
 
-  // Calculate email counts for each section
-  const emailCounts = useMemo(() => {
+  // Calculate email counts for sidebar
+  const calculateEmailCounts = () => {
     const counts: Record<string, number> = {};
 
-    // Basic sections - show unread count
-    counts.inbox = emails.filter(email => !email.isRead).length;
-    counts.starred = emails.filter(email => email.isStarred && !email.isRead).length;
+    // Basic sections - show total count for main sections, unread for others
+    counts.inbox = emails.length; // Total emails in inbox
+    counts.starred = emails.filter(email => email.isStarred).length; // Total starred emails
     counts.snoozed = 0; // Mock data doesn't have snoozed emails
-    counts.bin = deletedEmails.length;
+    counts.bin = deletedEmails.length; // Total deleted emails
 
-    // Custom labels - show unread count
+    // Custom labels - show total count of emails with that label
     customLabels.forEach(label => {
       if (label.isSystem) {
-        // System labels
-        let labelEmails: Email[] = [];
-        switch (label.id) {
-          case 'work':
-            labelEmails = emails.filter(email => 
-              email.customLabels?.includes('work') || 
-              email.senderEmail.includes('company.com') ||
-              email.senderEmail.includes('techcorp.com') ||
-              email.senderEmail.includes('consulting.com') ||
-              email.senderEmail.includes('design.studio')
-            );
-            break;
-          case 'personal':
-            labelEmails = emails.filter(email => 
-              email.customLabels?.includes('personal') ||
-              email.subject.toLowerCase().includes('welcome') ||
-              email.senderEmail.includes('startup.io')
-            );
-            break;
-          case 'important':
-            labelEmails = emails.filter(email => 
-              email.customLabels?.includes('important') ||
-              email.subject.toLowerCase().includes('urgent') ||
-              email.subject.toLowerCase().includes('important') ||
-              email.isStarred
-            );
-            break;
-          case 'travel':
-            labelEmails = emails.filter(email => 
-              email.customLabels?.includes('travel')
-            );
-            break;
-        }
-        counts[`label-${label.id}`] = labelEmails.filter(email => !email.isRead).length;
-      } else {
-        // Custom labels
+        // System labels - only count emails that actually have the label assigned
         const labelEmails = emails.filter(email => 
           email.customLabels?.includes(label.id)
         );
-        counts[`custom-label-${label.id}`] = labelEmails.filter(email => !email.isRead).length;
+        counts[`label-${label.id}`] = labelEmails.length;
+      } else {
+        // Custom labels - count emails that have the label assigned
+        const labelEmails = emails.filter(email => 
+          email.customLabels?.includes(label.id)
+        );
+        counts[`custom-label-${label.id}`] = labelEmails.length;
       }
     });
 
     return counts;
-  }, [emails, customLabels]);
+  };
+
+  const emailCounts = useMemo(() => {
+    return calculateEmailCounts();
+  }, [emails, customLabels, deletedEmails]);
 
   // Apply filters and sorting
   const applyFilters = (emailList: Email[]) => {
@@ -322,7 +297,7 @@ function App() {
     filtered = applyFilters(filtered);
 
     return filtered;
-  }, [emails, activeItem, searchQuery, filters, customLabels, conversations]);
+  }, [emails, activeItem, searchQuery, filters, customLabels, conversations, deletedEmails]);
 
   const handleEmailSelect = (email: Email, fullPage: boolean = false) => {
     setSelectedEmail(email);
@@ -485,16 +460,23 @@ function App() {
   };
 
   const handleEmailLabelsChange = (emailIds: string[], labelIds: string[]) => {
-    setEmails(prevEmails =>
-      prevEmails.map(email =>
-        emailIds.includes(email.id)
-          ? { ...email, customLabels: labelIds }
-          : email
-      )
+    setEmails(prevEmails => 
+      prevEmails.map(email => {
+        if (emailIds.includes(email.id)) {
+          return {
+            ...email,
+            customLabels: [...labelIds] // Create a new array to ensure state updates
+          };
+        }
+        return email;
+      })
     );
 
-    // In a real app, you would make an API call here
-    console.log('Updating email labels:', emailIds, labelIds);
+    // Force re-calculation of counts after label changes
+    setTimeout(() => {
+      // This ensures the counts update after the state has been updated
+      setEmails(prevEmails => [...prevEmails]);
+    }, 0);
   };
 
   const handleBulkMarkAsRead = (emailIds: string[], isRead: boolean) => {

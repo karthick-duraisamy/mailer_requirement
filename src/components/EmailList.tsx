@@ -359,8 +359,8 @@ const EmailList: React.FC<EmailListProps> = ({
               <h2 className="text-lg font-semibold text-gray-900">
                 {getSectionTitle(activeSection)}
                 {checkedEmails.size > 0
-                  ? `(${checkedEmails.size}/${emails.length})`
-                  : `(${emails.length})`}
+                  ? ` (${checkedEmails.size}/${emails.length} selected)`
+                  : ` (${emails.filter(email => !email.isRead).length}/${emails.length})`}
               </h2>
             </div>
           </div>
@@ -398,6 +398,8 @@ const EmailList: React.FC<EmailListProps> = ({
                           onClick={() => {
                             onBulkMarkAsRead(checkedEmailsArray, true);
                             setShowMoreActions(false);
+                            // Clear selections after operation
+                            setTimeout(() => onUnselectAll(), 100);
                           }}
                           className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors"
                         >
@@ -407,6 +409,8 @@ const EmailList: React.FC<EmailListProps> = ({
                           onClick={() => {
                             onBulkMarkAsRead(checkedEmailsArray, false);
                             setShowMoreActions(false);
+                            // Clear selections after operation
+                            setTimeout(() => onUnselectAll(), 100);
                           }}
                           className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors"
                         >
@@ -416,6 +420,8 @@ const EmailList: React.FC<EmailListProps> = ({
                           onClick={() => {
                             onBulkDelete(checkedEmailsArray);
                             setShowMoreActions(false);
+                            // Clear selections after operation
+                            setTimeout(() => onUnselectAll(), 100);
                           }}
                           className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded transition-colors"
                         >
