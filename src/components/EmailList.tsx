@@ -1,7 +1,25 @@
-import React, { useState, useRef, useCallback } from 'react';
-import { Star, Square, CheckSquare, Inbox, Send, FileText, Clock, Tag, Calendar, Megaphone, AlertTriangle, BarChart3, MessageSquare, Mail, MoreHorizontal, ArrowLeftRight, Trash2 } from 'lucide-react';
-import { Email, CustomLabel } from '../types/email';
-import EmailLabelActions from './EmailLabelActions';
+import React, { useState, useRef, useCallback } from "react";
+import {
+  Star,
+  Square,
+  CheckSquare,
+  Inbox,
+  Send,
+  FileText,
+  Clock,
+  Tag,
+  Calendar,
+  Megaphone,
+  AlertTriangle,
+  BarChart3,
+  MessageSquare,
+  Mail,
+  MoreHorizontal,
+  ArrowLeftRight,
+  Trash2,
+} from "lucide-react";
+import { Email, CustomLabel } from "../types/email";
+import EmailLabelActions from "./EmailLabelActions";
 
 interface EmailListProps {
   emails: Email[];
@@ -13,7 +31,7 @@ interface EmailListProps {
   activeSection: string;
   customLabels: CustomLabel[];
   onEmailLabelsChange: (emailIds: string[], labelIds: string[]) => void;
-  onCreateLabel: (labelData: Omit<CustomLabel, 'id' | 'createdAt'>) => void;
+  onCreateLabel: (labelData: Omit<CustomLabel, "id" | "createdAt">) => void;
   onBulkMarkAsRead: (emailIds: string[], isRead: boolean) => void;
   onBulkDelete: (emailIds: string[]) => void;
   onBulkRestore?: (emailIds: string[]) => void;
@@ -58,119 +76,135 @@ const EmailList: React.FC<EmailListProps> = ({
     const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
 
     if (diffInHours < 24) {
-      return date.toLocaleTimeString('en-US', { 
-        hour: 'numeric', 
-        minute: '2-digit',
-        hour12: true 
+      return date.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
       });
-    } else if (diffInHours < 168) { // Less than a week
-      return date.toLocaleDateString('en-US', { weekday: 'short' });
+    } else if (diffInHours < 168) {
+      // Less than a week
+      return date.toLocaleDateString("en-US", { weekday: "short" });
     } else {
-      return date.toLocaleDateString('en-US', { 
-        month: 'short', 
-        day: 'numeric' 
+      return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
       });
     }
   };
 
   const getIntentLabel = (intent: string) => {
     switch (intent) {
-      case 'meeting': 
-        return { 
-          text: 'Meeting', 
-          icon: Calendar, 
-          color: 'bg-blue-100 text-blue-800',
-          iconColor: 'text-blue-600'
+      case "meeting":
+        return {
+          text: "Meeting",
+          icon: Calendar,
+          color: "bg-blue-100 text-blue-800",
+          iconColor: "text-blue-600",
         };
-      case 'announcement': 
-        return { 
-          text: 'Announcement', 
-          icon: Megaphone, 
-          color: 'bg-purple-100 text-purple-800',
-          iconColor: 'text-purple-600'
+      case "announcement":
+        return {
+          text: "Announcement",
+          icon: Megaphone,
+          color: "bg-purple-100 text-purple-800",
+          iconColor: "text-purple-600",
         };
-      case 'system': 
-        return { 
-          text: 'System Alert', 
-          icon: AlertTriangle, 
-          color: 'bg-red-100 text-red-800',
-          iconColor: 'text-red-600'
+      case "system":
+        return {
+          text: "System Alert",
+          icon: AlertTriangle,
+          color: "bg-red-100 text-red-800",
+          iconColor: "text-red-600",
         };
-      case 'report': 
-        return { 
-          text: 'Report', 
-          icon: BarChart3, 
-          color: 'bg-green-100 text-green-800',
-          iconColor: 'text-green-600'
+      case "report":
+        return {
+          text: "Report",
+          icon: BarChart3,
+          color: "bg-green-100 text-green-800",
+          iconColor: "text-green-600",
         };
-      case 'feedback': 
-        return { 
-          text: 'Feedback', 
-          icon: MessageSquare, 
-          color: 'bg-orange-100 text-orange-800',
-          iconColor: 'text-orange-600'
+      case "feedback":
+        return {
+          text: "Feedback",
+          icon: MessageSquare,
+          color: "bg-orange-100 text-orange-800",
+          iconColor: "text-orange-600",
         };
-      case 'general': 
-        return { 
-          text: 'General', 
-          icon: Mail, 
-          color: 'bg-gray-100 text-gray-800',
-          iconColor: 'text-gray-600'
+      case "general":
+        return {
+          text: "General",
+          icon: Mail,
+          color: "bg-gray-100 text-gray-800",
+          iconColor: "text-gray-600",
         };
-      case 'new': 
-        return { 
-          text: 'New', 
-          icon: Mail, 
-          color: 'bg-blue-100 text-blue-800',
-          iconColor: 'text-blue-600'
+      case "new":
+        return {
+          text: "New",
+          icon: Mail,
+          color: "bg-blue-100 text-blue-800",
+          iconColor: "text-blue-600",
         };
-      default: 
-        return { 
-          text: 'New', 
-          icon: Mail, 
-          color: 'bg-blue-100 text-blue-800',
-          iconColor: 'text-blue-600'
+      default:
+        return {
+          text: "New",
+          icon: Mail,
+          color: "bg-blue-100 text-blue-800",
+          iconColor: "text-blue-600",
         };
     }
   };
 
   const getSectionTitle = (section: string) => {
     switch (section) {
-      case 'inbox': return 'Inbox';
-      case 'sent': return 'Sent';
-      case 'drafts': return 'Drafts';
-      case 'starred': return 'Starred';
-      case 'snoozed': return 'Snoozed';
-      case 'label-work': return 'Work';
-      case 'label-personal': return 'Personal';
-      case 'label-important': return 'Important';
-      case 'label-travel': return 'Travel';
+      case "inbox":
+        return "Inbox";
+      case "sent":
+        return "Sent";
+      case "drafts":
+        return "Drafts";
+      case "starred":
+        return "Starred";
+      case "snoozed":
+        return "Snoozed";
+      case "label-work":
+        return "Work";
+      case "label-personal":
+        return "Personal";
+      case "label-important":
+        return "Important";
+      case "label-travel":
+        return "Travel";
       default:
         // Handle custom labels
-        if (section.startsWith('custom-label-')) {
-          const labelId = section.replace('custom-label-', '');
-          const label = customLabels.find(l => l.id === labelId);
-          return label?.name || 'Unknown Label';
+        if (section.startsWith("custom-label-")) {
+          const labelId = section.replace("custom-label-", "");
+          const label = customLabels.find((l) => l.id === labelId);
+          return label?.name || "Unknown Label";
         }
-        return 'Inbox';
+        return "Inbox";
     }
   };
 
   const getSectionIcon = (section: string) => {
     switch (section) {
-      case 'inbox': return Inbox;
-      case 'sent': return Send;
-      case 'drafts': return FileText;
-      case 'starred': return Star;
-      case 'snoozed': return Clock;
-      default: return Tag;
+      case "inbox":
+        return Inbox;
+      case "sent":
+        return Send;
+      case "drafts":
+        return FileText;
+      case "starred":
+        return Star;
+      case "snoozed":
+        return Clock;
+      default:
+        return Tag;
     }
   };
 
   const getEmailCustomLabels = (email: Email) => {
     if (!email.customLabels) return [];
     return email.customLabels
-      .map(labelId => customLabels.find(label => label.id === labelId))
+      .map((labelId) => customLabels.find((label) => label.id === labelId))
       .filter(Boolean) as CustomLabel[];
   };
 
@@ -183,16 +217,18 @@ const EmailList: React.FC<EmailListProps> = ({
         <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
           <Icon className="w-10 h-10 text-gray-400" />
         </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">No emails in {title}</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">
+          No emails in {title}
+        </h3>
         <p className="text-gray-500 max-w-sm">
-          {section === 'starred'
-            ? 'Star important conversations to find them quickly here.'
-            : section === 'snoozed'
-            ? 'Snoozed conversations will appear here when it\'s time to deal with them.'
-            : section.startsWith('custom-label-') || section.startsWith('label-')
-            ? `Conversations with the "${title}" label will appear here.`
-            : `No conversations available yet.`
-          }
+          {section === "starred"
+            ? "Star important conversations to find them quickly here."
+            : section === "snoozed"
+              ? "Snoozed conversations will appear here when it's time to deal with them."
+              : section.startsWith("custom-label-") ||
+                  section.startsWith("label-")
+                ? `Conversations with the "${title}" label will appear here.`
+                : `No conversations available yet.`}
         </p>
       </div>
     );
@@ -201,16 +237,19 @@ const EmailList: React.FC<EmailListProps> = ({
   const checkedEmailsArray = Array.from(checkedEmails);
   const hasCheckedEmails = checkedEmailsArray.length > 0;
 
-  const handleResizeStart = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsResizing(true);
-    startXRef.current = e.clientX;
-    startWidthRef.current = width;
+  const handleResizeStart = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      setIsResizing(true);
+      startXRef.current = e.clientX;
+      startWidthRef.current = width;
 
-    // Add cursor style to body to prevent cursor flickering
-    document.body.style.cursor = 'col-resize';
-    document.body.style.userSelect = 'none';
-  }, [width]);
+      // Add cursor style to body to prevent cursor flickering
+      document.body.style.cursor = "col-resize";
+      document.body.style.userSelect = "none";
+    },
+    [width],
+  );
 
   const handleResize = useCallback(
     (e: MouseEvent) => {
@@ -226,47 +265,49 @@ const EmailList: React.FC<EmailListProps> = ({
         setWidth(clampedWidth);
       });
     },
-    [isResizing]
+    [isResizing],
   );
 
   const handleResizeStop = useCallback(() => {
     setIsResizing(false);
     // Reset cursor styles
-    document.body.style.cursor = '';
-    document.body.style.userSelect = '';
+    document.body.style.cursor = "";
+    document.body.style.userSelect = "";
   }, []);
 
   React.useEffect(() => {
     if (isResizing) {
-      document.addEventListener('mousemove', handleResize, { passive: false });
-      document.addEventListener('mouseup', handleResizeStop);
+      document.addEventListener("mousemove", handleResize, { passive: false });
+      document.addEventListener("mouseup", handleResizeStop);
     }
 
     return () => {
-      document.removeEventListener('mousemove', handleResize);
-      document.removeEventListener('mouseup', handleResizeStop);
+      document.removeEventListener("mousemove", handleResize);
+      document.removeEventListener("mouseup", handleResizeStop);
       // Cleanup cursor styles on unmount
-      document.body.style.cursor = '';
-      document.body.style.userSelect = '';
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
     };
   }, [isResizing, handleResize, handleResizeStop]);
 
   if (emails.length === 0) {
     return (
-      <div 
+      <div
         className="bg-white border-r border-gray-200 relative"
         ref={containerRef}
-        style={{ width: `${width}px`, minWidth: '240px', maxWidth: '800px' }}
+        style={{ width: `${width}px`, minWidth: "240px", maxWidth: "800px" }}
       >
-         {/* Resizer */}
-         <div
-            className="absolute top-0 right-0 h-full w-2 cursor-col-resize flex items-center justify-center hover:bg-blue-50 transition-colors group z-10"
-            onMouseDown={handleResizeStart}
-          >
-            <div className="bg-gray-300 group-hover:bg-blue-400 h-6 w-0.5 rounded-full transition-colors" />
-          </div>
+        {/* Resizer */}
+        <div
+          className="absolute top-0 right-0 h-full w-2 cursor-col-resize flex items-center justify-center hover:bg-blue-50 transition-colors group z-10"
+          onMouseDown={handleResizeStart}
+        >
+          <div className="bg-gray-300 group-hover:bg-blue-400 h-6 w-0.5 rounded-full transition-colors" />
+        </div>
         <div className="p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">{getSectionTitle(activeSection)}</h2>
+          <h2 className="text-lg font-semibold text-gray-900">
+            {getSectionTitle(activeSection)}
+          </h2>
         </div>
         <EmptyState section={activeSection} />
       </div>
@@ -274,18 +315,18 @@ const EmailList: React.FC<EmailListProps> = ({
   }
 
   return (
-    <div 
+    <div
       className="bg-white border-r border-gray-200 relative"
       ref={containerRef}
-      style={{ width: `${width}px`, minWidth: '240px', maxWidth: '800px' }}
+      style={{ width: `${width}px`, minWidth: "240px", maxWidth: "800px" }}
     >
-       {/* Resizer */}
-       <div
-          className="absolute top-0 right-0 h-full w-2 cursor-col-resize flex items-center justify-center hover:bg-blue-50 transition-colors group z-10"
-          onMouseDown={handleResizeStart}
-        >
-          <div className="bg-gray-300 group-hover:bg-blue-400 h-6 w-0.5 rounded-full transition-colors" />
-        </div>
+      {/* Resizer */}
+      <div
+        className="absolute top-0 right-0 h-full w-2 cursor-col-resize flex items-center justify-center hover:bg-blue-50 transition-colors group z-10"
+        onMouseDown={handleResizeStart}
+      >
+        <div className="bg-gray-300 group-hover:bg-blue-400 h-6 w-0.5 rounded-full transition-colors" />
+      </div>
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
@@ -299,7 +340,11 @@ const EmailList: React.FC<EmailListProps> = ({
                 }
               }}
               className="text-gray-400 hover:text-gray-600 transition-colors"
-              title={checkedEmails.size === emails.length ? "Unselect all" : "Select all"}
+              title={
+                checkedEmails.size === emails.length
+                  ? "Unselect all"
+                  : "Select all"
+              }
             >
               {checkedEmails.size === emails.length && emails.length > 0 ? (
                 <CheckSquare className="w-4 h-4 text-blue-600" />
@@ -313,7 +358,9 @@ const EmailList: React.FC<EmailListProps> = ({
             <div>
               <h2 className="text-lg font-semibold text-gray-900">
                 {getSectionTitle(activeSection)}
-                {checkedEmails.size > 0 ? `(${checkedEmails.size}/${emails.length})` : `(${emails.length})`}
+                {checkedEmails.size > 0
+                  ? `(${checkedEmails.size}/${emails.length})`
+                  : `(${emails.length})`}
               </h2>
             </div>
           </div>
@@ -333,7 +380,7 @@ const EmailList: React.FC<EmailListProps> = ({
 
             {/* More Actions Menu */}
             <div className="relative">
-              <button 
+              <button
                 onClick={() => setShowMoreActions(!showMoreActions)}
                 className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                 title="More actions"
@@ -415,8 +462,8 @@ const EmailList: React.FC<EmailListProps> = ({
               key={email.id}
               className={`
                 p-4 cursor-pointer transition-colors hover:bg-gray-50
-                ${isSelected ? 'bg-blue-50 border-r-2 border-blue-500' : ''}
-                ${!email.isRead ? 'bg-blue-25' : ''}
+                ${isSelected ? "bg-blue-50 border-r-2 border-blue-500" : ""}
+                ${!email.isRead ? "bg-blue-25" : ""}
               `}
               onClick={() => onEmailSelect(email)}
               onDoubleClick={(e) => handleEmailDoubleClick(email, e)}
@@ -444,32 +491,39 @@ const EmailList: React.FC<EmailListProps> = ({
                   }}
                   className="mt-1 transition-colors"
                 >
-                  <Star 
+                  <Star
                     className={`w-4 h-4 ${
-                      email.isStarred 
-                        ? 'text-yellow-500 fill-yellow-500' 
-                        : 'text-gray-400 hover:text-yellow-500'
-                    }`} 
+                      email.isStarred
+                        ? "text-yellow-500 fill-yellow-500"
+                        : "text-gray-400 hover:text-yellow-500"
+                    }`}
                   />
                 </button>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2 min-w-0">
-                      <p className={`
+                      <p
+                        className={`
                         text-sm truncate
-                        ${!email.isRead ? 'font-bold text-black' : 'font-normal text-gray-500'}
-                      `}>
+                        ${!email.isRead ? "font-bold text-black" : "font-normal text-gray-500"}
+                      `}
+                      >
                         {email.sender}
                       </p>
                       {email.intentLabel && (
-                        <div className={`
+                        <div
+                          className={`
                           inline-flex items-center px-2 py-1 rounded-full text-xs font-medium flex-shrink-0
                           ${getIntentLabel(email.intentLabel).color}
-                        `}>
-                          {React.createElement(getIntentLabel(email.intentLabel).icon, {
-                            className: `w-3 h-3 mr-1 ${getIntentLabel(email.intentLabel).iconColor}`
-                          })}
+                        `}
+                        >
+                          {React.createElement(
+                            getIntentLabel(email.intentLabel).icon,
+                            {
+                              className: `w-3 h-3 mr-1 ${getIntentLabel(email.intentLabel).iconColor}`,
+                            },
+                          )}
                           {getIntentLabel(email.intentLabel).text}
                         </div>
                       )}
@@ -479,17 +533,21 @@ const EmailList: React.FC<EmailListProps> = ({
                     </p>
                   </div>
 
-                  <p className={`
+                  <p
+                    className={`
                     text-sm mt-1 truncate
-                    ${!email.isRead ? 'font-bold text-black' : 'font-normal text-gray-500'}
-                  `}>
+                    ${!email.isRead ? "font-bold text-black" : "font-normal text-gray-500"}
+                  `}
+                  >
                     {email.subject}
                   </p>
 
-                  <p className={`
+                  <p
+                    className={`
                     text-sm mt-1 truncate
-                    ${!email.isRead ? 'text-gray-700 font-medium' : 'text-gray-400'}
-                  `}>
+                    ${!email.isRead ? "text-gray-700 font-medium" : "text-gray-400"}
+                  `}
+                  >
                     {email.preview}
                   </p>
 
