@@ -357,6 +357,12 @@ function App() {
         email.id === emailId ? { ...email, isStarred: !email.isStarred } : email
       )
     );
+
+    // If we're currently in the starred section and the email is being unstarred,
+    // clear the selection to avoid showing an email that's no longer in this section
+    if (activeItem === 'starred' && email.isStarred) {
+      setSelectedEmail(null);
+    }
   };
 
   const handleCheckToggle = (emailId: string) => {
@@ -765,6 +771,7 @@ function App() {
               onCreateLabel={handleCreateLabel}
               onDeleteEmail={handleDeleteEmail}
               onRestoreEmail={handleRestoreEmail}
+              onStarToggle={handleStarToggle}
               activeSection={activeItem}
             />
           ) : (
@@ -801,6 +808,7 @@ function App() {
                 onCreateLabel={handleCreateLabel}
                 onDeleteEmail={handleDeleteEmail}
                 onRestoreEmail={handleRestoreEmail}
+                onStarToggle={handleStarToggle}
                 activeSection={activeItem}
               />
             </div>

@@ -47,6 +47,7 @@ interface ConversationThreadProps {
   onCreateLabel: (labelData: Omit<CustomLabel, "id" | "createdAt">) => void;
   onDeleteEmail?: (emailId: string) => void;
   onRestoreEmail?: (emailId: string) => void;
+  onStarToggle?: (emailId: string) => void;
   activeSection?: string;
 }
 
@@ -63,6 +64,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   onCreateLabel,
   onDeleteEmail,
   onRestoreEmail,
+  onStarToggle,
   activeSection,
 }) => {
   const [replyText, setReplyText] = useState("");
@@ -442,7 +444,11 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
             {/* <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
               <Archive className="w-5 h-5 text-gray-600" />
             </button> */}
-            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+            <button 
+              onClick={() => onStarToggle?.(email.id)}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              title={email.isStarred ? "Unstar conversation" : "Star conversation"}
+            >
               <Star
                 className={`w-5 h-5 ${email.isStarred ? "text-yellow-500 fill-yellow-500" : "text-gray-600"}`}
               />
