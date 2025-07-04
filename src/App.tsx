@@ -50,7 +50,7 @@ function App() {
   const [composePanelOpen, setComposePanelOpen] = useState(false);
   const [lastAction, setLastAction] = useState<any>(null);
 
-  // Calculate email counts for each section
+  // Calculate email counts for each section with improved logic
   const emailCounts = useMemo(() => {
     const counts: Record<string, number> = {};
 
@@ -60,54 +60,28 @@ function App() {
     counts.snoozed = 0; // Mock data doesn't have snoozed emails
     counts.bin = deletedEmails.length;
 
-    // Custom labels - show unread count
+    // Helper function to get emails with specific label
+    const getEmailsWithLabel = (labelId: string, isSystem: boolean = false): Email[] => {
+      return emails.filter(email => {
+        if (!email.customLabels) return false;
+        return email.customLabels.includes(labelId);
+      });
+    };
+
+    // System labels - count all emails with that label (unread only)
     customLabels.forEach(label => {
       if (label.isSystem) {
-        // System labels
-        let labelEmails: Email[] = [];
-        switch (label.id) {
-          case 'work':
-            labelEmails = emails.filter(email => 
-              email.customLabels?.includes('work') || 
-              email.senderEmail.includes('company.com') ||
-              email.senderEmail.includes('techcorp.com') ||
-              email.senderEmail.includes('consulting.com') ||
-              email.senderEmail.includes('design.studio')
-            );
-            break;
-          case 'personal':
-            labelEmails = emails.filter(email => 
-              email.customLabels?.includes('personal') ||
-              email.subject.toLowerCase().includes('welcome') ||
-              email.senderEmail.includes('startup.io')
-            );
-            break;
-          case 'important':
-            labelEmails = emails.filter(email => 
-              email.customLabels?.includes('important') ||
-              email.subject.toLowerCase().includes('urgent') ||
-              email.subject.toLowerCase().includes('important') ||
-              email.isStarred
-            );
-            break;
-          case 'travel':
-            labelEmails = emails.filter(email => 
-              email.customLabels?.includes('travel')
-            );
-            break;
-        }
+        const labelEmails = getEmailsWithLabel(label.id, true);
         counts[`label-${label.id}`] = labelEmails.filter(email => !email.isRead).length;
       } else {
-        // Custom labels
-        const labelEmails = emails.filter(email => 
-          email.customLabels?.includes(label.id)
-        );
+        // Custom labels - count all emails with that label (unread only)
+        const labelEmails = getEmailsWithLabel(label.id, false);
         counts[`custom-label-${label.id}`] = labelEmails.filter(email => !email.isRead).length;
       }
     });
 
     return counts;
-  }, [emails, customLabels]);
+  }, [emails, customLabels, deletedEmails]);
 
   // Apply filters and sorting
   const applyFilters = (emailList: Email[]) => {
@@ -247,7 +221,7 @@ function App() {
     }).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
   }, [emails]);
 
-  // Filtering logic
+  // Filtering logic with improved label filtering
   const filteredEmails = useMemo(() => {
     let filtered = conversations;
 
@@ -270,39 +244,14 @@ function App() {
           messages: email.messages || []
         }));
         break;
-      case 'label-work':
-        filtered = conversations.filter(email => 
-          email.customLabels?.includes('work') ||
-          email.subject.toLowerCase().includes('project') ||
-          email.subject.toLowerCase().includes('meeting') ||
-          email.subject.toLowerCase().includes('campaign') ||
-          email.senderEmail.includes('company.com') ||
-          email.senderEmail.includes('techcorp.com')
-        );
-        break;
-      case 'label-personal':
-        filtered = conversations.filter(email => 
-          email.customLabels?.includes('personal') ||
-          email.subject.toLowerCase().includes('welcome') ||
-          email.senderEmail.includes('startup.io')
-        );
-        break;
-      case 'label-important':
-        filtered = conversations.filter(email => 
-          email.customLabels?.includes('important') ||
-          email.subject.toLowerCase().includes('urgent') ||
-          email.subject.toLowerCase().includes('important') ||
-          email.isStarred
-        );
-        break;
-      case 'label-travel':
-        filtered = conversations.filter(email => 
-          email.customLabels?.includes('travel')
-        );
-        break;
       default:
-        // Handle custom labels
-        if (activeItem.startsWith('custom-label-')) {
+        // Handle system and custom labels
+        if (activeItem.startsWith('label-')) {
+          const labelId = activeItem.replace('label-', '');
+          filtered = conversations.filter(email => 
+            email.customLabels?.includes(labelId)
+          );
+        } else if (activeItem.startsWith('custom-label-')) {
           const labelId = activeItem.replace('custom-label-', '');
           filtered = conversations.filter(email => 
             email.customLabels?.includes(labelId)
@@ -491,6 +440,17 @@ function App() {
   };
 
   const handleEmailLabelsChange = (emailIds: string[], labelIds: string[]) => {
+    // Store previous state for undo
+    const previousState = emails
+      .filter(email => emailIds.includes(email.id))
+      .map(email => ({ id: email.id, customLabels: email.customLabels || [] }));
+
+    setLastAction({
+      type: 'labelChange',
+      emailIds,
+      previousState,
+    });
+
     setEmails(prevEmails =>
       prevEmails.map(email =>
         emailIds.includes(email.id)
@@ -498,6 +458,9 @@ function App() {
           : email
       )
     );
+
+    // Clear checked emails after action
+    setCheckedEmails(new Set());
 
     // In a real app, you would make an API call here
     console.log('Updating email labels:', emailIds, labelIds);
@@ -640,6 +603,15 @@ function App() {
           prevEmails.map(email => {
             const prevState = lastAction.previousState.find((state: any) => state.id === email.id);
             return prevState ? { ...email, isStarred: prevState.isStarred } : email;
+          })
+        );
+        break;
+
+      case 'labelChange':
+        setEmails(prevEmails =>
+          prevEmails.map(email => {
+            const prevState = lastAction.previousState.find((state: any) => state.id === email.id);
+            return prevState ? { ...email, customLabels: prevState.customLabels } : email;
           })
         );
         break;
