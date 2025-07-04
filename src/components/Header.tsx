@@ -1,6 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, Settings, Menu, User, Bell, LogOut, UserCircle } from 'lucide-react';
 import EmailFilters, { FilterOptions } from './EmailFilters';
+import NotificationPreferences from './NotificationPreferences';
+import SignatureSetup from './SignatureSetup';
+import EmailDisplayOptions from './EmailDisplayOptions';
+import GeneralSettings from './GeneralSettings';
 
 interface HeaderProps {
   onMenuToggle: () => void;
@@ -13,6 +17,10 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, onSearch, onFiltersChange
   const [searchQuery, setSearchQuery] = useState('');
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [showNotificationPreferences, setShowNotificationPreferences] = useState(false);
+  const [showSignatureSetup, setShowSignatureSetup] = useState(false);
+  const [showEmailDisplayOptions, setShowEmailDisplayOptions] = useState(false);
+  const [showGeneralSettings, setShowGeneralSettings] = useState(false);
   const settingsRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
 
@@ -51,6 +59,26 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, onSearch, onFiltersChange
       dateRange: { from: '', to: '' },
       intent: 'all',
     });
+  };
+
+  const handleOpenNotificationPreferences = () => {
+    setShowNotificationPreferences(true);
+    setShowSettingsDropdown(false);
+  };
+
+  const handleOpenSignatureSetup = () => {
+    setShowSignatureSetup(true);
+    setShowSettingsDropdown(false);
+  };
+
+  const handleOpenEmailDisplayOptions = () => {
+    setShowEmailDisplayOptions(true);
+    setShowSettingsDropdown(false);
+  };
+
+  const handleOpenGeneralSettings = () => {
+    setShowGeneralSettings(true);
+    setShowSettingsDropdown(false);
   };
 
   return (
@@ -107,22 +135,34 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, onSearch, onFiltersChange
                 <h3 className="font-semibold text-gray-900">Settings</h3>
               </div>
 
-              <button className="w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors flex items-center space-x-3">
+              <button 
+                onClick={handleOpenNotificationPreferences}
+                className="w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors flex items-center space-x-3"
+              >
                 <Bell className="w-4 h-4 text-gray-500" />
                 <span className="text-gray-700">Notification Preferences</span>
               </button>
 
-              <button className="w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors flex items-center space-x-3">
+              <button 
+                onClick={handleOpenSignatureSetup}
+                className="w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors flex items-center space-x-3"
+              >
                 <UserCircle className="w-4 h-4 text-gray-500" />
                 <span className="text-gray-700">Signature Setup</span>
               </button>
 
-              <button className="w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors flex items-center space-x-3">
+              <button 
+                onClick={handleOpenEmailDisplayOptions}
+                className="w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors flex items-center space-x-3"
+              >
                 <Settings className="w-4 h-4 text-gray-500" />
                 <span className="text-gray-700">Email Display Options</span>
               </button>
 
-              <button className="w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors flex items-center space-x-3">
+              <button 
+                onClick={handleOpenGeneralSettings}
+                className="w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors flex items-center space-x-3"
+              >
                 <Settings className="w-4 h-4 text-gray-500" />
                 <span className="text-gray-700">General Settings</span>
               </button>
@@ -162,6 +202,27 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, onSearch, onFiltersChange
           )}
         </div>
       </div>
+
+      {/* Settings Modals */}
+      <NotificationPreferences
+        isOpen={showNotificationPreferences}
+        onClose={() => setShowNotificationPreferences(false)}
+      />
+      
+      <SignatureSetup
+        isOpen={showSignatureSetup}
+        onClose={() => setShowSignatureSetup(false)}
+      />
+      
+      <EmailDisplayOptions
+        isOpen={showEmailDisplayOptions}
+        onClose={() => setShowEmailDisplayOptions(false)}
+      />
+      
+      <GeneralSettings
+        isOpen={showGeneralSettings}
+        onClose={() => setShowGeneralSettings(false)}
+      />
     </header>
   );
 };
