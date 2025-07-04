@@ -358,9 +358,14 @@ function App() {
       )
     );
 
+    // Update selected email if it's the one being starred/unstarred
+    if (selectedEmail?.id === emailId) {
+      setSelectedEmail(prev => prev ? { ...prev, isStarred: !prev.isStarred } : null);
+    }
+
     // If we're currently in the starred section and the email is being unstarred,
     // clear the selection to avoid showing an email that's no longer in this section
-    if (activeItem === 'starred' && !email.isStarred && selectedEmail?.id === emailId) {
+    if (activeItem === 'starred' && email.isStarred && selectedEmail?.id === emailId) {
       setSelectedEmail(null);
     }
   };
