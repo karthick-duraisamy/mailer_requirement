@@ -134,17 +134,16 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
     setEmails: (emails: string[]) => void,
     setInput: (value: string) => void
   ) => {
-    if (value.includes(',') || value.includes(';') || value.includes(' ')) {
-      const newEmails = value
-        .split(/[,;\s]+/)
-        .map(email => email.trim())
-        .filter(email => email.length > 0);
-      
-      const validEmails = newEmails.filter(email => validateEmail(email));
-      const uniqueEmails = [...new Set([...currentEmails, ...validEmails])];
-      
-      setEmails(uniqueEmails);
-      setInput('');
+    // Only process email separation when user explicitly adds separators at the end
+    if (value.endsWith(',') || value.endsWith(';')) {
+      const emailToAdd = value.slice(0, -1).trim();
+      if (emailToAdd && validateEmail(emailToAdd)) {
+        const uniqueEmails = [...new Set([...currentEmails, emailToAdd])];
+        setEmails(uniqueEmails);
+        setInput('');
+      } else {
+        setInput(value);
+      }
     } else {
       setInput(value);
     }
@@ -617,7 +616,7 @@ Best regards`
                     value={toInput}
                     onChange={(e) => handleEmailInput(e.target.value, to, setTo, setToInput)}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === 'Tab') {
+                      if (e.key === 'Enter') {
                         e.preventDefault();
                         if (toInput.trim() && validateEmail(toInput.trim())) {
                           setTo([...to, toInput.trim()]);
@@ -677,7 +676,7 @@ Best regards`
                     value={ccInput}
                     onChange={(e) => handleEmailInput(e.target.value, cc, setCc, setCcInput)}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === 'Tab') {
+                      if (e.key === 'Enter') {
                         e.preventDefault();
                         if (ccInput.trim() && validateEmail(ccInput.trim())) {
                           setCc([...cc, ccInput.trim()]);
@@ -719,7 +718,7 @@ Best regards`
                     value={bccInput}
                     onChange={(e) => handleEmailInput(e.target.value, bcc, setBcc, setBccInput)}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === 'Tab') {
+                      if (e.key === 'Enter') {
                         e.preventDefault();
                         if (bccInput.trim() && validateEmail(bccInput.trim())) {
                           setBcc([...bcc, bccInput.trim()]);
