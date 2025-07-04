@@ -74,6 +74,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   );
   const [isAiReplyExpanded, setIsAiReplyExpanded] = useState(false);
   const [showEntitiesPopover, setShowEntitiesPopover] = useState(false);
+  const [starAnimation, setStarAnimation] = useState(false);
 
   // Refs for auto-scrolling
   const aiReplyRef = useRef<HTMLDivElement>(null);
@@ -302,6 +303,17 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     }
   };
 
+  const handleStarToggle = () => {
+    if (email && onStarToggle) {
+      // Trigger animation
+      setStarAnimation(true);
+      setTimeout(() => setStarAnimation(false), 300);
+      
+      // Call the star toggle function
+      onStarToggle(email.id);
+    }
+  };
+
   const toggleMessageExpansion = (messageId: string) => {
     setExpandedMessages((prev) => {
       const newSet = new Set(prev);
@@ -442,6 +454,27 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
           </div>
 
           <div className="flex items-center space-x-2 ml-4">
+            {/* Star Button */}
+            {onStarToggle && (
+              <button
+                onClick={handleStarToggle}
+                className={`p-2 rounded-lg transition-all duration-300 ${
+                  email.isStarred 
+                    ? 'text-yellow-500 hover:text-yellow-600 hover:bg-yellow-50' 
+                    : 'text-gray-400 hover:text-yellow-500 hover:bg-yellow-50'
+                } ${starAnimation ? 'scale-125' : 'scale-100'}`}
+                title={email.isStarred ? "Remove from starred" : "Add to starred"}
+              >
+                <Star 
+                  className={`w-5 h-5 transition-all duration-200 ${
+                    email.isStarred 
+                      ? 'fill-yellow-500 text-yellow-500' 
+                      : 'text-gray-400'
+                  } ${starAnimation ? 'animate-pulse' : ''}`} 
+                />
+              </button>
+            )}
+
             <EmailLabelActions
               emailIds={[email.id]}
               currentLabels={email.customLabels || []}

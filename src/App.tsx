@@ -318,9 +318,16 @@ function App() {
       )
     );
 
+    // Update selected email if it's the one being starred
+    if (selectedEmail && selectedEmail.id === emailId) {
+      setSelectedEmail(prevEmail => 
+        prevEmail ? { ...prevEmail, isStarred: !prevEmail.isStarred } : null
+      );
+    }
+
     // If we're currently in the starred section and the email is being unstarred,
     // clear the selection to avoid showing an email that's no longer in this section
-    if (activeItem === 'starred' && !email.isStarred && selectedEmail?.id === emailId) {
+    if (activeItem === 'starred' && email.isStarred && selectedEmail?.id === emailId) {
       setSelectedEmail(null);
     }
   };
@@ -755,6 +762,7 @@ function App() {
               onDeleteEmail={handleDeleteEmail}
               onRestoreEmail={handleRestoreEmail}
               activeSection={activeItem}
+              onStarToggle={handleStarToggle}
             />
           ) : (
             <div className="flex flex-1 h-full">
@@ -791,6 +799,7 @@ function App() {
                 onDeleteEmail={handleDeleteEmail}
                 onRestoreEmail={handleRestoreEmail}
                 activeSection={activeItem}
+                onStarToggle={handleStarToggle}
               />
             </div>
           )}
