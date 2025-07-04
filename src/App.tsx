@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import EmailList from './components/EmailList';
@@ -9,17 +9,28 @@ import { Email, CustomLabel } from './types/email';
 import { mockEmails } from './data/mockEmails';
 import { mockCustomLabels } from './data/mockLabels';
 import { FilterOptions } from './components/EmailFilters';
+import { useLazyGetMailListResponseQuery } from './service/inboxService';
 
 function App() {
   const [activeItem, setActiveItem] = useState('inbox');
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [getMailList, getMailListResponse] = useLazyGetMailListResponseQuery();
   const [emails, setEmails] = useState<Email[]>(
     mockEmails.map(email => ({
       ...email,
       intentLabel: email.intentLabel || 'new'
     }))
   );
+
+  useEffect(() => {
+    getMailList({});
+  }, [])
+
+  useEffect(() => {
+    console.log(getMailListResponse);
+  }, [getMailListResponse])
+
   const [deletedEmails, setDeletedEmails] = useState<Email[]>([]);
   const [customLabels, setCustomLabels] = useState<CustomLabel[]>(mockCustomLabels);
   const [checkedEmails, setCheckedEmails] = useState<Set<string>>(new Set());
