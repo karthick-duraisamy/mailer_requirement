@@ -443,7 +443,6 @@ const EmailList: React.FC<EmailListProps> = ({
                     onStarToggle(email.id);
                   }}
                   className="mt-1 transition-colors"
-                  title={email.isStarred ? "Unstar email" : "Star email"}
                 >
                   <Star 
                     className={`w-4 h-4 ${
