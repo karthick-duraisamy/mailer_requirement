@@ -450,7 +450,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
               title={email.isStarred ? "Unstar conversation" : "Star conversation"}
             >
               <Star
-                className={`w-5 h-5 ${email.isStarred ? "text-yellow-500 fill-yellow-500" : "text-gray-600"}`}
+                className={`w-5 h-5 ${email.isStarred ? "text-yellow-500 fill-yellow-500" : "text-gray-600 hover:text-yellow-500"}`}
               />
             </button>
             {activeSection === "bin" && onRestoreEmail ? (
