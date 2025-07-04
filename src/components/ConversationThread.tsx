@@ -74,12 +74,14 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   );
   const [isAiReplyExpanded, setIsAiReplyExpanded] = useState(false);
   const [showEntitiesPopover, setShowEntitiesPopover] = useState(false);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
 
   // Refs for auto-scrolling
   const aiReplyRef = useRef<HTMLDivElement>(null);
   const replyBoxRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const entitiesButtonRef = useRef<HTMLButtonElement>(null);
+  const entitiesButtonRef = useRef<HTMLButtonButton>(null);
+  const moreMenuRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to AI reply when it becomes available
   useEffect(() => {
@@ -111,6 +113,20 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       }, 100);
     }
   }, [showReply, replyText, aiReplyState.generatedReply]);
+
+  // Handle click outside for more menu
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) {
+        setShowMoreMenu(false);
+      }
+    };
+
+    if (showMoreMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showMoreMenu]);
 
   if (!email) {
     return (
@@ -302,6 +318,35 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     }
   };
 
+  const handleMarkAsUnread = () => {
+    // TODO: Implement mark as unread functionality
+    console.log("Mark as unread:", email?.id);
+    setShowMoreMenu(false);
+  };
+
+  const handleAddToCalendar = () => {
+    // TODO: Implement add to calendar functionality
+    console.log("Add to calendar:", email?.id);
+    setShowMoreMenu(false);
+  };
+
+  const handlePrintEmail = () => {
+    window.print();
+    setShowMoreMenu(false);
+  };
+
+  const handleReportSpam = () => {
+    // TODO: Implement report spam functionality
+    console.log("Report spam:", email?.id);
+    setShowMoreMenu(false);
+  };
+
+  const handleBlockSender = () => {
+    // TODO: Implement block sender functionality
+    console.log("Block sender:", email?.senderEmail);
+    setShowMoreMenu(false);
+  };
+
   const toggleMessageExpansion = (messageId: string) => {
     setExpandedMessages((prev) => {
       const newSet = new Set(prev);
@@ -478,9 +523,80 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                 </button>
               )
             )}
-            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-              <MoreHorizontal className="w-5 h-5 text-gray-600" />
-            </button>
+            <div className="relative" ref={moreMenuRef}>
+              <button 
+                onClick={() => setShowMoreMenu(!showMoreMenu)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <MoreHorizontal className="w-5 h-5 text-gray-600" />
+              </button>
+
+              {/* More Menu Dropdown */}
+              {showMoreMenu && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+                  <button
+                    onClick={() => {
+                      if (onStarToggle) onStarToggle(email.id);
+                      setShowMoreMenu(false);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
+                  >
+                    <Star className={`w-4 h-4 ${email.isStarred ? 'fill-yellow-400 text-yellow-400' : ''}`} />
+                    <span>{email.isStarred ? 'Remove star' : 'Add star'}</span>
+                  </button>
+                  
+                  <button
+                    onClick={handleMarkAsUnread}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
+                  >
+                    <div className="w-4 h-4 rounded-full border-2 border-blue-500"></div>
+                    <span>Mark as unread</span>
+                  </button>
+
+                  <button
+                    onClick={handleAddToCalendar}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>Add to calendar</span>
+                  </button>
+
+                  <button
+                    onClick={handlePrintEmail}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                    </svg>
+                    <span>Print</span>
+                  </button>
+
+                  <div className="border-t border-gray-100 my-1"></div>
+
+                  <button
+                    onClick={handleReportSpam}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                    <span>Report spam</span>
+                  </button>
+
+                  <button
+                    onClick={handleBlockSender}
+                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L5.636 5.636" />
+                    </svg>
+                    <span>Block {email.sender}</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
