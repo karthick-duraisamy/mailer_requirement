@@ -43,16 +43,16 @@ function App() {
   const calculateEmailCounts = () => {
     const counts: Record<string, number> = {};
 
-    // Basic sections
-    counts.inbox = emails.length; // Total emails in inbox
-    counts.starred = emails.filter(email => email.isStarred).length; // Total starred emails
+    // Basic sections - only count unread emails
+    counts.inbox = emails.filter(email => !email.isRead).length; // Unread emails in inbox
+    counts.starred = emails.filter(email => email.isStarred && !email.isRead).length; // Unread starred emails
     counts.snoozed = 0; // Mock data doesn't have snoozed emails
-    counts.bin = deletedEmails.length; // Total deleted emails
+    counts.bin = deletedEmails.filter(email => !email.isRead).length; // Unread deleted emails
 
-    // Label counts - only count emails that explicitly have the label assigned
+    // Label counts - only count unread emails that explicitly have the label assigned
     customLabels.forEach(label => {
       const labelEmails = emails.filter(email => 
-        email.customLabels?.includes(label.id)
+        email.customLabels?.includes(label.id) && !email.isRead
       );
       
       if (label.isSystem) {
