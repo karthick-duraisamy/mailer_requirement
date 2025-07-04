@@ -7,9 +7,28 @@ interface HeaderProps {
   onSearch: (query: string) => void;
   onFiltersChange: (filters: FilterOptions) => void;
   filters: FilterOptions;
+  checkedEmails?: Set<string>;
+  onBulkMarkAsRead?: (emailIds: string[], isRead: boolean) => void;
+  onBulkDelete?: (emailIds: string[]) => void;
+  onSelectAll?: () => void;
+  onUnselectAll?: () => void;
+  onUndo?: () => void;
+  hasSelection?: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ onMenuToggle, onSearch, onFiltersChange, filters }) => {
+const Header: React.FC<HeaderProps> = ({ 
+  onMenuToggle, 
+  onSearch, 
+  onFiltersChange, 
+  filters,
+  checkedEmails,
+  onBulkMarkAsRead,
+  onBulkDelete,
+  onSelectAll,
+  onUnselectAll,
+  onUndo,
+  hasSelection
+}) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);

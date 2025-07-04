@@ -141,6 +141,7 @@ const EmailList: React.FC<EmailListProps> = ({
       case 'drafts': return 'Drafts';
       case 'starred': return 'Starred';
       case 'snoozed': return 'Snoozed';
+      case 'bin': return 'Bin';
       case 'label-work': return 'Work';
       case 'label-personal': return 'Personal';
       case 'label-important': return 'Important';
@@ -163,6 +164,7 @@ const EmailList: React.FC<EmailListProps> = ({
       case 'drafts': return FileText;
       case 'starred': return Star;
       case 'snoozed': return Clock;
+      case 'bin': return Trash2;
       default: return Tag;
     }
   };
@@ -189,6 +191,8 @@ const EmailList: React.FC<EmailListProps> = ({
             ? 'Star important conversations to find them quickly here.'
             : section === 'snoozed'
             ? 'Snoozed conversations will appear here when it\'s time to deal with them.'
+            : section === 'bin'
+            ? 'Deleted conversations will appear here.'
             : section.startsWith('custom-label-') || section.startsWith('label-')
             ? `Conversations with the "${title}" label will appear here.`
             : `No conversations available yet.`
@@ -200,6 +204,20 @@ const EmailList: React.FC<EmailListProps> = ({
 
   const checkedEmailsArray = Array.from(checkedEmails);
   const hasCheckedEmails = checkedEmailsArray.length > 0;
+
+  // Calculate display counts for header
+  const getHeaderCount = () => {
+    const totalEmails = emails.length;
+    const unreadEmails = emails.filter(email => !email.isRead).length;
+    
+    // For sections that show unread count in sidebar, show (total) format
+    if (activeSection === 'inbox' || activeSection.startsWith('label-') || activeSection.startsWith('custom-label-')) {
+      return `(${totalEmails})`;
+    }
+    
+    // For other sections, show total count
+    return `(${totalEmails})`;
+  };
 
   const handleResizeStart = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -266,7 +284,9 @@ const EmailList: React.FC<EmailListProps> = ({
             <div className="bg-gray-300 group-hover:bg-blue-400 h-6 w-0.5 rounded-full transition-colors" />
           </div>
         <div className="p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">{getSectionTitle(activeSection)}</h2>
+          <h2 className="text-lg font-semibold text-gray-900">
+            {getSectionTitle(activeSection)}{getHeaderCount()}
+          </h2>
         </div>
         <EmptyState section={activeSection} />
       </div>
@@ -313,7 +333,7 @@ const EmailList: React.FC<EmailListProps> = ({
             <div>
               <h2 className="text-lg font-semibold text-gray-900">
                 {getSectionTitle(activeSection)}
-                {checkedEmails.size > 0 ? `(${checkedEmails.size}/${emails.length})` : `(${emails.length})`}
+                {hasCheckedEmails ? `(${checkedEmails.size}/${emails.length})` : getHeaderCount()}
               </h2>
             </div>
           </div>
@@ -365,15 +385,27 @@ const EmailList: React.FC<EmailListProps> = ({
                         >
                           Mark as Unread
                         </button>
-                        <button
-                          onClick={() => {
-                            onBulkDelete(checkedEmailsArray);
-                            setShowMoreActions(false);
-                          }}
-                          className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded transition-colors"
-                        >
-                          Delete
-                        </button>
+                        {activeSection === 'bin' && onBulkRestore ? (
+                          <button
+                            onClick={() => {
+                              onBulkRestore(checkedEmailsArray);
+                              setShowMoreActions(false);
+                            }}
+                            className="w-full text-left px-3 py-2 text-sm text-green-600 hover:bg-green-50 rounded transition-colors"
+                          >
+                            Restore
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => {
+                              onBulkDelete(checkedEmailsArray);
+                              setShowMoreActions(false);
+                            }}
+                            className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded transition-colors"
+                          >
+                            Delete
+                          </button>
+                        )}
                       </>
                     ) : (
                       <div className="px-3 py-2 text-sm text-gray-500">
