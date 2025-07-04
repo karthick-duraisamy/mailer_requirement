@@ -145,15 +145,21 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   const handleSendReply = () => {
     if (replyText.trim()) {
       // Determine reply type based on whether AI was used
-      let replyType: 'manual' | 'ai' | 'partial-ai' = 'manual';
-      if (replyText === aiReplyState.generatedReply && aiReplyState.generatedReply) {
-        replyType = 'ai';
-      } else if (aiReplyState.generatedReply && replyText.includes(aiReplyState.generatedReply)) {
-        replyType = 'partial-ai';
+      let replyType: "manual" | "ai" | "partial-ai" = "manual";
+      if (
+        replyText === aiReplyState.generatedReply &&
+        aiReplyState.generatedReply
+      ) {
+        replyType = "ai";
+      } else if (
+        aiReplyState.generatedReply &&
+        replyText.includes(aiReplyState.generatedReply)
+      ) {
+        replyType = "partial-ai";
       }
 
       // Handle reply logic here - would typically save the message with replyType
-      console.log('Reply sent with type:', replyType);
+      console.log("Reply sent with type:", replyType);
 
       setReplyText("");
       setShowReply(false);
@@ -315,37 +321,49 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       .filter(Boolean) as CustomLabel[];
   };
 
-  const ReplyTypeLabel = ({ replyType }: { replyType?: 'manual' | 'ai' | 'partial-ai' }) => {
+  const ReplyTypeLabel = ({
+    replyType,
+  }: {
+    replyType?: "manual" | "ai" | "partial-ai";
+  }) => {
     if (!replyType) return null;
 
     const config = {
       manual: {
         icon: User,
-        label: 'Replied Manually',
-        bgColor: 'bg-blue-50',
-        textColor: 'text-blue-700',
-        borderColor: 'border-blue-200',
+        label: "Replied Manually",
+        bgColor: "bg-blue-50",
+        textColor: "text-blue-700",
+        borderColor: "border-blue-200",
       },
       ai: {
         icon: Bot,
-        label: 'Replied by AI',
-        bgColor: 'bg-purple-50',
-        textColor: 'text-purple-700',
-        borderColor: 'border-purple-200',
+        label: "Replied by AI",
+        bgColor: "bg-purple-50",
+        textColor: "text-purple-700",
+        borderColor: "border-purple-200",
       },
-      'partial-ai': {
+      "partial-ai": {
         icon: UserCog,
-        label: 'Partial AI Reply',
-        bgColor: 'bg-orange-50',
-        textColor: 'text-orange-700',
-        borderColor: 'border-orange-200',
+        label: "Partial AI Reply",
+        bgColor: "bg-orange-50",
+        textColor: "text-orange-700",
+        borderColor: "border-orange-200",
       },
     };
 
-    const { icon: Icon, label, bgColor, textColor, borderColor } = config[replyType];
+    const {
+      icon: Icon,
+      label,
+      bgColor,
+      textColor,
+      borderColor,
+    } = config[replyType];
 
     return (
-      <div className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${bgColor} ${textColor} ${borderColor}`}>
+      <div
+        className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${bgColor} ${textColor} ${borderColor}`}
+      >
         <Icon className="w-3 h-3 mr-1" />
         {label}
       </div>
@@ -440,18 +458,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
               <span className="text-sm text-gray-600 hover:text-gray-800">
                 Entities
               </span>
-            </button>
-            {/* <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-              <Archive className="w-5 h-5 text-gray-600" />
-            </button> */}
-            <button 
-              onClick={() => onStarToggle?.(email.id)}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              title={email.isStarred ? "Unstar conversation" : "Star conversation"}
-            >
-              <Star
-                className={`w-5 h-5 ${email.isStarred ? "text-yellow-500 fill-yellow-500" : "text-gray-600 hover:text-yellow-500"}`}
-              />
             </button>
             {activeSection === "bin" && onRestoreEmail ? (
               <button
