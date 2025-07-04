@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { Star, Square, CheckSquare, Inbox, Send, FileText, Clock, Tag, Calendar, Megaphone, AlertTriangle, BarChart3, MessageSquare, Mail, MoreHorizontal, ArrowLeftRight, Trash2 } from 'lucide-react';
+import { Star, Square, CheckSquare, Inbox, Send, FileText, Clock, Tag, Calendar, Megaphone, AlertTriangle, BarChart3, MessageSquare, Mail, MoreHorizontal, ArrowLeftRight, Trash2, MailOpen, RotateCcw } from 'lucide-react';
 import { Email, CustomLabel } from '../types/email';
 import EmailLabelActions from './EmailLabelActions';
 
@@ -141,6 +141,7 @@ const EmailList: React.FC<EmailListProps> = ({
       case 'drafts': return 'Drafts';
       case 'starred': return 'Starred';
       case 'snoozed': return 'Snoozed';
+      case 'bin': return 'Bin';
       case 'label-work': return 'Work';
       case 'label-personal': return 'Personal';
       case 'label-important': return 'Important';
@@ -163,6 +164,7 @@ const EmailList: React.FC<EmailListProps> = ({
       case 'drafts': return FileText;
       case 'starred': return Star;
       case 'snoozed': return Clock;
+      case 'bin': return Trash2;
       default: return Tag;
     }
   };
@@ -189,6 +191,8 @@ const EmailList: React.FC<EmailListProps> = ({
             ? 'Star important conversations to find them quickly here.'
             : section === 'snoozed'
             ? 'Snoozed conversations will appear here when it\'s time to deal with them.'
+            : section === 'bin'
+            ? 'Deleted conversations will appear here.'
             : section.startsWith('custom-label-') || section.startsWith('label-')
             ? `Conversations with the "${title}" label will appear here.`
             : `No conversations available yet.`
@@ -200,6 +204,20 @@ const EmailList: React.FC<EmailListProps> = ({
 
   const checkedEmailsArray = Array.from(checkedEmails);
   const hasCheckedEmails = checkedEmailsArray.length > 0;
+
+  // Calculate display counts for header
+  const getHeaderCount = () => {
+    const totalEmails = emails.length;
+    const unreadEmails = emails.filter(email => !email.isRead).length;
+    
+    // For sections that show unread count in sidebar, show (total) format
+    if (activeSection === 'inbox' || activeSection.startsWith('label-') || activeSection.startsWith('custom-label-')) {
+      return `(${totalEmails})`;
+    }
+    
+    // For other sections, show total count
+    return `(${totalEmails})`;
+  };
 
   const handleResizeStart = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -266,7 +284,9 @@ const EmailList: React.FC<EmailListProps> = ({
             <div className="bg-gray-300 group-hover:bg-blue-400 h-6 w-0.5 rounded-full transition-colors" />
           </div>
         <div className="p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">{getSectionTitle(activeSection)}</h2>
+          <h2 className="text-lg font-semibold text-gray-900">
+            {getSectionTitle(activeSection)}{getHeaderCount()}
+          </h2>
         </div>
         <EmptyState section={activeSection} />
       </div>
@@ -313,15 +333,15 @@ const EmailList: React.FC<EmailListProps> = ({
             <div>
               <h2 className="text-lg font-semibold text-gray-900">
                 {getSectionTitle(activeSection)}
-                {checkedEmails.size > 0 ? `(${checkedEmails.size}/${emails.length})` : `(${emails.length})`}
+                {hasCheckedEmails ? `(${checkedEmails.size}/${emails.length})` : getHeaderCount()}
               </h2>
             </div>
           </div>
 
-          {/* Actions Menu */}
-          <div className="flex items-center space-x-2">
-            {/* Label Actions - only show when emails are selected */}
-            {hasCheckedEmails && (
+          {/* Actions Menu - Only show when emails are selected */}
+          {hasCheckedEmails && (
+            <div className="flex items-center space-x-2">
+              {/* Label Actions */}
               <EmailLabelActions
                 emailIds={checkedEmailsArray}
                 currentLabels={[]} // For bulk actions, we don't show current labels
@@ -329,78 +349,107 @@ const EmailList: React.FC<EmailListProps> = ({
                 onLabelsChange={onEmailLabelsChange}
                 onCreateLabel={onCreateLabel}
               />
-            )}
 
-            {/* More Actions Menu */}
-            <div className="relative">
-              <button 
-                onClick={() => setShowMoreActions(!showMoreActions)}
-                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                title="More actions"
-              >
-                <MoreHorizontal className="w-4 h-4" />
-              </button>
+              {/* Quick Actions */}
+              <div className="flex items-center space-x-1">
+                {/* Mark as Read */}
+                <button
+                  onClick={() => {
+                    onBulkMarkAsRead(checkedEmailsArray, true);
+                  }}
+                  className="flex items-center space-x-1 px-3 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+                  title="Mark as read"
+                >
+                  <MailOpen className="w-4 h-4" />
+                  <span className="hidden sm:inline">Read</span>
+                </button>
 
-              {showMoreActions && (
-                <div className="absolute top-full right-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-                  <div className="p-1">
-                    {/* Bulk Actions - only show when emails are selected */}
-                    {hasCheckedEmails ? (
-                      <>
-                        <button
-                          onClick={() => {
-                            onBulkMarkAsRead(checkedEmailsArray, true);
-                            setShowMoreActions(false);
-                          }}
-                          className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors"
-                        >
-                          Mark as Read
-                        </button>
-                        <button
-                          onClick={() => {
-                            onBulkMarkAsRead(checkedEmailsArray, false);
-                            setShowMoreActions(false);
-                          }}
-                          className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors"
-                        >
-                          Mark as Unread
-                        </button>
-                        <button
-                          onClick={() => {
-                            onBulkDelete(checkedEmailsArray);
-                            setShowMoreActions(false);
-                          }}
-                          className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded transition-colors"
-                        >
-                          Delete
-                        </button>
-                      </>
-                    ) : (
-                      <div className="px-3 py-2 text-sm text-gray-500">
-                        Select emails to see actions
+                {/* Mark as Unread */}
+                <button
+                  onClick={() => {
+                    onBulkMarkAsRead(checkedEmailsArray, false);
+                  }}
+                  className="flex items-center space-x-1 px-3 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+                  title="Mark as unread"
+                >
+                  <Mail className="w-4 h-4" />
+                  <span className="hidden sm:inline">Unread</span>
+                </button>
+
+                {/* Delete/Restore Action */}
+                {activeSection === 'bin' && onBulkRestore ? (
+                  <button
+                    onClick={() => {
+                      onBulkRestore(checkedEmailsArray);
+                    }}
+                    className="flex items-center space-x-1 px-3 py-2 text-sm text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors"
+                    title="Restore emails"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    <span className="hidden sm:inline">Restore</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      onBulkDelete(checkedEmailsArray);
+                    }}
+                    className="flex items-center space-x-1 px-3 py-2 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                    title="Delete emails"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    <span className="hidden sm:inline">Delete</span>
+                  </button>
+                )}
+
+                {/* More Actions Menu */}
+                <div className="relative">
+                  <button 
+                    onClick={() => setShowMoreActions(!showMoreActions)}
+                    className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                    title="More actions"
+                  >
+                    <MoreHorizontal className="w-4 h-4" />
+                  </button>
+
+                  {showMoreActions && (
+                    <div className="absolute top-full right-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                      <div className="p-1">
+                        {/* Additional actions for Bin section */}
+                        {activeSection === 'bin' && (
+                          <button
+                            onClick={() => {
+                              // Handle permanent delete
+                              console.log('Permanently delete emails:', checkedEmailsArray);
+                              setShowMoreActions(false);
+                            }}
+                            className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded transition-colors"
+                          >
+                            Delete Permanently
+                          </button>
+                        )}
+
+                        {/* Undo Action */}
+                        {onUndo && (
+                          <>
+                            {activeSection === 'bin' && <div className="border-t border-gray-100 my-1"></div>}
+                            <button
+                              onClick={() => {
+                                onUndo();
+                                setShowMoreActions(false);
+                              }}
+                              className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors"
+                            >
+                              Undo Last Action
+                            </button>
+                          </>
+                        )}
                       </div>
-                    )}
-
-                    {/* Undo Action */}
-                    {onUndo && (
-                      <>
-                        <div className="border-t border-gray-100 my-1"></div>
-                        <button
-                          onClick={() => {
-                            onUndo();
-                            setShowMoreActions(false);
-                          }}
-                          className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors"
-                        >
-                          Undo Last Action
-                        </button>
-                      </>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
