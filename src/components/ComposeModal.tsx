@@ -134,6 +134,9 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
     setEmails: (emails: string[]) => void,
     setInput: (value: string) => void
   ) => {
+    // Always update the input value first to allow normal typing
+    setInput(value);
+    
     // Only process email separation when user explicitly adds separators at the end
     if (value.endsWith(',') || value.endsWith(';')) {
       const emailToAdd = value.slice(0, -1).trim();
@@ -141,11 +144,7 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
         const uniqueEmails = [...new Set([...currentEmails, emailToAdd])];
         setEmails(uniqueEmails);
         setInput('');
-      } else {
-        setInput(value);
       }
-    } else {
-      setInput(value);
     }
   };
 
