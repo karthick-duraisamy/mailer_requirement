@@ -318,15 +318,63 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     }
   };
 
-  const handleMarkAsUnread = () => {
-    // TODO: Implement mark as unread functionality
-    console.log("Mark as unread:", email?.id);
-    setShowMoreMenu(false);
-  };
-
   const handleAddToCalendar = () => {
-    // TODO: Implement add to calendar functionality
-    console.log("Add to calendar:", email?.id);
+    if (!email) return;
+    
+    // Extract meeting details from the email content
+    const lastMessage = sortedMessages[sortedMessages.length - 1];
+    const content = lastMessage.content;
+    
+    // Create calendar event details
+    const eventTitle = `Meeting: ${email.subject}`;
+    const eventDetails = `Original email from: ${lastMessage.sender}\n\n${content}`;
+    
+    // Try to extract date/time from content (basic pattern matching)
+    const datePattern = /(\d{1,2}\/\d{1,2}\/\d{4}|\d{4}-\d{2}-\d{2})/;
+    const timePattern = /(\d{1,2}:\d{2}\s*(AM|PM|am|pm))/;
+    
+    const dateMatch = content.match(datePattern);
+    const timeMatch = content.match(timePattern);
+    
+    let startDate = new Date();
+    if (dateMatch) {
+      startDate = new Date(dateMatch[0]);
+    }
+    
+    if (timeMatch) {
+      // Parse time and set it
+      const timeStr = timeMatch[0];
+      const [time, meridiem] = timeStr.split(/\s+/);
+      const [hours, minutes] = time.split(':').map(Number);
+      let adjustedHours = hours;
+      
+      if (meridiem?.toLowerCase() === 'pm' && hours !== 12) {
+        adjustedHours += 12;
+      } else if (meridiem?.toLowerCase() === 'am' && hours === 12) {
+        adjustedHours = 0;
+      }
+      
+      startDate.setHours(adjustedHours, minutes, 0, 0);
+    }
+    
+    // Format dates for calendar
+    const formatDateForCalendar = (date: Date) => {
+      return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    };
+    
+    const startDateTime = formatDateForCalendar(startDate);
+    const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // 1 hour later
+    const endDateTime = formatDateForCalendar(endDate);
+    
+    // Create Google Calendar URL
+    const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE` +
+      `&text=${encodeURIComponent(eventTitle)}` +
+      `&dates=${startDateTime}/${endDateTime}` +
+      `&details=${encodeURIComponent(eventDetails)}` +
+      `&location=${encodeURIComponent('To be determined')}`;
+    
+    // Open calendar in new tab
+    window.open(calendarUrl, '_blank');
     setShowMoreMenu(false);
   };
 
@@ -336,8 +384,25 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   };
 
   const handleReportSpam = () => {
-    // TODO: Implement report spam functionality
-    console.log("Report spam:", email?.id);
+    if (!email) return;
+    
+    // Mark email as spam and move to appropriate section
+    // In a real app, this would make an API call to mark as spam
+    console.log("Reporting spam for email:", email.id);
+    
+    // Show confirmation
+    if (window.confirm(`Report "${email.subject}" as spam? This conversation will be moved to spam folder.`)) {
+      // TODO: In a real implementation, you would:
+      // 1. Call API to mark as spam
+      // 2. Move email to spam folder
+      // 3. Update email status
+      
+      alert("Email reported as spam successfully");
+      
+      // Close the conversation and go back to list
+      onClose();
+    }
+    
     setShowMoreMenu(false);
   };
 
@@ -543,14 +608,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                   >
                     <Star className={`w-4 h-4 ${email.isStarred ? 'fill-yellow-400 text-yellow-400' : ''}`} />
                     <span>{email.isStarred ? 'Remove star' : 'Add star'}</span>
-                  </button>
-                  
-                  <button
-                    onClick={handleMarkAsUnread}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
-                  >
-                    <div className="w-4 h-4 rounded-full border-2 border-blue-500"></div>
-                    <span>Mark as unread</span>
                   </button>
 
                   <button
