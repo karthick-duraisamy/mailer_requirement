@@ -38,6 +38,7 @@ function App() {
   const [isFullPageView, setIsFullPageView] = useState(false);
   const [composePanelOpen, setComposePanelOpen] = useState(false);
   const [lastAction, setLastAction] = useState<any>(null);
+  const [starAnimation, setStarAnimation] = useState<string | null>(null);
 
   // Calculate email counts for each section
   const emailCounts = useMemo(() => {
@@ -132,7 +133,7 @@ function App() {
         const fromDate = filters.dateRange.from ? new Date(filters.dateRange.from) : null;
         const toDate = filters.dateRange.to ? new Date(filters.dateRange.to + 'T23:59:59') : null;
 
-        return (!fromDate || emailDate >= fromDate) && (!toDate || emailDate <= toDate);
+        return (!fromDate || emailDate >= fromDate) && (!toDate || emailDate <= ToDate);
       });
     }
 
@@ -362,6 +363,10 @@ function App() {
     if (selectedEmail?.id === emailId) {
       setSelectedEmail(prev => prev ? { ...prev, isStarred: !prev.isStarred } : null);
     }
+
+    // Trigger star animation
+    setStarAnimation(emailId);
+    setTimeout(() => setStarAnimation(null), 600);
 
     // If we're currently in the starred section and the email is being unstarred,
     // clear the selection to avoid showing an email that's no longer in this section

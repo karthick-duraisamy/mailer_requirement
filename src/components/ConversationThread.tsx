@@ -75,6 +75,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   const [isAiReplyExpanded, setIsAiReplyExpanded] = useState(false);
   const [showEntitiesPopover, setShowEntitiesPopover] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [starAnimation, setStarAnimation] = useState(false);
 
   // Refs for auto-scrolling
   const aiReplyRef = useRef<HTMLDivElement>(null);
@@ -320,59 +321,59 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
   const handleAddToCalendar = () => {
     if (!email) return;
-    
+
     // Extract meeting details from the email content
     const lastMessage = sortedMessages[sortedMessages.length - 1];
     const content = lastMessage.content;
-    
+
     // Create calendar event details
     const eventTitle = `Meeting: ${email.subject}`;
     const eventDetails = `Original email from: ${lastMessage.sender}\n\n${content}`;
-    
+
     // Try to extract date/time from content (basic pattern matching)
     const datePattern = /(\d{1,2}\/\d{1,2}\/\d{4}|\d{4}-\d{2}-\d{2})/;
     const timePattern = /(\d{1,2}:\d{2}\s*(AM|PM|am|pm))/;
-    
+
     const dateMatch = content.match(datePattern);
     const timeMatch = content.match(timePattern);
-    
+
     let startDate = new Date();
     if (dateMatch) {
       startDate = new Date(dateMatch[0]);
     }
-    
+
     if (timeMatch) {
       // Parse time and set it
       const timeStr = timeMatch[0];
       const [time, meridiem] = timeStr.split(/\s+/);
       const [hours, minutes] = time.split(':').map(Number);
       let adjustedHours = hours;
-      
+
       if (meridiem?.toLowerCase() === 'pm' && hours !== 12) {
         adjustedHours += 12;
       } else if (meridiem?.toLowerCase() === 'am' && hours === 12) {
         adjustedHours = 0;
       }
-      
+
       startDate.setHours(adjustedHours, minutes, 0, 0);
     }
-    
+
     // Format dates for calendar
     const formatDateForCalendar = (date: Date) => {
       return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
     };
-    
+
     const startDateTime = formatDateForCalendar(startDate);
     const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // 1 hour later
     const endDateTime = formatDateForCalendar(endDate);
-    
+
     // Create Google Calendar URL
     const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE` +
       `&text=${encodeURIComponent(eventTitle)}` +
       `&dates=${startDateTime}/${endDateTime}` +
       `&details=${encodeURIComponent(eventDetails)}` +
       `&location=${encodeURIComponent('To be determined')}`;
-    
+
     // Open calendar in new tab
     window.open(calendarUrl, '_blank');
     setShowMoreMenu(false);
@@ -385,24 +386,24 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
   const handleReportSpam = () => {
     if (!email) return;
-    
+
     // Mark email as spam and move to appropriate section
     // In a real app, this would make an API call to mark as spam
     console.log("Reporting spam for email:", email.id);
-    
+
     // Show confirmation
     if (window.confirm(`Report "${email.subject}" as spam? This conversation will be moved to spam folder.`)) {
       // TODO: In a real implementation, you would:
       // 1. Call API to mark as spam
       // 2. Move email to spam folder
       // 3. Update email status
-      
+
       alert("Email reported as spam successfully");
-      
+
       // Close the conversation and go back to list
       onClose();
     }
-    
+
     setShowMoreMenu(false);
   };
 
