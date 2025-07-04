@@ -795,20 +795,23 @@ function App() {
                 />
               </div>
 
-              <ConversationThread 
-                email={selectedEmail} 
-                onClose={() => setSelectedEmail(null)}
-                isFullPage={false}
-                aiReplyState={getAiReplyState(selectedEmail?.id || '')}
-                onGenerateAiReply={generateAiReply}
-                onAiReplyStateChange={(newState) => selectedEmail?.id && updateAiReplyState(selectedEmail.id, newState)}
-                customLabels={customLabels}
-                onEmailLabelsChange={handleEmailLabelsChange}
-                onCreateLabel={handleCreateLabel}
-                onDeleteEmail={handleDeleteEmail}
-                onRestoreEmail={handleRestoreEmail}
-                activeSection={activeItem}
-              />
+              <div className="flex-1">
+                <ConversationThread 
+                  email={selectedEmail} 
+                  onClose={() => setSelectedEmail(null)}
+                  isFullPage={false}
+                  aiReplyState={getAiReplyState(selectedEmail?.id || '')}
+                  onGenerateAiReply={generateAiReply}
+                  onAiReplyStateChange={(newState) => selectedEmail?.id && updateAiReplyState(selectedEmail.id, newState)}
+                  customLabels={customLabels}
+                  onEmailLabelsChange={handleEmailLabelsChange}
+                  onCreateLabel={handleCreateLabel}
+                  onDeleteEmail={handleDeleteEmail}
+                  onRestoreEmail={handleRestoreEmail}
+                  activeSection={activeItem}
+                  onStarToggle={handleStarToggle}
+                />
+              </div>
             </div>
           )}
         </div>
