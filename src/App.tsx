@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import EmailList from './components/EmailList';
@@ -9,8 +9,10 @@ import { Email, CustomLabel } from './types/email';
 import { mockEmails } from './data/mockEmails';
 import { mockCustomLabels } from './data/mockLabels';
 import { FilterOptions } from './components/EmailFilters';
+import { useLazyGetMailListResponseQuery } from './service/inboxService';
 
 function App() {
+  const [getMailList, getMailListResponse] = useLazyGetMailListResponseQuery();
   const [activeItem, setActiveItem] = useState('inbox');
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -38,6 +40,16 @@ function App() {
   const [isFullPageView, setIsFullPageView] = useState(false);
   const [composePanelOpen, setComposePanelOpen] = useState(false);
   const [lastAction, setLastAction] = useState<any>(null);
+
+  // The following useEffect is trigged to get the mail list info at initial load.
+  useEffect(() => {
+    getMailList({});
+  }, []);
+
+  // The following useEffect is triggered once mail list api get success.
+  useEffect(() => {
+    console.log(getMailListResponse);
+  }, [getMailListResponse]);
 
   // Calculate email counts for sidebar
   const calculateEmailCounts = () => {
