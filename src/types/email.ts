@@ -23,6 +23,7 @@ export interface EmailMessage {
   content: string;
   timestamp: string;
   isRead: boolean;
+  replyType?: 'manual' | 'ai' | 'partial-ai';
 }
 
 export interface Label {

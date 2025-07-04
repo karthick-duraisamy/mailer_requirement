@@ -17,6 +17,9 @@ import {
   Expand,
   Minimize,
   FileText,
+  User,
+  Bot,
+  UserCog,
 } from "lucide-react";
 import { Email, CustomLabel } from "../types/email";
 import EmailLabelActions from "./EmailLabelActions";
@@ -139,7 +142,17 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
   const handleSendReply = () => {
     if (replyText.trim()) {
-      // Handle reply logic here
+      // Determine reply type based on whether AI was used
+      let replyType: 'manual' | 'ai' | 'partial-ai' = 'manual';
+      if (replyText === aiReplyState.generatedReply && aiReplyState.generatedReply) {
+        replyType = 'ai';
+      } else if (aiReplyState.generatedReply && replyText.includes(aiReplyState.generatedReply)) {
+        replyType = 'partial-ai';
+      }
+      
+      // Handle reply logic here - would typically save the message with replyType
+      console.log('Reply sent with type:', replyType);
+      
       setReplyText("");
       setShowReply(false);
       onAiReplyStateChange({
@@ -298,6 +311,43 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     return email.customLabels
       .map((labelId) => customLabels.find((label) => label.id === labelId))
       .filter(Boolean) as CustomLabel[];
+  };
+
+  const ReplyTypeLabel = ({ replyType }: { replyType?: 'manual' | 'ai' | 'partial-ai' }) => {
+    if (!replyType) return null;
+
+    const config = {
+      manual: {
+        icon: User,
+        label: 'Replied Manually',
+        bgColor: 'bg-blue-50',
+        textColor: 'text-blue-700',
+        borderColor: 'border-blue-200',
+      },
+      ai: {
+        icon: Bot,
+        label: 'Replied by AI',
+        bgColor: 'bg-purple-50',
+        textColor: 'text-purple-700',
+        borderColor: 'border-purple-200',
+      },
+      'partial-ai': {
+        icon: UserCog,
+        label: 'Partial AI Reply',
+        bgColor: 'bg-orange-50',
+        textColor: 'text-orange-700',
+        borderColor: 'border-orange-200',
+      },
+    };
+
+    const { icon: Icon, label, bgColor, textColor, borderColor } = config[replyType];
+
+    return (
+      <div className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${bgColor} ${textColor} ${borderColor}`}>
+        <Icon className="w-3 h-3 mr-1" />
+        {label}
+      </div>
+    );
   };
 
   // Sort messages chronologically (oldest first)
@@ -477,6 +527,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                             <p className="font-semibold text-gray-900">
                               {isFromCurrentUser ? "You" : message.sender}
                             </p>
+                            <ReplyTypeLabel replyType={message.replyType} />
                             <button className="text-gray-400 hover:text-gray-600">
                               {isExpanded ? (
                                 <ChevronUp className="w-4 h-4" />
