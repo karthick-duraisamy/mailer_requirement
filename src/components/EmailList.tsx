@@ -14,15 +14,13 @@ import {
   BarChart3,
   MessageSquare,
   Mail,
-  MoreHorizontal,
-  ArrowLeftRight,
-  Trash2,
+  MoreHorizontal
 } from "lucide-react";
 import { Email, CustomLabel } from "../types/email";
 import EmailLabelActions from "./EmailLabelActions";
 
 interface EmailListProps {
-  emails: Email[];
+  emails: any[];
   selectedEmailId: string | null;
   onEmailSelect: (email: Email, fullPage?: boolean) => void;
   onStarToggle: (emailId: string) => void;
@@ -70,8 +68,8 @@ const EmailList: React.FC<EmailListProps> = ({
     onEmailSelect(email, true); // true for full-page view
   };
 
-  const formatTime = (timestamp: string) => {
-    const date = new Date(timestamp);
+  const formatTime = (created_at: string) => {
+    const date = new Date(created_at);
     const now = new Date();
     const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
 
@@ -295,7 +293,7 @@ const EmailList: React.FC<EmailListProps> = ({
       <div
         className="bg-white border-r border-gray-200 relative"
         ref={containerRef}
-        style={{ width: `${width}px`, minWidth: "240px", maxWidth: "800px" }}
+        style={{ width: `${width}px`, minWidth: '240px', maxWidth: '800px' ,height: '100%' }}
       >
         {/* Resizer */}
         <div
@@ -318,7 +316,7 @@ const EmailList: React.FC<EmailListProps> = ({
     <div
       className="bg-white border-r border-gray-200 relative"
       ref={containerRef}
-      style={{ width: `${width}px`, minWidth: "240px", maxWidth: "800px" }}
+      style={{ width: `${width}px`, minWidth: '240px', maxWidth: '800px', height: '100%' }}
     >
       {/* Resizer */}
       <div
@@ -355,10 +353,10 @@ const EmailList: React.FC<EmailListProps> = ({
               )}
             </button>
 
-            <div>
+            <div style={{height:"100%"}}>
               <h2 className="text-lg font-semibold text-gray-900">
                 {getSectionTitle(activeSection)}
-                {` (${emails.filter(email => !email.isRead).length}/${emails.length})`}
+                {` (${emails.filter(email => !email.is_read).length}/${emails.length})`}
               </h2>
             </div>
           </div>
@@ -463,17 +461,17 @@ const EmailList: React.FC<EmailListProps> = ({
 
       <div className="divide-y divide-gray-100 overflow-y-auto max-h-[calc(100vh-8rem)] thin-scrollbar">
         {emails.map((email) => {
-          const isSelected = selectedEmailId === email.id;
-          const isChecked = checkedEmails.has(email.id);
+          const isSelected = selectedEmailId === email.message_id;
+          const isChecked = checkedEmails.has(email.message_id);
           const emailLabels = getEmailCustomLabels(email);
 
           return (
             <div
-              key={email.id}
+              key={email.message_id}
               className={`
                 p-4 cursor-pointer transition-colors hover:bg-gray-50
-                ${isSelected ? "bg-blue-50 border-r-2 border-blue-500" : ""}
-                ${!email.isRead ? "bg-blue-25" : ""}
+                ${isSelected ? 'bg-blue-50 border-r-2 border-blue-500' : ''}
+                ${!email.is_read ? 'bg-blue-25' : ''}
               `}
               onClick={() => onEmailSelect(email)}
               onDoubleClick={(e) => handleEmailDoubleClick(email, e)}
@@ -483,7 +481,7 @@ const EmailList: React.FC<EmailListProps> = ({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    onCheckToggle(email.id);
+                    onCheckToggle(email.message_id);
                   }}
                   className="mt-1 text-gray-400 hover:text-gray-600 transition-colors"
                 >
@@ -497,13 +495,13 @@ const EmailList: React.FC<EmailListProps> = ({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    onStarToggle(email.id);
+                    onStarToggle(email.message_id);
                   }}
                   className="mt-1 transition-colors"
                 >
                   <Star
                     className={`w-4 h-4 ${
-                      email.isStarred
+                      email.is_starred
                         ? "text-yellow-500 fill-yellow-500"
                         : "text-gray-400 hover:text-yellow-500"
                     }`}
@@ -516,10 +514,9 @@ const EmailList: React.FC<EmailListProps> = ({
                       <p
                         className={`
                         text-sm truncate
-                        ${!email.isRead ? "font-bold text-black" : "font-normal text-gray-500"}
-                      `}
-                      >
-                        {email.sender}
+                        ${!email.is_read ? 'font-bold text-black' : 'font-normal text-gray-500'}
+                      `}>
+                        {email?.to}
                       </p>
                       {email.intentLabel && (
                         <div
@@ -539,26 +536,24 @@ const EmailList: React.FC<EmailListProps> = ({
                       )}
                     </div>
                     <p className="text-xs text-gray-500 ml-2 flex-shrink-0">
-                      {formatTime(email.timestamp)}
+                      {formatTime(email.created_at)}
                     </p>
                   </div>
 
                   <p
                     className={`
                     text-sm mt-1 truncate
-                    ${!email.isRead ? "font-bold text-black" : "font-normal text-gray-500"}
-                  `}
-                  >
+                    ${!email.is_read ? 'font-bold text-black' : 'font-normal text-gray-500'}
+                  `}>
                     {email.subject}
                   </p>
 
                   <p
                     className={`
                     text-sm mt-1 truncate
-                    ${!email.isRead ? "text-gray-700 font-medium" : "text-gray-400"}
-                  `}
-                  >
-                    {email.preview}
+                    ${!email.is_read ? 'text-gray-700 font-medium' : 'text-gray-400'}
+                  `}>
+                    {email.snippet}
                   </p>
 
                   {/* Custom Labels */}

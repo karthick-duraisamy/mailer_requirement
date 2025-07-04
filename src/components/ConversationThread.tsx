@@ -24,6 +24,7 @@ import {
 import { Email, CustomLabel } from "../types/email";
 import EmailLabelActions from "./EmailLabelActions";
 import EntitiesPopover from "./EntitiesPopover";
+import { useLazyGetConvoResponseQuery } from "../service/inboxService";
 
 interface AiReplyState {
   isGenerating: boolean;
@@ -35,13 +36,13 @@ interface AiReplyState {
 }
 
 interface ConversationThreadProps {
-  email: Email | null;
+  email: any | null;
   onClose: () => void;
   onBack?: () => void;
   isFullPage?: boolean;
   aiReplyState: AiReplyState;
-  onGenerateAiReply: (email: Email, tone: string, replyType: string) => void;
-  onAiReplyStateChange: (newState: AiReplyState) => void;
+  onGenerateAiReply: (email: any, tone?: string, replyType?: string) => void;
+  onAiReplyStateChange: (state: AiReplyState) => void;
   customLabels: CustomLabel[];
   onEmailLabelsChange: (emailIds: string[], labelIds: string[]) => void;
   onCreateLabel: (labelData: Omit<CustomLabel, "id" | "createdAt">) => void;
@@ -69,7 +70,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 }) => {
   const [replyText, setReplyText] = useState("");
   const [showReply, setShowReply] = useState(false);
-  const [expandedMessages, setExpandedMessages] = useState<Set<string>>(
+   const [expandedMessages, setExpandedMessages] = useState<Set<string>>(
     new Set(),
   );
   const [isAiReplyExpanded, setIsAiReplyExpanded] = useState(false);
@@ -80,7 +81,9 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   const aiReplyRef = useRef<HTMLDivElement>(null);
   const replyBoxRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const entitiesButtonRef = useRef<HTMLButtonButton>(null);
+  const entitiesButtonRef = useRef<HTMLButtonElement>(null);
+  const [ getConvoResponse, getConvoResponseStatus ] = useLazyGetConvoResponseQuery();
+  const [msgData, setMsgData] = useState<any[]>([]);
   const moreMenuRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to AI reply when it becomes available
@@ -127,6 +130,19 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
   }, [showMoreMenu]);
+  
+  useEffect(()=>{
+    getConvoResponse({});
+  },[]);
+
+  useEffect(() => {
+    if(getConvoResponseStatus?.isSuccess){
+      const msgData = (getConvoResponseStatus as any)?.data?.response?.data?.conversation;
+      if(msgData){
+        setMsgData(msgData);
+      }
+    }
+  },[getConvoResponseStatus]);
 
   if (!email) {
     return (
@@ -189,7 +205,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   };
 
   // Determine if this should be a reply-all based on email context
-  const shouldUseReplyAll = (email: Email): boolean => {
+  const shouldUseReplyAll = (email: Email): any => {
     const lastMessage = sortedMessages[sortedMessages.length - 1];
 
     // Check if there are multiple recipients (to + cc)
@@ -201,14 +217,10 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   };
 
   const handleAiReplyGenerate = () => {
-    if (email) {
+    if (msgData) {
       const useReplyAll = shouldUseReplyAll(email);
       // Always use professional tone
-      onGenerateAiReply(
-        email,
-        "professional",
-        useReplyAll ? "reply-all" : "reply",
-      );
+      onGenerateAiReply(msgData, 'professional', useReplyAll ? 'reply-all' : 'reply');
     }
   };
 
@@ -223,14 +235,10 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   };
 
   const handleRegenerateAi = () => {
-    if (email) {
+    if (msgData) {
       const useReplyAll = shouldUseReplyAll(email);
       // Always use professional tone
-      onGenerateAiReply(
-        email,
-        "professional",
-        useReplyAll ? "reply-all" : "reply",
-      );
+      onGenerateAiReply(msgData, 'professional', useReplyAll ? 'reply-all' : 'reply');
     }
   };
 
@@ -247,21 +255,21 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
   // Handle AI Reply All button click
   const handleAiReplyAll = () => {
-    if (email) {
-      const lastMessage = sortedMessages[sortedMessages.length - 1];
-      // Get all unique recipients (to, cc) excluding our own email
-      const allRecipients = new Set([
-        lastMessage.senderEmail,
-        ...lastMessage.to,
-        ...(lastMessage.cc || []),
-      ]);
+    if (msgData && sortedMessages.length > 0) {
+    const lastMessage = sortedMessages[sortedMessages.length - 1];
+    // Get all unique recipients (to, cc) excluding our own email if needed
+    const allRecipients = new Set([
+      ...lastMessage.to,
+      ...(lastMessage.cc || []),
+    ]);
+    // Optionally remove your own email from recipients here
 
-      // Set reply text with appropriate header
-      const replyAllText = `\n\n--- Reply All ---\nTo: ${Array.from(allRecipients).join(", ")}\n\n${aiReplyState.generatedReply}`;
-      setReplyText(replyAllText);
-      setShowReply(true);
-      onAiReplyStateChange({ ...aiReplyState, showAiReply: false });
-    }
+    // Set reply text with appropriate header and AI reply
+    const replyAllText = `\n\n--- Reply All ---\nTo: ${Array.from(allRecipients).join(", ")}\n\n${aiReplyState.generatedReply}`;
+    setReplyText(replyAllText);
+    setShowReply(true);
+    onAiReplyStateChange({ ...aiReplyState, showAiReply: false });
+  }
   };
 
   const handleReplyAll = () => {
@@ -269,7 +277,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       const lastMessage = sortedMessages[sortedMessages.length - 1];
       // Get all unique recipients (to, cc) excluding our own email
       const allRecipients = new Set([
-        lastMessage.senderEmail,
+        lastMessage.to,
         ...lastMessage.to,
         ...(lastMessage.cc || []),
       ]);
@@ -288,10 +296,10 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   };
 
   const handleForward = () => {
-    if (email) {
+    if (msgData) {
       const lastMessage = sortedMessages[sortedMessages.length - 1];
       // Format the forwarded message
-      const forwardedText = `\n\n--- Forwarded Message ---\nFrom: ${lastMessage.sender} <${lastMessage.senderEmail}>\nDate: ${formatTimestamp(lastMessage.timestamp)}\nSubject: ${lastMessage.subject}\nTo: ${lastMessage.to.join(", ")}\n${lastMessage.cc ? `Cc: ${lastMessage.cc.join(", ")}\n` : ""}\n${lastMessage.content}`;
+      const forwardedText = `\n\n--- Forwarded Message ---\nFrom: ${lastMessage.from_address}\nDate: ${formatTimestamp(lastMessage.create_to)}\nSubject: ${lastMessage.subject}\nTo: ${lastMessage.to.join(', ')}\n${lastMessage.cc ? `Cc: ${lastMessage.cc.join(', ')}\n` : ''}\n${lastMessage.body_plain}`;
 
       setReplyText(forwardedText);
       setShowReply(true);
@@ -306,14 +314,14 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
   const handleDeleteEmail = () => {
     if (email) {
-      onDeleteEmail(email.id);
+      onDeleteEmail(email.message_id);
       onClose(); // Close the conversation thread after deletion
     }
   };
 
   const handleRestoreEmail = () => {
     if (email && onRestoreEmail) {
-      onRestoreEmail(email.id);
+      onRestoreEmail(email.message_id);
       onClose();
     }
   };
@@ -323,11 +331,11 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     
     // Extract meeting details from the email content
     const lastMessage = sortedMessages[sortedMessages.length - 1];
-    const content = lastMessage.content;
+    const content = lastMessage.body_plain;
     
     // Create calendar event details
     const eventTitle = `Meeting: ${email.subject}`;
-    const eventDetails = `Original email from: ${lastMessage.sender}\n\n${content}`;
+    const eventDetails = `Original email from: ${lastMessage.from_address}\n\n${content}`;
     
     // Try to extract date/time from content (basic pattern matching)
     const datePattern = /(\d{1,2}\/\d{1,2}\/\d{4}|\d{4}-\d{2}-\d{2})/;
@@ -388,7 +396,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     
     // Mark email as spam and move to appropriate section
     // In a real app, this would make an API call to mark as spam
-    console.log("Reporting spam for email:", email.id);
+    console.log("Reporting spam for email:", email.message_id);
     
     // Show confirmation
     if (window.confirm(`Report "${email.subject}" as spam? This conversation will be moved to spam folder.`)) {
@@ -424,10 +432,10 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     });
   };
 
-  const getEmailCustomLabels = (email: Email) => {
+  const getEmailCustomLabels = (email: any) => {
     if (!email.customLabels) return [];
     return email.customLabels
-      .map((labelId) => customLabels.find((label) => label.id === labelId))
+      .map((labelId:any) => customLabels.find(label => label.id === labelId))
       .filter(Boolean) as CustomLabel[];
   };
 
@@ -481,11 +489,11 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   };
 
   // Sort messages chronologically (oldest first)
-  const sortedMessages = [...email.messages].sort(
-    (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+  const sortedMessages = [...msgData].sort((a, b) => 
+    new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
   );
 
-  const emailLabels = getEmailCustomLabels(email);
+  const emailLabels = getEmailCustomLabels(msgData);
 
   // Loading indicator component
   const LoadingIndicator = () => (
@@ -511,13 +519,11 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
               </button>
             )}
             <div className="flex-1 min-w-0">
-              <h2 className="text-2xl font-semibold text-gray-900 truncate">
-                {email.subject}
-              </h2>
-              <div className="flex items-center space-x-4 mt-2">
+              <h2 className="text-2xl font-semibold text-gray-900 truncate"  style={{whiteSpace : 'unset'}}>{email.subject}</h2>
+            <div className="flex items-center space-x-4 mt-2">
                 <p className="text-sm text-gray-500">
-                  {email.messages.length} message
-                  {email.messages.length !== 1 ? "s" : ""} • Conversation
+                  {msgData.length} message
+                  {msgData.length !== 1 ? "s" : ""} • Conversation
                 </p>
 
                 {/* Email Labels */}
@@ -553,7 +559,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
           <div className="flex items-center space-x-2 ml-4">
             <EmailLabelActions
-              emailIds={[email.id]}
+              emailIds={[email.message_id]}
               currentLabels={email.customLabels || []}
               availableLabels={customLabels}
               onLabelsChange={onEmailLabelsChange}
@@ -571,7 +577,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
             </button>
             {activeSection === "bin" && onRestoreEmail ? (
               <button
-                onClick={() => onRestoreEmail(email.id)}
+                onClick={() => onRestoreEmail(email.message_id)}
                 className="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
                 title="Restore conversation"
               >
@@ -580,7 +586,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
             ) : (
               onDeleteEmail && (
                 <button
-                  onClick={() => onDeleteEmail(email.id)}
+                  onClick={() => onDeleteEmail(email.message_id)}
                   className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                   title="Delete conversation"
                 >
@@ -601,7 +607,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
                   <button
                     onClick={() => {
-                      if (onStarToggle) onStarToggle(email.id);
+                      if (onStarToggle) onStarToggle(email.message_id);
                       setShowMoreMenu(false);
                     }}
                     className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
@@ -662,19 +668,13 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-5xl mx-auto">
           {sortedMessages.map((message, index) => {
-            const isExpanded =
-              expandedMessages.has(message.id) ||
-              (index === sortedMessages.length - 1 &&
-                !expandedMessages.has(`collapsed-${message.id}`));
+            const isExpanded = expandedMessages.has(message.message_id) || (index === sortedMessages.length - 1 && !expandedMessages.has(`collapsed-${message.message_id}`));
             const isLastMessage = index === sortedMessages.length - 1;
-            const isFromCurrentUser =
-              message.senderEmail === "john.doe@company.com";
+            const isFromCurrentUser = message.from_address === email.from_address;
 
             return (
-              <div key={message.id} className="last:border-b-0">
-                <div
-                  className={`p-6 ${isFromCurrentUser ? "bg-blue-50" : "bg-white"}`}
-                >
+              <div key={message.message_id} className="last:border-b-0">
+                <div className={`p-6 ${isFromCurrentUser ? 'bg-blue-50' : 'bg-white'}`}>
                   {/* Message Header */}
                   <div
                     className="cursor-pointer hover:bg-gray-50 -m-2 p-2 rounded-lg"
@@ -682,19 +682,16 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                       if (isLastMessage) {
                         // For last message, use a special collapsed state
                         if (isExpanded) {
-                          setExpandedMessages(
-                            (prev) =>
-                              new Set([...prev, `collapsed-${message.id}`]),
-                          );
+                          setExpandedMessages(prev => new Set([...prev, `collapsed-${message.message_id}`]));
                         } else {
                           setExpandedMessages((prev) => {
                             const newSet = new Set(prev);
-                            newSet.delete(`collapsed-${message.id}`);
+                            newSet.delete(`collapsed-${message.message_id}`);
                             return newSet;
                           });
                         }
                       } else {
-                        toggleMessageExpansion(message.id);
+                        toggleMessageExpansion(message.message_id);
                       }
                     }}
                   >
@@ -704,13 +701,13 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                           className={`w-10 h-10 ${isFromCurrentUser ? "bg-gradient-to-br from-green-500 to-green-600" : "bg-gradient-to-br from-blue-500 to-purple-600"} rounded-full flex items-center justify-center flex-shrink-0`}
                         >
                           <span className="text-white font-semibold text-sm">
-                            {message.sender.charAt(0).toUpperCase()}
+                            {message.from_address.charAt(0).toUpperCase()}
                           </span>
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center space-x-2">
                             <p className="font-semibold text-gray-900">
-                              {isFromCurrentUser ? "You" : message.sender}
+                              {isFromCurrentUser ? 'You' : message.from_address}
                             </p>
                             <ReplyTypeLabel replyType={message.replyType} />
                             <button className="text-gray-400 hover:text-gray-600">
@@ -722,7 +719,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                             </button>
                           </div>
                           <p className="text-sm text-gray-500">
-                            {formatTimestamp(message.timestamp)}
+                            {formatTimestamp(message.created_at)}
                           </p>
                         </div>
                       </div>
@@ -733,10 +730,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                       <div className="mb-4 bg-gray-50 rounded-lg p-4 space-y-2">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                           <div>
-                            <span className="font-medium text-gray-700">
-                              From:
-                            </span>
-                            <p className="text-gray-600 mt-1">{`${message.sender} <${message.senderEmail}>`}</p>
+                            <span className="font-medium text-gray-700">From:</span>
+                            <p className="text-gray-600 mt-1">{`${message.from_address} <${message.to}>`}</p>
                           </div>
                           <div>
                             <span className="font-medium text-gray-700">
@@ -788,9 +783,9 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                   {isExpanded && (
                     <>
                       <div className="prose max-w-none mb-6">
-                        <div className="text-gray-800 leading-relaxed whitespace-pre-wrap">
-                          {message.content}
-                        </div>
+                        <div className="text-gray-800 leading-relaxed whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: message.body_html || message.body_plain }} />
+                          {/* {message.body_plain}
+                        </div> */}
                       </div>
                     </>
                   )}
@@ -798,8 +793,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                   {/* Collapsed Message Preview */}
                   {!isExpanded && (
                     <>
-                      <div className="text-sm text-gray-500 truncate mb-3">
-                        {message.content.substring(0, 100)}...
+                      <div className="text-sm text-gray-500 truncate mb-3" >
+                        {message.body_plain.substring(0, 100)}...
                       </div>
                     </>
                   )}
@@ -939,13 +934,14 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                   <span>Reply All</span>
                 </button>
                 <button
-                  onClick={() =>
+                  onClick={() =>{ 
+                    setIsAiReplyExpanded(false);
                     onAiReplyStateChange({
                       ...aiReplyState,
                       showAiReply: false,
                       replyType: undefined,
-                    })
-                  }
+                    });
+                  }}
                   className="px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors text-sm"
                 >
                   Dismiss
@@ -972,29 +968,22 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                     : "Reply"}
               </h3>
               <div className="text-sm text-gray-600 space-y-1 bg-white p-3 rounded-lg border">
-                <p>
-                  <span className="font-medium">To:</span>{" "}
-                  {replyText.includes("--- Reply All ---")
-                    ? (() => {
-                        const lastMessage =
-                          sortedMessages[sortedMessages.length - 1];
-                        const allRecipients = new Set([
-                          lastMessage.senderEmail,
-                          ...lastMessage.to,
-                          ...(lastMessage.cc || []),
-                        ]);
-                        return Array.from(allRecipients).join(", ");
-                      })()
-                    : replyText.includes("--- Forwarded Message ---")
-                      ? "Enter recipient email(s)"
-                      : email.messages[email.messages.length - 1].senderEmail}
-                </p>
-                <p>
-                  <span className="font-medium">Subject:</span>{" "}
-                  {replyText.includes("--- Forwarded Message ---")
-                    ? `Fwd: ${email.subject}`
-                    : `Re: ${email.subject}`}
-                </p>
+                <p><span className="font-medium">To:</span> {
+                  replyText.includes('--- Reply All ---') ? 
+                    (() => {
+                      const lastMessage = sortedMessages[sortedMessages.length - 1];
+                      const allRecipients = new Set([
+                        lastMessage.to,
+                        ...lastMessage.to,
+                        ...(lastMessage.cc || [])
+                      ]);
+                      return Array.from(allRecipients).join(', ');
+                    })() :
+                  replyText.includes('--- Forwarded Message ---') ? 
+                    'Enter recipient email(s)' : 
+                    sortedMessages[sortedMessages.length - 1].to.join(', ')
+                }</p>
+                <p><span className="font-medium">Subject:</span> {replyText.includes('--- Forwarded Message ---') ? `Fwd: ${email.subject}` : `Re: ${email.subject}`}</p>
               </div>
             </div>
 
