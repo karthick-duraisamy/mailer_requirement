@@ -357,6 +357,12 @@ function App() {
         email.id === emailId ? { ...email, isStarred: !email.isStarred } : email
       )
     );
+
+    // If we're currently in the starred section and the email is being unstarred,
+    // clear the selection to avoid showing an email that's no longer in this section
+    if (activeItem === 'starred' && !email.isStarred && selectedEmail?.id === emailId) {
+      setSelectedEmail(null);
+    }
   };
 
   const handleCheckToggle = (emailId: string) => {
@@ -585,7 +591,7 @@ function App() {
   const handleBulkRestore = (emailIds: string[]) => {
     // Find emails to restore
     const emailsToRestore = deletedEmails.filter(email => emailIds.includes(email.id));
-    
+
     // Move emails back to active emails
     setEmails(prev => [...prev, ...emailsToRestore]);
 

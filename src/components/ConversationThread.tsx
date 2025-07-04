@@ -48,6 +48,7 @@ interface ConversationThreadProps {
   onDeleteEmail?: (emailId: string) => void;
   onRestoreEmail?: (emailId: string) => void;
   activeSection?: string;
+  onStarToggle?: (emailId: string) => void;
 }
 
 const ConversationThread: React.FC<ConversationThreadProps> = ({
@@ -64,6 +65,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   onDeleteEmail,
   onRestoreEmail,
   activeSection,
+  onStarToggle,
 }) => {
   const [replyText, setReplyText] = useState("");
   const [showReply, setShowReply] = useState(false);
@@ -149,10 +151,10 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       } else if (aiReplyState.generatedReply && replyText.includes(aiReplyState.generatedReply)) {
         replyType = 'partial-ai';
       }
-      
+
       // Handle reply logic here - would typically save the message with replyType
       console.log('Reply sent with type:', replyType);
-      
+
       setReplyText("");
       setShowReply(false);
       onAiReplyStateChange({
@@ -442,9 +444,13 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
             {/* <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
               <Archive className="w-5 h-5 text-gray-600" />
             </button> */}
-            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+            <button 
+              onClick={() => onStarToggle?.(email.id)}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              title={email.isStarred ? "Unstar conversation" : "Star conversation"}
+            >
               <Star
-                className={`w-5 h-5 ${email.isStarred ? "text-yellow-500 fill-yellow-500" : "text-gray-600"}`}
+                className={`w-5 h-5 ${email.isStarred ? "text-yellow-500 fill-yellow-500" : "text-gray-600 hover:text-yellow-500"}`}
               />
             </button>
             {activeSection === "bin" && onRestoreEmail ? (
