@@ -373,7 +373,13 @@ const EmailList: React.FC<EmailListProps> = ({
                 emailIds={checkedEmailsArray}
                 currentLabels={[]} // For bulk actions, we don't show current labels
                 availableLabels={customLabels}
-                onLabelsChange={onEmailLabelsChange}
+                onLabelsChange={(emailIds, labelIds) => {
+                  onEmailLabelsChange(emailIds, labelIds);
+                  // Clear selection after bulk label operation
+                  setTimeout(() => {
+                    onUnselectAll();
+                  }, 100);
+                }}
                 onCreateLabel={onCreateLabel}
               />
             )}

@@ -46,9 +46,10 @@ const EmailLabelActions: React.FC<EmailLabelActionsProps> = ({
     
     try {
       onLabelsChange(emailIds, newLabelIds);
-      // Small delay to show loading state
+      // Small delay to show loading state and close dropdown
       setTimeout(() => {
         setIsUpdating(false);
+        setIsOpen(false); // Close the dropdown after updating
       }, 300);
     } catch (error) {
       setIsUpdating(false);

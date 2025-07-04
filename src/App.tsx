@@ -43,25 +43,21 @@ function App() {
   const calculateEmailCounts = () => {
     const counts: Record<string, number> = {};
 
-    // Basic sections - show total count for main sections, unread for others
+    // Basic sections
     counts.inbox = emails.length; // Total emails in inbox
     counts.starred = emails.filter(email => email.isStarred).length; // Total starred emails
     counts.snoozed = 0; // Mock data doesn't have snoozed emails
     counts.bin = deletedEmails.length; // Total deleted emails
 
-    // Custom labels - show total count of emails with that label
+    // Label counts - only count emails that explicitly have the label assigned
     customLabels.forEach(label => {
+      const labelEmails = emails.filter(email => 
+        email.customLabels?.includes(label.id)
+      );
+      
       if (label.isSystem) {
-        // System labels - only count emails that actually have the label assigned
-        const labelEmails = emails.filter(email => 
-          email.customLabels?.includes(label.id)
-        );
         counts[`label-${label.id}`] = labelEmails.length;
       } else {
-        // Custom labels - count emails that have the label assigned
-        const labelEmails = emails.filter(email => 
-          email.customLabels?.includes(label.id)
-        );
         counts[`custom-label-${label.id}`] = labelEmails.length;
       }
     });
@@ -236,27 +232,17 @@ function App() {
         break;
       case 'label-work':
         filtered = conversations.filter(email => 
-          email.customLabels?.includes('work') ||
-          email.subject.toLowerCase().includes('project') ||
-          email.subject.toLowerCase().includes('meeting') ||
-          email.subject.toLowerCase().includes('campaign') ||
-          email.senderEmail.includes('company.com') ||
-          email.senderEmail.includes('techcorp.com')
+          email.customLabels?.includes('work')
         );
         break;
       case 'label-personal':
         filtered = conversations.filter(email => 
-          email.customLabels?.includes('personal') ||
-          email.subject.toLowerCase().includes('welcome') ||
-          email.senderEmail.includes('startup.io')
+          email.customLabels?.includes('personal')
         );
         break;
       case 'label-important':
         filtered = conversations.filter(email => 
-          email.customLabels?.includes('important') ||
-          email.subject.toLowerCase().includes('urgent') ||
-          email.subject.toLowerCase().includes('important') ||
-          email.isStarred
+          email.customLabels?.includes('important')
         );
         break;
       case 'label-travel':
@@ -465,18 +451,17 @@ function App() {
         if (emailIds.includes(email.id)) {
           return {
             ...email,
-            customLabels: [...labelIds] // Create a new array to ensure state updates
+            customLabels: [...labelIds] // Replace all labels with the new ones
           };
         }
         return email;
       })
     );
 
-    // Force re-calculation of counts after label changes
-    setTimeout(() => {
-      // This ensures the counts update after the state has been updated
-      setEmails(prevEmails => [...prevEmails]);
-    }, 0);
+    // Clear checked emails after label operation
+    setCheckedEmails(new Set());
+
+    console.log(`Updated labels for ${emailIds.length} emails:`, labelIds);
   };
 
   const handleBulkMarkAsRead = (emailIds: string[], isRead: boolean) => {
