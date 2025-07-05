@@ -80,7 +80,6 @@ function App() {
     }
   }, [getMailListResponse]);
 
-  const [composeModalOpen, setComposeModalOpen] = useState(false);
   const [labelManagerOpen, setLabelManagerOpen] = useState(false);
   const [isFullPageView, setIsFullPageView] = useState(false);
   const [composePanelOpen, setComposePanelOpen] = useState(false);

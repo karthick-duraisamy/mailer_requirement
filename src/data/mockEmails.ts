@@ -1,14 +1,14 @@
 import { Email } from '../types/email';
 
-// Helper function to ensure all emails have an intentLabel
-const ensureIntentLabel = (emails: Email[]): Email[] => {
+// Helper function to ensure all emails have an intent
+const ensureintent = (emails: any[]): any[] => {
   return emails.map(email => ({
     ...email,
-    intentLabel: email.intentLabel || 'new'
+    intent: email.intent || 'new'
   }));
 };
 
-const rawEmails: Email[] = [
+const rawEmails: any[] = [
   {
     id: '1',
     sender: 'Sarah Johnson',
@@ -18,7 +18,7 @@ const rawEmails: Email[] = [
     timestamp: '2024-01-15T16:45:00Z',
     isStarred: true,
     isRead: false,
-    intentLabel: 'report',
+    intent: 'report',
     customLabels: ['work', 'important'],
     messages: [
       {
@@ -105,7 +105,7 @@ Manager`,
     timestamp: '2024-01-15T13:45:00Z',
     isStarred: false,
     isRead: false,
-    intentLabel: 'announcement',
+    intent: 'announcement',
     customLabels: ['work', 'urgent'],
     messages: [
       {
@@ -144,7 +144,7 @@ David`,
     timestamp: '2024-01-15T11:20:00Z',
     isStarred: true,
     isRead: true,
-    intentLabel: 'announcement',
+    intent: 'announcement',
     customLabels: ['personal'],
     messages: [
       {
@@ -183,7 +183,7 @@ Emma`,
     timestamp: '2024-01-15T09:15:00Z',
     isStarred: false,
     isRead: true,
-    intentLabel: 'meeting',
+    intent: 'meeting',
     customLabels: ['work', 'clients'],
     messages: [
       {
@@ -222,7 +222,7 @@ Michael`,
     timestamp: '2024-01-14T18:30:00Z',
     isStarred: false,
     isRead: true,
-    intentLabel: 'feedback',
+    intent: 'feedback',
     customLabels: ['work'],
     messages: [
       {
@@ -285,7 +285,7 @@ Alex`,
     timestamp: '2024-01-14T08:00:00Z',
     isStarred: false,
     isRead: true,
-    intentLabel: 'announcement',
+    intent: 'announcement',
     customLabels: ['newsletters'],
     messages: [
       {
@@ -334,7 +334,7 @@ Tech Trends Team`,
     timestamp: '2024-01-13T14:20:00Z',
     isStarred: false,
     isRead: true,
-    intentLabel: 'general',
+    intent: 'general',
     customLabels: ['work'],
     messages: [
       {
@@ -372,7 +372,7 @@ John`,
     timestamp: '2024-01-15T10:30:00Z',
     isStarred: false,
     isRead: false,
-    // No intentLabel - should be assigned 'new' automatically
+    // No intent - should be assigned 'new' automatically
     customLabels: ['work'],
     messages: [
       {
@@ -403,7 +403,7 @@ Alice`,
     timestamp: '2024-01-14T15:45:00Z',
     isStarred: false,
     isRead: false,
-    // No intentLabel - should be assigned 'new' automatically
+    // No intent - should be assigned 'new' automatically
     customLabels: [],
     messages: [
       {
@@ -439,7 +439,7 @@ Support Team`,
     timestamp: '2024-01-13T12:00:00Z',
     isStarred: true,
     isRead: false,
-    // No intentLabel - should be assigned 'new' automatically
+    // No intent - should be assigned 'new' automatically
     customLabels: ['newsletters'],
     messages: [
       {
@@ -469,4 +469,4 @@ Marketing Insights Team`,
   },
 ];
 
-export const mockEmails: Email[] = ensureIntentLabel(rawEmails);
+export const mockEmails: Email[] = ensureintent(rawEmails);

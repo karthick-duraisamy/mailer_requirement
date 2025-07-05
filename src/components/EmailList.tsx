@@ -14,7 +14,10 @@ import {
   BarChart3,
   MessageSquare,
   Mail,
-  MoreHorizontal
+  MoreHorizontal,
+  CheckCircle,
+  XCircle,
+  Ticket
 } from "lucide-react";
 import { Email, CustomLabel } from "../types/email";
 import EmailLabelActions from "./EmailLabelActions";
@@ -37,6 +40,13 @@ interface EmailListProps {
   onUnselectAll: () => void;
   onUndo?: () => void;
 }
+
+type IntentLabel = {
+  text: string;
+  icon: React.ElementType;
+  color: string;
+  iconColor: string;
+};
 
 const EmailList: React.FC<EmailListProps> = ({
   emails,
@@ -90,65 +100,61 @@ const EmailList: React.FC<EmailListProps> = ({
     }
   };
 
-  const getIntentLabel = (intent: string) => {
-    switch (intent) {
-      case "meeting":
-        return {
-          text: "Meeting",
-          icon: Calendar,
-          color: "bg-blue-100 text-blue-800",
-          iconColor: "text-blue-600",
-        };
-      case "announcement":
-        return {
-          text: "Announcement",
-          icon: Megaphone,
-          color: "bg-purple-100 text-purple-800",
-          iconColor: "text-purple-600",
-        };
-      case "system":
-        return {
-          text: "System Alert",
-          icon: AlertTriangle,
-          color: "bg-red-100 text-red-800",
-          iconColor: "text-red-600",
-        };
-      case "report":
-        return {
-          text: "Report",
-          icon: BarChart3,
-          color: "bg-green-100 text-green-800",
-          iconColor: "text-green-600",
-        };
-      case "feedback":
-        return {
-          text: "Feedback",
-          icon: MessageSquare,
-          color: "bg-orange-100 text-orange-800",
-          iconColor: "text-orange-600",
-        };
-      case "general":
-        return {
-          text: "General",
-          icon: Mail,
-          color: "bg-gray-100 text-gray-800",
-          iconColor: "text-gray-600",
-        };
-      case "new":
-        return {
-          text: "New",
-          icon: Mail,
-          color: "bg-blue-100 text-blue-800",
-          iconColor: "text-blue-600",
-        };
-      default:
-        return {
-          text: "New",
-          icon: Mail,
-          color: "bg-blue-100 text-blue-800",
-          iconColor: "text-blue-600",
-        };
+  const getIntentLabel = (intent: string): IntentLabel => {
+    const lower = intent.toLowerCase();
+  
+    if (lower.includes("get")) {
+      return {
+        text: "Get Info",
+        icon: Calendar,
+        color: "bg-blue-100 text-blue-800",
+        iconColor: "text-blue-600",
+      };
     }
+  
+    if (lower.includes("approve") || lower.includes("success") || lower.includes("confirmed")) {
+      return {
+        text: "Approved",
+        icon: CheckCircle,
+        color: "bg-green-100 text-green-800",
+        iconColor: "text-green-600",
+      };
+    }
+  
+    if (lower.includes("cancel") || lower.includes("rejected") || lower.includes("failed")) {
+      return {
+        text: "Cancelled",
+        icon: XCircle,
+        color: "bg-red-100 text-red-800",
+        iconColor: "text-red-600",
+      };
+    }
+  
+    if (lower.includes("ticket") || lower.includes("booking") || lower.includes("reservation")) {
+      return {
+        text: "Ticketing",
+        icon: Ticket,
+        color: "bg-yellow-100 text-yellow-800",
+        iconColor: "text-yellow-600",
+      };
+    }
+  
+    if (lower.includes("feedback") || lower.includes("report")) {
+      return {
+        text: "Feedback",
+        icon: MessageSquare,
+        color: "bg-orange-100 text-orange-800",
+        iconColor: "text-orange-600",
+      };
+    }
+  
+    // default fallback
+    return {
+      text: "new",
+      icon: Mail,
+      color: "bg-blue-100 text-blue-800",
+      iconColor: "text-blue-600",
+    };
   };
 
   const getSectionTitle = (section: string) => {
@@ -518,20 +524,20 @@ const EmailList: React.FC<EmailListProps> = ({
                       `}>
                         {email?.to}
                       </p>
-                      {email.intentLabel && (
+                      {email?.intent && (
                         <div
                           className={`
                           inline-flex items-center px-2 py-1 rounded-full text-xs font-medium flex-shrink-0
-                          ${getIntentLabel(email.intentLabel).color}
+                          ${getIntentLabel(email.intent).color}
                         `}
                         >
                           {React.createElement(
-                            getIntentLabel(email.intentLabel).icon,
+                            getIntentLabel(email.intent).icon,
                             {
-                              className: `w-3 h-3 mr-1 ${getIntentLabel(email.intentLabel).iconColor}`,
+                              className: `w-3 h-3 mr-1 ${getIntentLabel(email.intent).iconColor}`,
                             },
                           )}
-                          {getIntentLabel(email.intentLabel).text}
+                          {getIntentLabel(email.intent).text}
                         </div>
                       )}
                     </div>
