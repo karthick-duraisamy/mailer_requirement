@@ -24,7 +24,7 @@ import {
 import { Email, CustomLabel } from "../types/email";
 import EmailLabelActions from "./EmailLabelActions";
 import EntitiesPopover from "./EntitiesPopover";
-import { useLazyGetConvoResponseQuery } from "../service/inboxService";
+import { useLazyGetConversationDetailsQuery } from "../service/inboxService";
 
 interface AiReplyState {
   isGenerating: boolean;
@@ -68,6 +68,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   activeSection,
   onStarToggle,
 }) => {
+  console.log('select email')
+  console.log(email?.mail_id)
   const [replyText, setReplyText] = useState("");
   const [showReply, setShowReply] = useState(false);
    const [expandedMessages, setExpandedMessages] = useState<Set<string>>(
@@ -82,7 +84,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   const replyBoxRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const entitiesButtonRef = useRef<HTMLButtonElement>(null);
-  const [ getConvoResponse, getConvoResponseStatus ] = useLazyGetConvoResponseQuery();
+  const [ getConversationDetails, getConversationDetailsStatus ] = useLazyGetConversationDetailsQuery();
   const [msgData, setMsgData] = useState<any[]>([]);
   const moreMenuRef = useRef<HTMLDivElement>(null);
 
@@ -132,17 +134,21 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   }, [showMoreMenu]);
   
   useEffect(()=>{
-    getConvoResponse({});
-  },[]);
+    if(email?.mail_id) {
+      let id = email?.mail_id;
+      getConversationDetails({id});
+    }
+  },[email?.mail_id]);
 
   useEffect(() => {
-    if(getConvoResponseStatus?.isSuccess){
-      const msgData = (getConvoResponseStatus as any)?.data?.response?.data?.conversation;
+    if(getConversationDetailsStatus?.isSuccess){
+      console.log(getConversationDetailsStatus)
+      const msgData = (getConversationDetailsStatus as any)?.data?.response?.data?.conversation;
       if(msgData){
         setMsgData(msgData);
       }
     }
-  },[getConvoResponseStatus]);
+  },[getConversationDetailsStatus]);
 
   if (!email) {
     return (
@@ -794,7 +800,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                   {!isExpanded && (
                     <>
                       <div className="text-sm text-gray-500 truncate mb-3" >
-                        {message.body_plain.substring(0, 100)}...
+                        {message?.body_plain?.substring(0, 100)}...
                       </div>
                     </>
                   )}

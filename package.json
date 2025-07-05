@@ -12,12 +12,14 @@
   "dependencies": {
     "@reduxjs/toolkit": "^2.8.2",
     "lucide-react": "^0.344.0",
+    "crypto-js": "^4.2.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-redux": "^9.2.0",
     "redux": "^5.0.1"
   },
   "devDependencies": {
+    "@types/crypto-js": "^4.2.2",
     "@eslint/js": "^9.9.1",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
