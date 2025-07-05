@@ -6,7 +6,8 @@ const service = InboxService.enhanceEndpoints({
   // Define a expected endpoints
   endpoints: (builder: any) => ({
     getMailListResponse: builder.query({
-      query: () => `/mail-server/?project=${localStorage.getItem("project")}&page=1&page_size=100`, // dynamic project ID
+      // query: () => `/mail-server/?project=${localStorage.getItem("project")}&page=1&page_size=100`, // dynamic project ID
+      query: (param : any) => ({ url: `/mail-server/?project=${localStorage.getItem("project")}`, method: 'GET', params: param }),
     }),
     getConvoResponse: builder.query({
       query: () => "staticResponse/convoResponse.json",

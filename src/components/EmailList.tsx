@@ -22,6 +22,8 @@ import {
 import { Email, CustomLabel } from "../types/email";
 import EmailLabelActions from "./EmailLabelActions";
 import LabelList from "./CustomLabel";
+import { useLazyGetMailListResponseQuery } from "../service/inboxService";
+import { FilterOptions } from "../components/EmailFilters";
 
 interface EmailListProps {
   emails: any[];
@@ -40,6 +42,8 @@ interface EmailListProps {
   onSelectAll: () => void;
   onUnselectAll: () => void;
   onUndo?: () => void;
+  setEmails?: Function;
+  readStatus: string;
 }
 
 type IntentLabel = {
@@ -47,6 +51,7 @@ type IntentLabel = {
   icon: React.ElementType;
   color: string;
   iconColor: string;
+  
 };
 
 const EmailList: React.FC<EmailListProps> = ({
@@ -66,6 +71,8 @@ const EmailList: React.FC<EmailListProps> = ({
   onSelectAll,
   onUnselectAll,
   onUndo,
+  setEmails,
+  readStatus,
 }) => {
   const [toAddress, setToAddress] = useState("");
   const [width, setWidth] = useState(320); // Default width
@@ -74,6 +81,41 @@ const EmailList: React.FC<EmailListProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const startXRef = useRef<number>(0);
   const startWidthRef = useRef<number>(320);
+  const [getMailList, getMailListResponse] = useLazyGetMailListResponseQuery();
+  const [filterData, setFilterData] = useState<any>({
+    page: 1,
+    page_size: 20,
+    search: undefined
+  });
+  const [inboxCount, setInboxCount] = useState(0);
+
+  useEffect(() => {
+    // Initial call
+    getMailList(filterData);
+  }, [filterData])
+
+  useEffect(() => {
+    if (getMailListResponse.isSuccess && setEmails) {
+      const staticList = (getMailListResponse as any)?.data?.response?.data
+        ?.results;
+      if (staticList && Array.isArray(staticList)) {
+        setInboxCount((getMailListResponse as any)?.data?.response?.data?.count || 0);
+        setEmails((prevEmails: any[]) => {
+          // Create a Set of existing mail_ids
+          const existingIds = new Set(prevEmails.map(email => email.mail_id));
+          // Filter out emails that already exist
+          const newEmails = staticList.filter(
+            (email: any) => !existingIds.has(email.mail_id)
+          ).map((email: any) => ({
+            ...email,
+            intentLabel: email.labels || "new",
+          }));
+          // Append only new emails
+          return [...prevEmails, ...newEmails];
+        });
+      }
+    }
+  }, [getMailListResponse]);
 
   const handleEmailDoubleClick = (email: Email, event: React.MouseEvent) => {
     event.stopPropagation();
@@ -250,11 +292,11 @@ const EmailList: React.FC<EmailListProps> = ({
           {section === "starred"
             ? "Star important conversations to find them quickly here."
             : section === "snoozed"
-            ? "Snoozed conversations will appear here when it's time to deal with them."
-            : section.startsWith("custom-label-") ||
-              section.startsWith("label-")
-            ? `Conversations with the "${title}" label will appear here.`
-            : `No conversations available yet.`}
+              ? "Snoozed conversations will appear here when it's time to deal with them."
+              : section.startsWith("custom-label-") ||
+                section.startsWith("label-")
+                ? `Conversations with the "${title}" label will appear here.`
+                : `No conversations available yet.`}
         </p>
       </div>
     );
@@ -394,9 +436,7 @@ const EmailList: React.FC<EmailListProps> = ({
             <div style={{ height: "100%" }}>
               <h2 className="text-lg font-semibold text-gray-900">
                 {getSectionTitle(activeSection)}
-                {` (${emails.filter((email) => !email.is_read).length}/${
-                  emails.length
-                })`}
+                {` (${emails.filter((email) => !email.is_read).length}/${readStatus === "all" ? inboxCount : emails.length})`}
               </h2>
               <p className={`text-sm mt-1 truncate`}>
                 {toAddress ? `To: ${toAddress}` : "No recipients found"}
@@ -502,7 +542,18 @@ const EmailList: React.FC<EmailListProps> = ({
         </div>
       </div>
 
-      <div className="divide-y divide-gray-100 overflow-y-auto max-h-[calc(100vh-8rem)] thin-scrollbar">
+      <div
+        className="divide-y divide-gray-100 overflow-y-auto max-h-[calc(100vh-8rem)] thin-scrollbar"
+        onScroll={(e) => {
+          const target = e.currentTarget;
+          if (target.scrollHeight - target.scrollTop === target.clientHeight) {
+            setFilterData((prev: any) => ({
+              ...prev,
+              page: prev.page + 1,
+            }));
+          }
+        }}
+      >
         {emails.map((email) => {
           const isSelected = selectedEmailId === email.message_id;
           const isChecked = checkedEmails.has(email.message_id);
@@ -546,11 +597,10 @@ const EmailList: React.FC<EmailListProps> = ({
                   className="mt-1 transition-colors"
                 >
                   <Star
-                    className={`w-4 h-4 ${
-                      email.is_starred
-                        ? "text-yellow-500 fill-yellow-500"
-                        : "text-gray-400 hover:text-yellow-500"
-                    }`}
+                    className={`w-4 h-4 ${email.is_starred
+                      ? "text-yellow-500 fill-yellow-500"
+                      : "text-gray-400 hover:text-yellow-500"
+                      }`}
                   />
                 </button>
 
@@ -560,11 +610,10 @@ const EmailList: React.FC<EmailListProps> = ({
                       <p
                         className={`
                         text-sm mt-1
-                        ${
-                          !email.is_read
+                        ${!email.is_read
                             ? "font-bold text-black"
                             : "font-semibold text-gray-400"
-                        }
+                          }
                         line-clamp-2
                       `}
                       >
@@ -580,9 +629,8 @@ const EmailList: React.FC<EmailListProps> = ({
                           {React.createElement(
                             getIntentLabel(email.intent).icon,
                             {
-                              className: `w-3 h-3 mr-1 ${
-                                getIntentLabel(email.intent).iconColor
-                              }`,
+                              className: `w-3 h-3 mr-1 ${getIntentLabel(email.intent).iconColor
+                                }`,
                             }
                           )}
                           {getIntentLabel(email.intent).text}
@@ -597,11 +645,10 @@ const EmailList: React.FC<EmailListProps> = ({
                   <p
                     className={`
                     text-sm mt-1 truncate
-                    ${
-                      !email.is_read
+                    ${!email.is_read
                         ? "text-gray-700 font-medium"
                         : "text-gray-400"
-                    }
+                      }
                   `}
                   >
                     {email.snippet}

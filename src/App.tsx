@@ -957,6 +957,8 @@ function App() {
                     onBulkRestore={handleBulkRestore}
                     onSelectAll={handleSelectAll}
                     onUnselectAll={handleUnselectAll}
+                    setEmails={setEmails}
+                    readStatus={filters?.readStatus}
                   />
                 </div>
 
