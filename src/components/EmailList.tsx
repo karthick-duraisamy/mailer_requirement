@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { Email, CustomLabel } from "../types/email";
 import EmailLabelActions from "./EmailLabelActions";
+import LabelList from "./CustomLabel";
 
 interface EmailListProps {
   emails: any[];
@@ -206,8 +207,8 @@ const EmailList: React.FC<EmailListProps> = ({
   };
 
   const getEmailCustomLabels = (email: Email) => {
-    if (!email.customLabels) return [];
-    return email.customLabels
+    if (!email.labels) return [];
+    return email.labels
       .map((labelId) => customLabels.find((label) => label.id === labelId))
       .filter(Boolean) as CustomLabel[];
   };
@@ -564,30 +565,7 @@ const EmailList: React.FC<EmailListProps> = ({
 
                   {/* Custom Labels */}
                   {emailLabels.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {emailLabels.slice(0, 3).map((label) => (
-                        <span
-                          key={label.id}
-                          className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium"
-                          style={{
-                            backgroundColor: `${label.color}15`,
-                            color: label.color,
-                            border: `1px solid ${label.color}30`,
-                          }}
-                        >
-                          <div
-                            className="w-2 h-2 rounded-full mr-1"
-                            style={{ backgroundColor: label.color }}
-                          />
-                          {label.name}
-                        </span>
-                      ))}
-                      {emailLabels.length > 3 && (
-                        <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600">
-                          +{emailLabels.length - 3} more
-                        </span>
-                      )}
-                    </div>
+                    <LabelList emailLabels={email?.labels as string[]} />
                   )}
                 </div>
               </div>

@@ -9,7 +9,7 @@ export interface Email {
   isRead: boolean;
   messages: EmailMessage[];
   intentLabel?: 'meeting' | 'announcement' | 'system' | 'report' | 'feedback' | 'general' | 'new';
-  customLabels?: string[]; // Array of custom label IDs
+  labels?: string[]; // Array of custom label IDs
 }
 
 export interface EmailMessage {

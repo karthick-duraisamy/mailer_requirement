@@ -121,7 +121,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               );
             })}
 
-            <div className="pt-4">
+            {false && <div className="pt-4">
               <div className="flex items-center justify-between px-3 py-2">
                 <button
                   onClick={() => setLabelsExpanded(!labelsExpanded)}
@@ -223,7 +223,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   </button>
                 </div>
               )}
-            </div>
+            </div>}
           </nav>
         </div>
       </aside>
