@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Settings, Menu, User, Bell, LogOut, UserCircle, X } from 'lucide-react';
+import { Search, Settings, Menu, User, Bell, LogOut, UserCircle } from 'lucide-react';
 import EmailFilters, { FilterOptions } from './EmailFilters';
 import NotificationPreferences from './NotificationPreferences';
 import SignatureSetup from './SignatureSetup';
@@ -11,16 +11,9 @@ interface HeaderProps {
   onSearch: (query: string) => void;
   onFiltersChange: (filters: FilterOptions) => void;
   filters: FilterOptions;
-  sidebarOpen: boolean; // Add this prop to show current state
 }
 
-const Header: React.FC<HeaderProps> = ({ 
-  onMenuToggle, 
-  onSearch, 
-  onFiltersChange, 
-  filters,
-  sidebarOpen 
-}) => {
+const Header: React.FC<HeaderProps> = ({ onMenuToggle, onSearch, onFiltersChange, filters }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
@@ -91,36 +84,21 @@ const Header: React.FC<HeaderProps> = ({
   return (
     <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between relative z-50">
       <div className="flex items-center space-x-4">
-        {/* Enhanced Menu Toggle Button */}
         <button
           onClick={onMenuToggle}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-          aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
-          title={sidebarOpen ? "Close sidebar" : "Open sidebar"}
+          className="p-2 hover:bg-gray-100 rounded-lg transition-colors md:hidden"
         >
-          <div className="relative w-5 h-5">
-            {/* Animated hamburger/close icon */}
-            <span className={`absolute block w-5 h-0.5 bg-gray-600 transform transition-all duration-300 ease-in-out ${
-              sidebarOpen ? 'rotate-45 translate-y-0' : '-translate-y-1.5'
-            }`} />
-            <span className={`absolute block w-5 h-0.5 bg-gray-600 transform transition-all duration-300 ease-in-out ${
-              sidebarOpen ? 'opacity-0' : 'opacity-100'
-            }`} />
-            <span className={`absolute block w-5 h-0.5 bg-gray-600 transform transition-all duration-300 ease-in-out ${
-              sidebarOpen ? '-rotate-45 translate-y-0' : 'translate-y-1.5'
-            }`} />
-          </div>
+          <Menu className="w-5 h-5" />
         </button>
-        
         <div className="flex items-center space-x-2">
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-sm">M</span>
           </div>
-          <h1 className="text-xl font-semibold text-gray-900 hidden sm:block">Mail</h1>
+          <h1 className="text-xl font-semibold text-gray-900">Mail</h1>
         </div>
       </div>
 
-      <div className="flex-1 max-w-2xl mx-4 sm:mx-8">
+      <div className="flex-1 max-w-2xl mx-8">
         <div className="flex items-center space-x-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -133,14 +111,11 @@ const Header: React.FC<HeaderProps> = ({
             />
           </div>
 
-          {/* Hide filters on very small screens */}
-          <div className="hidden sm:block">
-            <EmailFilters
-              filters={filters}
-              onFiltersChange={onFiltersChange}
-              onClearFilters={handleClearFilters}
-            />
-          </div>
+          <EmailFilters
+            filters={filters}
+            onFiltersChange={onFiltersChange}
+            onClearFilters={handleClearFilters}
+          />
         </div>
       </div>
 

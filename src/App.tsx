@@ -41,39 +41,6 @@ function App() {
     }
   }, []);
 
-  // Auto-close sidebar on window resize for better responsive behavior
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 768) {
-        // Desktop breakpoint - keep sidebar open
-        setSidebarOpen(false);
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  // Close sidebar when clicking outside on mobile
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (sidebarOpen && window.innerWidth < 768) {
-        const sidebar = document.querySelector('[role="navigation"]');
-        const menuButton = document.querySelector('[aria-label*="sidebar"]');
-        
-        if (sidebar && !sidebar.contains(event.target as Node) && 
-            menuButton && !menuButton.contains(event.target as Node)) {
-          setSidebarOpen(false);
-        }
-      }
-    };
-
-    if (sidebarOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [sidebarOpen]);
-
   const [aiReplyStates, setAiReplyStates] = useState({
     isGenerating: false,
     showAiReply: false,
@@ -522,10 +489,6 @@ function App() {
     setSidebarOpen(!sidebarOpen);
   };
 
-  const handleCloseSidebar = () => {
-    setSidebarOpen(false);
-  };
-
   const handleSearch = (query: string) => {
     setSearchQuery(query);
   };
@@ -533,10 +496,7 @@ function App() {
   const handleSectionChange = (section: string) => {
     setActiveItem(section);
     setSelectedEmail(null); // Clear selected email when changing sections
-    // Auto-close sidebar on mobile when selecting item
-    if (window.innerWidth < 768) {
-      setSidebarOpen(false);
-    }
+    setSidebarOpen(false); // Close sidebar on mobile when selecting item
   };
 
   const handleFiltersChange = (newFilters: FilterOptions) => {
@@ -962,7 +922,13 @@ function App() {
         onSearch={handleSearch}
         onFiltersChange={handleFiltersChange}
         filters={filters}
-        sidebarOpen={sidebarOpen}
+        checkedEmails={checkedEmails}
+        onBulkMarkAsRead={handleBulkMarkAsRead}
+        onBulkDelete={handleBulkDelete}
+        onSelectAll={handleSelectAll}
+        onUnselectAll={handleUnselectAll}
+        onUndo={handleUndo}
+        hasSelection={checkedEmails.size > 0}
       />
 
       <div className="flex-1 flex overflow-hidden">
@@ -974,7 +940,6 @@ function App() {
           customLabels={customLabels}
           onManageLabels={() => setLabelManagerOpen(true)}
           emailCounts={emailCounts}
-          onClose={handleCloseSidebar}
         />
 
         {getMailListResponse?.isSuccess && (
