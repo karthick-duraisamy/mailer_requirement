@@ -73,6 +73,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   console.log(email?.mail_id)
   const { width: windowWidth } = useScreenResolution();
   const [replyText, setReplyText] = useState("");
+  const [AIGeneratedReply, setAIGeneratedReply] = useState("");
   const [showReply, setShowReply] = useState(false);
   const [expandedMessages, setExpandedMessages] = useState<Set<string>>(
     new Set(),
@@ -225,11 +226,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   };
 
   const handleAiReplyGenerate = () => {
-    if (msgData) {
-      const useReplyAll = shouldUseReplyAll(email);
-      // Always use professional tone
-      onGenerateAiReply(msgData, 'professional', useReplyAll ? 'reply-all' : 'reply');
-    }
+    setAIGeneratedReply(msgData[msgData.length - 1]?.ai_response);
   };
 
   const handleToneChange = (tone: "professional" | "friendly" | "concise") => {
@@ -864,7 +861,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       )}
 
       {/* AI Reply Preview - Always positioned properly */}
-      {aiReplyState.showAiReply && (
+      {AIGeneratedReply.length > 0 && (
         <div className="border-t border-gray-200 p-6 bg-gray-50">
           <div 
           style={{ width: windowWidth > 1580 ? "100%" : windowWidth < 1580 && windowWidth > 1280 ? "85%" : "65%" }}>
@@ -924,7 +921,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                 style={isAiReplyExpanded ? { minHeight: "350px" } : {}}
               >
                 <pre className="whitespace-pre-wrap text-gray-800 text-sm font-sans">
-                  {aiReplyState.generatedReply}
+                  {AIGeneratedReply}
                 </pre>
               </div>
               <div className="flex items-center space-x-2 flex-wrap">
