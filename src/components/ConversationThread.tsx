@@ -439,6 +439,18 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       .filter(Boolean) as CustomLabel[];
   };
 
+  // Fixed dismiss handler
+  const handleDismissAiReply = () => {
+    onAiReplyStateChange({
+      ...aiReplyState,
+      showAiReply: false,
+      generatedReply: "",
+      isGenerating: false,
+      replyType: undefined,
+    });
+    setIsAiReplyExpanded(false);
+  };
+
   const ReplyTypeLabel = ({
     replyType,
   }: {
@@ -495,11 +507,30 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
   const emailLabels = getEmailCustomLabels(msgData);
 
-  // Loading indicator component
+  // Enhanced loading indicator component with animated spinner
   const LoadingIndicator = () => (
-    <div className="flex items-center space-x-2">
-      <Loader2 className="w-4 h-4 animate-spin" />
-      <span>Generating...</span>
+    <div className="flex items-center justify-center space-x-3 py-8">
+      <div className="relative">
+        <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+        <div className="absolute inset-0 w-8 h-8 border-2 border-purple-200 rounded-full animate-pulse"></div>
+      </div>
+      <div className="flex flex-col items-start">
+        <span className="text-purple-700 font-medium">Generating AI Reply...</span>
+        <span className="text-purple-500 text-sm">This may take a few seconds</span>
+      </div>
+    </div>
+  );
+
+  // Alternative pulsing dots loader
+  const PulsingDotsLoader = () => (
+    <div className="flex items-center justify-center space-x-2 py-6">
+      <Sparkles className="w-5 h-5 text-purple-600" />
+      <span className="text-purple-700 font-medium">Generating AI reply</span>
+      <div className="flex space-x-1">
+        <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+        <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+        <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+      </div>
     </div>
   );
 
@@ -805,8 +836,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
         </div>
       </div>
 
-      {/* Action Buttons - Hidden when AI reply is active */}
-      {!aiReplyState.showAiReply && (
+      {/* Action Buttons - Hidden when AI reply is active or generating */}
+      {!aiReplyState.showAiReply && !aiReplyState.isGenerating && (
         <div className="border-t border-gray-200 p-6 bg-gray-50">
           <div className="max-w-5xl mx-auto">
             <div className="flex items-center space-x-2 flex-wrap gap-2">
@@ -823,14 +854,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                 disabled={aiReplyState.isGenerating}
                 className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-400 text-white rounded-lg transition-colors"
               >
-                {aiReplyState.isGenerating ? (
-                  <LoadingIndicator />
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4" />
-                    <span>Reply with AI</span>
-                  </>
-                )}
+                <Sparkles className="w-4 h-4" />
+                <span>Reply with AI</span>
               </button>
 
               <button
@@ -853,8 +878,19 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
         </div>
       )}
 
+      {/* AI Reply Loading State */}
+      {aiReplyState.isGenerating && (
+        <div className="border-t border-gray-200 p-6 bg-gray-50">
+          <div className="max-w-5xl mx-auto">
+            <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg">
+              <LoadingIndicator />
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* AI Reply Preview - Always positioned properly */}
-      {aiReplyState.showAiReply && (
+      {aiReplyState.showAiReply && !aiReplyState.isGenerating && (
         <div className="border-t border-gray-200 p-6 bg-gray-50">
           <div className="max-w-5xl mx-auto">
             <div
@@ -934,14 +970,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                   <span>Reply All</span>
                 </button>
                 <button
-                  onClick={() =>{ 
-                    setIsAiReplyExpanded(false);
-                    onAiReplyStateChange({
-                      ...aiReplyState,
-                      showAiReply: false,
-                      replyType: undefined,
-                    });
-                  }}
+                  onClick={handleDismissAiReply}
                   className="px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors text-sm"
                 >
                   Dismiss
@@ -1034,7 +1063,10 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                       className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-400 text-white rounded-lg transition-colors"
                     >
                       {aiReplyState.isGenerating ? (
-                        <LoadingIndicator />
+                        <div className="flex items-center space-x-2">
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>Generating...</span>
+                        </div>
                       ) : (
                         <>
                           <Sparkles className="w-4 h-4" />
