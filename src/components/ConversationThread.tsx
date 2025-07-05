@@ -442,11 +442,12 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   // Fixed dismiss handler
   const handleDismissAiReply = () => {
     onAiReplyStateChange({
-      ...aiReplyState,
+      isGenerating: false,
       showAiReply: false,
       generatedReply: "",
-      isGenerating: false,
+      tone: "professional",
       replyType: undefined,
+      isExpanded: false,
     });
     setIsAiReplyExpanded(false);
   };
@@ -517,19 +518,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       <div className="flex flex-col items-start">
         <span className="text-purple-700 font-medium">Generating AI Reply...</span>
         <span className="text-purple-500 text-sm">This may take a few seconds</span>
-      </div>
-    </div>
-  );
-
-  // Alternative pulsing dots loader
-  const PulsingDotsLoader = () => (
-    <div className="flex items-center justify-center space-x-2 py-6">
-      <Sparkles className="w-5 h-5 text-purple-600" />
-      <span className="text-purple-700 font-medium">Generating AI reply</span>
-      <div className="flex space-x-1">
-        <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-        <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-        <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
       </div>
     </div>
   );
