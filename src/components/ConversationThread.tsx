@@ -20,9 +20,10 @@ import {
   User,
   Bot,
   UserCog,
+  Send as MailSend,
+  Inbox as InboxIcon,
 } from "lucide-react";
 import { Email, CustomLabel } from "../types/email";
-import EmailLabelActions from "./EmailLabelActions";
 import EntitiesPopover from "./EntitiesPopover";
 import { useLazyGetConversationDetailsQuery } from "../service/inboxService";
 import { useScreenResolution } from "../hooks/commonFunction";
@@ -767,7 +768,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
               >
                 <div
                   className={`p-6 ${
-                    isFromCurrentUser ? "bg-blue-50" : "bg-white"
+                    isFromCurrentUser ? "bg-blue-50" : "bg-gray-50"
                   }`}
                 >
                   {/* Message Header */}
@@ -795,7 +796,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                         toggleMessageExpansion(message.message_id);
                       }
                     }}
-                    style={{ marginBottom: 10 }}
+                    style={{ marginBottom: 10, border: "2px solid #abb1ae" }}
                   >
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center space-x-3">
@@ -810,55 +811,65 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                             {message.from_address.charAt(0).toUpperCase()}
                           </span>
                         </div>
-                        <div className="min-w-0 flex-1">
+
+                        {/* Left content (Name, reply type, mail icon, timestamp) */}
+                        <div className="min-w-0">
                           <div className="flex items-center space-x-2">
                             <p className="font-semibold text-gray-900">
                               {message.from_address}
                             </p>
                             <ReplyTypeLabel replyType={message.replyType} />
-                            <button className="text-gray-400 hover:text-gray-600">
-                              {isExpanded ? (
-                                <ChevronUp className="w-4 h-4" />
-                              ) : (
-                                <ChevronDown className="w-4 h-4" />
-                              )}
-                            </button>
+                            {isFromCurrentUser ? (
+                              <MailSend className="w-5 h-5 text-blue-600 mt-0.5" />
+                            ) : (
+                              <InboxIcon className="w-5 h-5 text-green-600 mt-0.5" />
+                            )}
                           </div>
                           <p className="text-sm text-gray-500">
                             {formatTimestamp(message.created_at)}
                           </p>
                         </div>
                       </div>
+
+                      {/* Right-aligned expand/collapse button */}
+                      <button className="text-gray-400 hover:text-gray-600 mt-1">
+                        {isExpanded ? (
+                          <ChevronUp className="w-6 h-6" />
+                        ) : (
+                          <ChevronDown className="w-6 h-6" />
+                        )}
+                      </button>
                     </div>
 
                     {/* Message Metadata - Always visible for expanded messages */}
-                    {isExpanded && (
-                      <div className="mb-4 bg-gray-50 rounded-lg p-4 space-y-2">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                          {message.cc && message.cc.length > 0 && (
-                            <div>
-                              <span className="font-medium text-gray-700">
-                                CC:
-                              </span>
-                              <p className="text-gray-600 mt-1">
-                                {message.cc.join(", ")}
-                              </p>
-                            </div>
-                          )}
+                    {isExpanded &&
+                      (message.cc.length > 0 || message.bcc.length > 0) && (
+                        <div className="mb-4 bg-gray-50 rounded-lg p-4 space-y-2">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            {message.cc && message.cc.length > 0 && (
+                              <div>
+                                <span className="font-medium text-gray-700">
+                                  CC:
+                                </span>
+                                <p className="text-gray-600 mt-1">
+                                  {message.cc.join(", ")}
+                                </p>
+                              </div>
+                            )}
 
-                          {message.bcc && message.bcc.length > 0 && (
-                            <div>
-                              <span className="font-medium text-gray-700">
-                                BCC:
-                              </span>
-                              <p className="text-gray-600 mt-1">
-                                {message.bcc.join(", ")}
-                              </p>
-                            </div>
-                          )}
+                            {message.bcc && message.bcc.length > 0 && (
+                              <div>
+                                <span className="font-medium text-gray-700">
+                                  BCC:
+                                </span>
+                                <p className="text-gray-600 mt-1">
+                                  {message.bcc.join(", ")}
+                                </p>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
                   </div>
 
                   {/* Message Content */}
@@ -1045,7 +1056,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                 </button>
                 <button
                   onClick={() => {
-                    setAIGeneratedReply('')
+                    setAIGeneratedReply("");
                   }}
                   className="px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors text-sm"
                 >

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import {
   Star,
   Square,
@@ -17,7 +17,7 @@ import {
   MoreHorizontal,
   CheckCircle,
   XCircle,
-  Ticket
+  Ticket,
 } from "lucide-react";
 import { Email, CustomLabel } from "../types/email";
 import EmailLabelActions from "./EmailLabelActions";
@@ -67,7 +67,7 @@ const EmailList: React.FC<EmailListProps> = ({
   onUnselectAll,
   onUndo,
 }) => {
-  const [toAddress] = useState(emails[emails?.length - 1]?.to > 0 ? emails[emails?.length - 1]?.to[0] : undefined);
+  const [toAddress, setToAddress] = useState("");
   const [width, setWidth] = useState(320); // Default width
   const [isResizing, setIsResizing] = useState(false);
   const [showMoreActions, setShowMoreActions] = useState(false);
@@ -79,6 +79,14 @@ const EmailList: React.FC<EmailListProps> = ({
     event.stopPropagation();
     onEmailSelect(email, true); // true for full-page view
   };
+
+  useEffect(() => {
+    setToAddress(
+      emails[emails?.length - 1]?.to?.length > 0
+        ? emails[emails?.length - 1]?.to[0]
+        : undefined
+    );
+  }, [emails]);
 
   const formatTime = (created_at: string) => {
     const date = new Date(created_at);
@@ -104,7 +112,7 @@ const EmailList: React.FC<EmailListProps> = ({
 
   const getIntentLabel = (intent: string): IntentLabel => {
     const lower = intent.toLowerCase();
-  
+
     if (lower.includes("get")) {
       return {
         text: "Get Info",
@@ -113,8 +121,12 @@ const EmailList: React.FC<EmailListProps> = ({
         iconColor: "text-blue-600",
       };
     }
-  
-    if (lower.includes("approve") || lower.includes("success") || lower.includes("confirmed")) {
+
+    if (
+      lower.includes("approve") ||
+      lower.includes("success") ||
+      lower.includes("confirmed")
+    ) {
       return {
         text: "Approved",
         icon: CheckCircle,
@@ -122,8 +134,12 @@ const EmailList: React.FC<EmailListProps> = ({
         iconColor: "text-green-600",
       };
     }
-  
-    if (lower.includes("cancel") || lower.includes("rejected") || lower.includes("failed")) {
+
+    if (
+      lower.includes("cancel") ||
+      lower.includes("rejected") ||
+      lower.includes("failed")
+    ) {
       return {
         text: "Cancelled",
         icon: XCircle,
@@ -131,8 +147,12 @@ const EmailList: React.FC<EmailListProps> = ({
         iconColor: "text-red-600",
       };
     }
-  
-    if (lower.includes("ticket") || lower.includes("booking") || lower.includes("reservation")) {
+
+    if (
+      lower.includes("ticket") ||
+      lower.includes("booking") ||
+      lower.includes("reservation")
+    ) {
       return {
         text: "Ticketing",
         icon: Ticket,
@@ -140,7 +160,7 @@ const EmailList: React.FC<EmailListProps> = ({
         iconColor: "text-yellow-600",
       };
     }
-  
+
     if (lower.includes("feedback") || lower.includes("report")) {
       return {
         text: "Feedback",
@@ -149,7 +169,7 @@ const EmailList: React.FC<EmailListProps> = ({
         iconColor: "text-orange-600",
       };
     }
-  
+
     // default fallback
     return {
       text: "new",
@@ -230,11 +250,11 @@ const EmailList: React.FC<EmailListProps> = ({
           {section === "starred"
             ? "Star important conversations to find them quickly here."
             : section === "snoozed"
-              ? "Snoozed conversations will appear here when it's time to deal with them."
-              : section.startsWith("custom-label-") ||
-                section.startsWith("label-")
-                ? `Conversations with the "${title}" label will appear here.`
-                : `No conversations available yet.`}
+            ? "Snoozed conversations will appear here when it's time to deal with them."
+            : section.startsWith("custom-label-") ||
+              section.startsWith("label-")
+            ? `Conversations with the "${title}" label will appear here.`
+            : `No conversations available yet.`}
         </p>
       </div>
     );
@@ -254,7 +274,7 @@ const EmailList: React.FC<EmailListProps> = ({
       document.body.style.cursor = "col-resize";
       document.body.style.userSelect = "none";
     },
-    [width],
+    [width]
   );
 
   const handleResize = useCallback(
@@ -271,7 +291,7 @@ const EmailList: React.FC<EmailListProps> = ({
         setWidth(clampedWidth);
       });
     },
-    [isResizing],
+    [isResizing]
   );
 
   const handleResizeStop = useCallback(() => {
@@ -301,7 +321,12 @@ const EmailList: React.FC<EmailListProps> = ({
       <div
         className="bg-white border-r border-gray-200 relative"
         ref={containerRef}
-        style={{ width: `${width}px`, minWidth: '240px', maxWidth: '800px', height: '100%' }}
+        style={{
+          width: `${width}px`,
+          minWidth: "240px",
+          maxWidth: "800px",
+          height: "100%",
+        }}
       >
         {/* Resizer */}
         <div
@@ -324,7 +349,12 @@ const EmailList: React.FC<EmailListProps> = ({
     <div
       className="bg-white border-r border-gray-200 relative"
       ref={containerRef}
-      style={{ width: `${width}px`, minWidth: '240px', maxWidth: '800px', height: '100%' }}
+      style={{
+        width: `${width}px`,
+        minWidth: "240px",
+        maxWidth: "800px",
+        height: "100%",
+      }}
     >
       {/* Resizer */}
       <div
@@ -333,7 +363,7 @@ const EmailList: React.FC<EmailListProps> = ({
       >
         <div className="bg-gray-300 group-hover:bg-blue-400 h-6 w-0.5 rounded-full transition-colors" />
       </div>
-      <div className="p-4 border-b border-gray-200" style={{border: '1px solid red'}}>
+      <div className="p-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             {/* Master Checkbox for Select All/Unselect All */}
@@ -364,12 +394,13 @@ const EmailList: React.FC<EmailListProps> = ({
             <div style={{ height: "100%" }}>
               <h2 className="text-lg font-semibold text-gray-900">
                 {getSectionTitle(activeSection)}
-                {` (${emails.filter(email => !email.is_read).length}/${emails.length})`}
+                {` (${emails.filter((email) => !email.is_read).length}/${
+                  emails.length
+                })`}
               </h2>
-              {/* <p
-                className={`text-sm mt-1 truncate`}>
+              <p className={`text-sm mt-1 truncate`}>
                 {toAddress ? `To: ${toAddress}` : "No recipients found"}
-              </p> */}
+              </p>
             </div>
           </div>
 
@@ -482,14 +513,14 @@ const EmailList: React.FC<EmailListProps> = ({
               key={email.message_id}
               className={`
                 p-4 cursor-pointer transition-colors hover:bg-gray-50
-                ${isSelected ? 'bg-blue-50 border-r-2 border-blue-500' : ''}
-                ${!email.is_read ? 'bg-blue-25' : ''}
+                ${isSelected ? "bg-blue-50 border-r-2 border-blue-500" : ""}
+                ${!email.is_read ? "bg-blue-25" : ""}
               `}
               onClick={() => onEmailSelect(email)}
               onDoubleClick={(e) => handleEmailDoubleClick(email, e)}
               title="Double-click to open in full-page view"
               style={{
-                ...(isSelected ? { borderRight: '1px solid blue' } : {})
+                ...(isSelected ? { borderRight: "1px solid blue" } : {}),
               }}
             >
               <div className="flex items-start space-x-3">
@@ -515,25 +546,30 @@ const EmailList: React.FC<EmailListProps> = ({
                   className="mt-1 transition-colors"
                 >
                   <Star
-                    className={`w-4 h-4 ${email.is_starred
+                    className={`w-4 h-4 ${
+                      email.is_starred
                         ? "text-yellow-500 fill-yellow-500"
                         : "text-gray-400 hover:text-yellow-500"
-                      }`}
+                    }`}
                   />
                 </button>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2 min-w-0">
-                    <p
-                      className={`
+                      <p
+                        className={`
                         text-sm mt-1
-                        ${!email.is_read ? 'font-bold text-black' : 'font-semibold text-gray-400'}
+                        ${
+                          !email.is_read
+                            ? "font-bold text-black"
+                            : "font-semibold text-gray-400"
+                        }
                         line-clamp-2
                       `}
-                    >
-                      {email.subject}
-                    </p>
+                      >
+                        {email.subject}
+                      </p>
                       {email?.intent && (
                         <div
                           className={`
@@ -544,8 +580,10 @@ const EmailList: React.FC<EmailListProps> = ({
                           {React.createElement(
                             getIntentLabel(email.intent).icon,
                             {
-                              className: `w-3 h-3 mr-1 ${getIntentLabel(email.intent).iconColor}`,
-                            },
+                              className: `w-3 h-3 mr-1 ${
+                                getIntentLabel(email.intent).iconColor
+                              }`,
+                            }
                           )}
                           {getIntentLabel(email.intent).text}
                         </div>
@@ -559,8 +597,13 @@ const EmailList: React.FC<EmailListProps> = ({
                   <p
                     className={`
                     text-sm mt-1 truncate
-                    ${!email.is_read ? 'text-gray-700 font-medium' : 'text-gray-400'}
-                  `}>
+                    ${
+                      !email.is_read
+                        ? "text-gray-700 font-medium"
+                        : "text-gray-400"
+                    }
+                  `}
+                  >
                     {email.snippet}
                   </p>
 
