@@ -597,13 +597,13 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
           </div>
 
           <div className="flex items-center space-x-2 ml-4">
-            <EmailLabelActions
+            {/* <EmailLabelActions
               emailIds={[email.message_id]}
               currentLabels={email.customLabels || []}
               availableLabels={customLabels}
               onLabelsChange={onEmailLabelsChange}
               onCreateLabel={onCreateLabel}
-            />
+            /> */}
             <button
               ref={entitiesButtonRef}
               onClick={() => setShowEntitiesPopover(!showEntitiesPopover)}
@@ -813,7 +813,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center space-x-2">
                             <p className="font-semibold text-gray-900">
-                              {isFromCurrentUser ? "You" : message.from_address}
+                              {message.from_address}
                             </p>
                             <ReplyTypeLabel replyType={message.replyType} />
                             <button className="text-gray-400 hover:text-gray-600">
@@ -835,12 +835,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                     {isExpanded && (
                       <div className="mb-4 bg-gray-50 rounded-lg p-4 space-y-2">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                          <div>
-                            <span className="font-medium text-gray-700">
-                              From:
-                            </span>
-                            <p className="text-gray-600 mt-1">{`${message.from_address} <${message.to}>`}</p>
-                          </div>
                           {message.cc && message.cc.length > 0 && (
                             <div>
                               <span className="font-medium text-gray-700">

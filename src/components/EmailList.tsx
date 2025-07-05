@@ -67,6 +67,7 @@ const EmailList: React.FC<EmailListProps> = ({
   onUnselectAll,
   onUndo,
 }) => {
+  const [toAddress] = useState(emails[emails?.length - 1]?.to > 0 ? emails[emails?.length - 1]?.to[0] : undefined);
   const [width, setWidth] = useState(320); // Default width
   const [isResizing, setIsResizing] = useState(false);
   const [showMoreActions, setShowMoreActions] = useState(false);
@@ -332,7 +333,7 @@ const EmailList: React.FC<EmailListProps> = ({
       >
         <div className="bg-gray-300 group-hover:bg-blue-400 h-6 w-0.5 rounded-full transition-colors" />
       </div>
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-gray-200" style={{border: '1px solid red'}}>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             {/* Master Checkbox for Select All/Unselect All */}
@@ -365,6 +366,10 @@ const EmailList: React.FC<EmailListProps> = ({
                 {getSectionTitle(activeSection)}
                 {` (${emails.filter(email => !email.is_read).length}/${emails.length})`}
               </h2>
+              {/* <p
+                className={`text-sm mt-1 truncate`}>
+                {toAddress ? `To: ${toAddress}` : "No recipients found"}
+              </p> */}
             </div>
           </div>
 
@@ -520,13 +525,15 @@ const EmailList: React.FC<EmailListProps> = ({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2 min-w-0">
-                      <p
-                        className={`
-                        text-sm truncate
-                        ${!email.is_read ? 'font-bold text-black' : 'font-normal text-gray-500'}
-                      `}>
-                        {email?.to}
-                      </p>
+                    <p
+                      className={`
+                        text-sm mt-1
+                        ${!email.is_read ? 'font-bold text-black' : 'font-semibold text-gray-400'}
+                        line-clamp-2
+                      `}
+                    >
+                      {email.subject}
+                    </p>
                       {email?.intent && (
                         <div
                           className={`
@@ -548,14 +555,6 @@ const EmailList: React.FC<EmailListProps> = ({
                       {formatTime(email.created_at)}
                     </p>
                   </div>
-
-                  <p
-                    className={`
-                    text-sm mt-1 truncate
-                    ${!email.is_read ? 'font-bold text-black' : 'font-normal text-gray-500'}
-                  `}>
-                    {email.subject}
-                  </p>
 
                   <p
                     className={`
