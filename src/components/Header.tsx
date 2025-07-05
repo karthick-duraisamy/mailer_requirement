@@ -84,12 +84,25 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, onSearch, onFiltersChange
   return (
     <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between relative z-50">
       <div className="flex items-center space-x-4">
-        <button
+        {/* Enhanced Menu Toggle Button */}
+        {/* <button
           onClick={onMenuToggle}
           className="p-2 hover:bg-gray-100 rounded-lg transition-colors md:hidden"
-        >
-          <Menu className="w-5 h-5" />
-        </button>
+        > */}
+          {/* <div className="relative w-5 h-5">
+            {/* Animated hamburger/close icon */}
+            {/* <span className={`absolute block w-5 h-0.5 bg-gray-600 transform transition-all duration-300 ease-in-out ${
+              sidebarOpen ? 'rotate-45 translate-y-0' : '-translate-y-1.5'
+            }`} />
+            <span className={`absolute block w-5 h-0.5 bg-gray-600 transform transition-all duration-300 ease-in-out ${
+              sidebarOpen ? 'opacity-0' : 'opacity-100'
+            }`} />
+            <span className={`absolute block w-5 h-0.5 bg-gray-600 transform transition-all duration-300 ease-in-out ${
+              sidebarOpen ? '-rotate-45 translate-y-0' : 'translate-y-1.5'
+            }`} />
+          </div>
+        </button> */}
+        
         <div className="flex items-center space-x-2">
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-sm">M</span>

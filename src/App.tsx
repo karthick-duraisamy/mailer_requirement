@@ -29,6 +29,7 @@ function App() {
     dateRange: { from: "", to: "" },
     intent: "all",
   });
+  const [sidebarWidth, setSidebarWidth] = useState(64); // default to collapsed width
 
   // The following useEffect is used to set initial user and project data in localStorage
   useEffect(() => {
@@ -836,58 +837,14 @@ function App() {
 
     console.log(email);
     // Generate contextual reply based on email content and tone
-    const lastMessage = email[email - 1];
     let generatedReply = "";
+    const foundEmail = emails[emails.length - 1];
 
     // Handle different reply types
-    if (replyType === "reply-all") {
-      // Get all unique recipients for reply-all
-      const allRecipients = new Set([
-        lastMessage.to,
-        ...lastMessage.to,
-        ...(lastMessage.cc || []),
-      ]);
-      const recipientList = Array.from(allRecipients).join(", ");
+    if (replyType) {
 
-      switch (tone) {
-        case "friendly":
-          generatedReply = `Hi everyone,\n\nThanks for the email! I wanted to respond to the group with my thoughts.\n\n${getContextualResponse(
-            email
-          )}\n\nLooking forward to hearing from all of you!\n\nBest regards`;
-          break;
-        case "concise":
-          generatedReply = `Hi all,\n\n${getContextualResponse(
-            email
-          )}\n\nBest regards`;
-          break;
-        default: // professional
-          generatedReply = `Dear team,\n\nThank you all for your input regarding ${email.subject.toLowerCase()}.\n\n${getContextualResponse(
-            email
-          )}\n\nPlease let me know if anyone has additional questions or concerns.\n\nBest regards`;
-      }
-    } else {
-      // Regular reply generation
-
-      switch (tone) {
-        case "friendly":
-          generatedReply = `Hi ${
-            lastMessage?.from_address.split(" ")[0]
-          },\n\nThanks for your email! I appreciate you reaching out.\n\n${getContextualResponse(
-            email
-          )}\n\nLooking forward to hearing from you!\n\nBest regards`;
-          break;
-        case "concise":
-          generatedReply = `Hi,\n\n${getContextualResponse(
-            email
-          )}\n\nBest regards`;
-          break;
-        default: // professional
-          generatedReply = `Dear ${
-            lastMessage?.from_address
-          },\n\nThank you for your email regarding ${email?.subject?.toLowerCase()}.\n\n${getContextualResponse(
-            email
-          )}\n\nPlease let me know if you have any questions.\n\nBest regards`;
-      }
+      generatedReply = foundEmail?.ai_response;
+    
     }
 
     setAiReplyStates((prev) => ({
@@ -940,10 +897,15 @@ function App() {
           customLabels={customLabels}
           onManageLabels={() => setLabelManagerOpen(true)}
           emailCounts={emailCounts}
+          // onClose={handleCloseSidebar}
+          onWidthChange={setSidebarWidth}
         />
 
         {getMailListResponse?.isSuccess && (
-          <div className="flex-1 flex min-w-0">
+          <div
+            className="flex-1 flex min-w-0 transition-all duration-200"
+            style={{ marginLeft: sidebarWidth }}
+          >
             {isFullPageView ? (
               <ConversationThread
                 email={selectedEmail}
@@ -968,7 +930,7 @@ function App() {
                 <div className="flex-shrink-0">
                   <EmailList
                     emails={filteredEmails}
-                    selectedEmailId={selectedEmail?.id || null}
+                    selectedEmailId={selectedEmail?.message_id || null}
                     onEmailSelect={handleEmailSelect}
                     onStarToggle={handleStarToggle}
                     onCheckToggle={handleCheckToggle}
