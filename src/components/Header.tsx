@@ -104,9 +104,9 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, onSearch, onFiltersChange
         </button> */}
         
         <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+          {/* <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-sm">M</span>
-          </div>
+          </div> */}
           <h1 className="text-xl font-semibold text-gray-900">Mail</h1>
         </div>
       </div>
@@ -134,7 +134,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, onSearch, onFiltersChange
 
       <div className="flex items-center space-x-2">
         {/* Settings Dropdown */}
-        <div className="relative" ref={settingsRef}>
+        {/* <div className="relative" ref={settingsRef}>
           <button 
             onClick={() => setShowSettingsDropdown(!showSettingsDropdown)}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -181,10 +181,10 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, onSearch, onFiltersChange
               </button>
             </div>
           )}
-        </div>
+        </div> */}
 
         {/* Profile Dropdown */}
-        <div className="relative" ref={profileRef}>
+        {/* <div className="relative" ref={profileRef}>
           <button 
             onClick={() => setShowProfileDropdown(!showProfileDropdown)}
             className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center hover:bg-blue-200 transition-colors"
@@ -213,8 +213,8 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, onSearch, onFiltersChange
               </button>
             </div>
           )}
-        </div>
-      </div>
+        </div>*/}
+      </div> 
 
       {/* Settings Modals */}
       <NotificationPreferences

@@ -29,7 +29,7 @@ function App() {
     dateRange: { from: "", to: "" },
     intent: "all",
   });
-  const [sidebarWidth, setSidebarWidth] = useState(64); // default to collapsed width
+  // const [sidebarWidth, setSidebarWidth] = useState(64); // default to collapsed width
 
   // The following useEffect is used to set initial user and project data in localStorage
   useEffect(() => {
@@ -889,7 +889,7 @@ function App() {
       />
 
       <div className="flex-1 flex overflow-hidden">
-        <Sidebar
+        {/* <Sidebar
           activeItem={activeItem}
           onItemSelect={handleSectionChange}
           isOpen={sidebarOpen}
@@ -899,12 +899,12 @@ function App() {
           emailCounts={emailCounts}
           // onClose={handleCloseSidebar}
           onWidthChange={setSidebarWidth}
-        />
+        /> */}
 
         {getMailListResponse?.isSuccess && (
           <div
             className="flex-1 flex min-w-0 transition-all duration-200"
-            style={{ marginLeft: sidebarWidth }}
+            // style={{ marginLeft: sidebarWidth }}
           >
             {isFullPageView ? (
               <ConversationThread

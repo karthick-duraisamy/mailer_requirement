@@ -21,8 +21,8 @@
 }
 
 body {
-  /* font-family: 'Open Sans', sans-serif; */
-  font-family: 'Arial';
+  font-family: 'Open Sans', sans-serif , Arial;
+  /* font-family: 'Arial'; */
   font-weight: 400;
   background-color: #f2f5f8;
 }
