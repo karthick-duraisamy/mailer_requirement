@@ -231,7 +231,7 @@ const EmailList: React.FC<EmailListProps> = ({
             : section === "snoozed"
               ? "Snoozed conversations will appear here when it's time to deal with them."
               : section.startsWith("custom-label-") ||
-                  section.startsWith("label-")
+                section.startsWith("label-")
                 ? `Conversations with the "${title}" label will appear here.`
                 : `No conversations available yet.`}
         </p>
@@ -300,7 +300,7 @@ const EmailList: React.FC<EmailListProps> = ({
       <div
         className="bg-white border-r border-gray-200 relative"
         ref={containerRef}
-        style={{ width: `${width}px`, minWidth: '240px', maxWidth: '800px' ,height: '100%' }}
+        style={{ width: `${width}px`, minWidth: '240px', maxWidth: '800px', height: '100%' }}
       >
         {/* Resizer */}
         <div
@@ -360,7 +360,7 @@ const EmailList: React.FC<EmailListProps> = ({
               )}
             </button>
 
-            <div style={{height:"100%"}}>
+            <div style={{ height: "100%" }}>
               <h2 className="text-lg font-semibold text-gray-900">
                 {getSectionTitle(activeSection)}
                 {` (${emails.filter(email => !email.is_read).length}/${emails.length})`}
@@ -483,6 +483,9 @@ const EmailList: React.FC<EmailListProps> = ({
               onClick={() => onEmailSelect(email)}
               onDoubleClick={(e) => handleEmailDoubleClick(email, e)}
               title="Double-click to open in full-page view"
+              style={{
+                ...(isSelected ? { borderRight: '1px solid blue' } : {})
+              }}
             >
               <div className="flex items-start space-x-3">
                 <button
@@ -507,11 +510,10 @@ const EmailList: React.FC<EmailListProps> = ({
                   className="mt-1 transition-colors"
                 >
                   <Star
-                    className={`w-4 h-4 ${
-                      email.is_starred
+                    className={`w-4 h-4 ${email.is_starred
                         ? "text-yellow-500 fill-yellow-500"
                         : "text-gray-400 hover:text-yellow-500"
-                    }`}
+                      }`}
                   />
                 </button>
 
