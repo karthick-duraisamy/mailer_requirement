@@ -912,7 +912,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       </div>
 
       {/* Action Buttons - Hidden when AI reply is active */}
-      {AIGeneratedReply?.length === 0 && (
+      {AIGeneratedReply?.length === 0 && !showReply && (
         <div className="border-t border-gray-200 p-6 bg-gray-50">
           <div className="max-w-5xl mx-auto">
             <div className="flex items-center justify-between flex-wrap gap-2 w-full">
@@ -1084,23 +1084,43 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                   : "Reply"}
               </h3>
               <div className="text-sm text-gray-600 space-y-1 bg-white p-3 rounded-lg border">
-                <p>
-                  <span className="font-medium">To:</span>{" "}
-                  {replyText.includes("--- Reply All ---")
-                    ? (() => {
-                        const lastMessage =
-                          sortedMessages[sortedMessages.length - 1];
-                        const allRecipients = new Set([
-                          lastMessage.to,
-                          ...lastMessage.to,
-                          ...(lastMessage.cc || []),
-                        ]);
-                        return Array.from(allRecipients).join(", ");
-                      })()
-                    : replyText.includes("--- Forwarded Message ---")
-                    ? "Enter recipient email(s)"
-                    : sortedMessages[sortedMessages.length - 1].to.join(", ")}
-                </p>
+                <div className="space-y-1 text-sm">
+                  {/* To */}
+                  <div>
+                    <span className="font-medium">To:</span>{" "}
+                    {replyText.includes("--- Reply All ---")
+                      ? (() => {
+                          const lastMessage =
+                            sortedMessages[sortedMessages.length - 1];
+                          const allRecipients = new Set([...lastMessage.to]);
+                          return Array.from(allRecipients).join(", ");
+                        })()
+                      : replyText.includes("--- Forwarded Message ---")
+                      ? "Enter recipient email(s)"
+                      : sortedMessages[sortedMessages.length - 1]?.to?.join(
+                          ", "
+                        )}
+                  </div>
+
+                  {/* Cc (render only if exists) */}
+                  {sortedMessages[sortedMessages.length - 1]?.cc?.length >
+                    0 && (
+                    <div>
+                      <span className="font-medium">Cc:</span>{" "}
+                      {sortedMessages[sortedMessages.length - 1].cc.join(", ")}
+                    </div>
+                  )}
+
+                  {/* Bcc (render only if exists) */}
+                  {sortedMessages[sortedMessages.length - 1]?.bcc?.length >
+                    0 && (
+                    <div>
+                      <span className="font-medium">Bcc:</span>{" "}
+                      {sortedMessages[sortedMessages.length - 1].bcc.join(", ")}
+                    </div>
+                  )}
+                </div>
+
                 <p>
                   <span className="font-medium">Subject:</span>{" "}
                   {replyText.includes("--- Forwarded Message ---")
@@ -1149,7 +1169,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
               </button>
               <div className="flex items-center space-x-2">
                 {/* Show AI generate button if not already using AI reply */}
-                {replyText !== aiReplyState.generatedReply &&
+                {/* {replyText !== aiReplyState.generatedReply &&
                   !aiReplyState.showAiReply && (
                     <button
                       onClick={handleAiReplyGenerate}
@@ -1165,7 +1185,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                         </>
                       )}
                     </button>
-                  )}
+                  )} */}
                 <button
                   onClick={handleSendReply}
                   disabled={!replyText.trim()}

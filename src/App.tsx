@@ -54,6 +54,19 @@ function App() {
   }, []);
 
   useEffect(() => {
+    // Initial call
+    getMailList({});
+
+    // Set interval
+    const intervalId = setInterval(() => {
+      getMailList({});
+    }, 300000); // 5 minutes
+
+    // Cleanup on unmount
+    return () => clearInterval(intervalId);
+  }, [getMailList]);
+
+  useEffect(() => {
     if (getMailListResponse?.isSuccess) {
       const staticList = (getMailListResponse as any)?.data?.response?.data
         ?.results;
