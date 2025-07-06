@@ -51,7 +51,6 @@ type IntentLabel = {
   icon: React.ElementType;
   color: string;
   iconColor: string;
-  
 };
 
 const EmailList: React.FC<EmailListProps> = ({
@@ -85,31 +84,33 @@ const EmailList: React.FC<EmailListProps> = ({
   const [filterData, setFilterData] = useState<any>({
     page: 1,
     page_size: 20,
-    search: undefined
+    search: undefined,
   });
   const [inboxCount, setInboxCount] = useState(0);
 
   useEffect(() => {
     // Initial call
     getMailList(filterData);
-  }, [filterData])
+  }, [filterData]);
 
   useEffect(() => {
     if (getMailListResponse.isSuccess && setEmails) {
       const staticList = (getMailListResponse as any)?.data?.response?.data
         ?.results;
       if (staticList && Array.isArray(staticList)) {
-        setInboxCount((getMailListResponse as any)?.data?.response?.data?.count || 0);
+        setInboxCount(
+          (getMailListResponse as any)?.data?.response?.data?.count || 0
+        );
         setEmails((prevEmails: any[]) => {
           // Create a Set of existing mail_ids
-          const existingIds = new Set(prevEmails.map(email => email.mail_id));
+          const existingIds = new Set(prevEmails.map((email) => email.mail_id));
           // Filter out emails that already exist
-          const newEmails = staticList.filter(
-            (email: any) => !existingIds.has(email.mail_id)
-          ).map((email: any) => ({
-            ...email,
-            intentLabel: email.labels || "new",
-          }));
+          const newEmails = staticList
+            .filter((email: any) => !existingIds.has(email.mail_id))
+            .map((email: any) => ({
+              ...email,
+              intentLabel: email.labels || "new",
+            }));
           // Append only new emails
           return [...prevEmails, ...newEmails];
         });
@@ -292,11 +293,11 @@ const EmailList: React.FC<EmailListProps> = ({
           {section === "starred"
             ? "Star important conversations to find them quickly here."
             : section === "snoozed"
-              ? "Snoozed conversations will appear here when it's time to deal with them."
-              : section.startsWith("custom-label-") ||
-                section.startsWith("label-")
-                ? `Conversations with the "${title}" label will appear here.`
-                : `No conversations available yet.`}
+            ? "Snoozed conversations will appear here when it's time to deal with them."
+            : section.startsWith("custom-label-") ||
+              section.startsWith("label-")
+            ? `Conversations with the "${title}" label will appear here.`
+            : `No conversations available yet.`}
         </p>
       </div>
     );
@@ -405,7 +406,10 @@ const EmailList: React.FC<EmailListProps> = ({
       >
         <div className="bg-gray-300 group-hover:bg-blue-400 h-6 w-0.5 rounded-full transition-colors" />
       </div>
-      <div className="p-4 border-b border-gray-200">
+      <div
+        className="p-4 border-b border-gray-200"
+        style={{ backgroundColor: "#eef7fe" }}
+      >
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             {/* Master Checkbox for Select All/Unselect All */}
@@ -436,7 +440,9 @@ const EmailList: React.FC<EmailListProps> = ({
             <div style={{ height: "100%" }}>
               <h2 className="text-lg font-semibold text-gray-900">
                 {getSectionTitle(activeSection)}
-                {` (${emails.filter((email) => !email.is_read).length}/${readStatus === "all" ? inboxCount : emails.length})`}
+                {` (${emails.filter((email) => !email.is_read).length}/${
+                  readStatus === "all" ? inboxCount : emails.length
+                })`}
               </h2>
               <p className={`text-sm mt-1 truncate`}>
                 {toAddress ? `To: ${toAddress}` : "No recipients found"}
@@ -597,10 +603,11 @@ const EmailList: React.FC<EmailListProps> = ({
                   className="mt-1 transition-colors"
                 >
                   <Star
-                    className={`w-4 h-4 ${email.is_starred
-                      ? "text-yellow-500 fill-yellow-500"
-                      : "text-gray-400 hover:text-yellow-500"
-                      }`}
+                    className={`w-4 h-4 ${
+                      email.is_starred
+                        ? "text-yellow-500 fill-yellow-500"
+                        : "text-gray-400 hover:text-yellow-500"
+                    }`}
                   />
                 </button>
 
@@ -610,10 +617,11 @@ const EmailList: React.FC<EmailListProps> = ({
                       <p
                         className={`
                         text-sm mt-1
-                        ${!email.is_read
+                        ${
+                          !email.is_read
                             ? "font-bold text-black"
                             : "font-semibold text-gray-400"
-                          }
+                        }
                         line-clamp-2
                       `}
                       >
@@ -629,8 +637,9 @@ const EmailList: React.FC<EmailListProps> = ({
                           {React.createElement(
                             getIntentLabel(email.intent).icon,
                             {
-                              className: `w-3 h-3 mr-1 ${getIntentLabel(email.intent).iconColor
-                                }`,
+                              className: `w-3 h-3 mr-1 ${
+                                getIntentLabel(email.intent).iconColor
+                              }`,
                             }
                           )}
                           {getIntentLabel(email.intent).text}
@@ -645,10 +654,11 @@ const EmailList: React.FC<EmailListProps> = ({
                   <p
                     className={`
                     text-sm mt-1 truncate
-                    ${!email.is_read
+                    ${
+                      !email.is_read
                         ? "text-gray-700 font-medium"
                         : "text-gray-400"
-                      }
+                    }
                   `}
                   >
                     {email.snippet}

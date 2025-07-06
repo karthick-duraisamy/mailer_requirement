@@ -27,6 +27,7 @@ import { Email, CustomLabel } from "../types/email";
 import EntitiesPopover from "./EntitiesPopover";
 import { useLazyGetConversationDetailsQuery } from "../service/inboxService";
 import { useScreenResolution } from "../hooks/commonFunction";
+import { ConversationSkeleton } from "./skeletonLoader";
 
 interface AiReplyState {
   isGenerating: boolean;
@@ -114,8 +115,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
   useEffect(() => {
     setReplyContent(false);
-    setShowReply(false)
-  }, [email])
+    setShowReply(false);
+  }, [email]);
 
   // Auto-scroll to reply box when AI reply is used
   useEffect(() => {
@@ -548,641 +549,663 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   );
 
   return (
-    <div ref={containerRef} className="flex-1 flex flex-col bg-white">
-      {/* Header */}
-      <div className="border-b border-gray-200 p-6">
-        <div className="flex items-center justify-between">
-          <div className="flex-1 min-w-0 flex items-center space-x-3">
-            {isFullPage && onBack && (
-              <button
-                onClick={onBack}
-                className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-gray-100 transition-colors"
-                title="Back to email list"
-              >
-                <ArrowLeft className="w-5 h-5 text-gray-600" />
-              </button>
-            )}
-            <div className="flex-1 min-w-0">
-              <h2
-                className="text-2xl font-semibold text-gray-900 truncate"
-                style={{ whiteSpace: "unset" }}
-              >
-                {email.subject}
-              </h2>
-              <div className="flex items-center space-x-4 mt-2">
-                <p className="text-sm text-gray-500">
-                  {msgData.length} message
-                  {msgData.length !== 1 ? "s" : ""} • Conversation
-                </p>
+    <>
+      {getConversationDetailsStatus?.isLoading ||
+      getConversationDetailsStatus?.isFetching ? (
+        <ConversationSkeleton />
+      ) : (
+        <div ref={containerRef} className="flex-1 flex flex-col bg-white">
+          {/* Header */}
+          <div className="border-b border-gray-200 p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex-1 min-w-0 flex items-center space-x-3">
+                {isFullPage && onBack && (
+                  <button
+                    onClick={onBack}
+                    className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-gray-100 transition-colors"
+                    title="Back to email list"
+                  >
+                    <ArrowLeft className="w-5 h-5 text-gray-600" />
+                  </button>
+                )}
+                <div className="flex-1 min-w-0">
+                  <h2
+                    className="text-2xl font-semibold text-gray-900 truncate"
+                    style={{ whiteSpace: "unset" }}
+                  >
+                    {email.subject}
+                  </h2>
+                  <div className="flex items-center space-x-4 mt-2">
+                    <p className="text-sm text-gray-500">
+                      {msgData.length} message
+                      {msgData.length !== 1 ? "s" : ""} • Conversation
+                    </p>
 
-                {/* Email Labels */}
-                {emailLabels.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {emailLabels.slice(0, 3).map((label) => (
-                      <span
-                        key={label.id}
-                        className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium"
-                        style={{
-                          backgroundColor: `${label.color}15`,
-                          color: label.color,
-                          border: `1px solid ${label.color}30`,
-                        }}
-                      >
-                        <div
-                          className="w-2 h-2 rounded-full mr-1"
-                          style={{ backgroundColor: label.color }}
-                        />
-                        {label.name}
-                      </span>
-                    ))}
-                    {emailLabels.length > 3 && (
-                      <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600">
-                        +{emailLabels.length - 3} more
-                      </span>
+                    {/* Email Labels */}
+                    {emailLabels.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {emailLabels.slice(0, 3).map((label) => (
+                          <span
+                            key={label.id}
+                            className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium"
+                            style={{
+                              backgroundColor: `${label.color}15`,
+                              color: label.color,
+                              border: `1px solid ${label.color}30`,
+                            }}
+                          >
+                            <div
+                              className="w-2 h-2 rounded-full mr-1"
+                              style={{ backgroundColor: label.color }}
+                            />
+                            {label.name}
+                          </span>
+                        ))}
+                        {emailLabels.length > 3 && (
+                          <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600">
+                            +{emailLabels.length - 3} more
+                          </span>
+                        )}
+                      </div>
                     )}
                   </div>
-                )}
+                </div>
               </div>
-            </div>
-          </div>
 
-          <div className="flex items-center space-x-2 ml-4">
-            {/* <EmailLabelActions
+              <div className="flex items-center space-x-2 ml-4">
+                {/* <EmailLabelActions
               emailIds={[email.message_id]}
               currentLabels={email.customLabels || []}
               availableLabels={customLabels}
               onLabelsChange={onEmailLabelsChange}
               onCreateLabel={onCreateLabel}
             /> */}
-            <button
-              ref={entitiesButtonRef}
-              onClick={() => setShowEntitiesPopover(!showEntitiesPopover)}
-              className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <FileText className="w-4 h-4 mr-1" />
-              <span className="text-sm text-gray-600 hover:text-gray-800">
-                Entities
-              </span>
-            </button>
-            {activeSection === "bin" && onRestoreEmail ? (
-              <button
-                onClick={() => onRestoreEmail(email.message_id)}
-                className="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                title="Restore conversation"
-              >
-                <RotateCcw className="w-4 h-4" />
-              </button>
-            ) : (
-              onDeleteEmail && (
                 <button
-                  onClick={() => onDeleteEmail(email.message_id)}
-                  className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                  title="Delete conversation"
+                  ref={entitiesButtonRef}
+                  onClick={() => setShowEntitiesPopover(!showEntitiesPopover)}
+                  className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <FileText className="w-4 h-4 mr-1" />
+                  <span className="text-sm text-gray-600 hover:text-gray-800">
+                    Entities
+                  </span>
                 </button>
-              )
-            )}
-            <div className="relative" ref={moreMenuRef}>
-              <button
-                onClick={() => setShowMoreMenu(!showMoreMenu)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <MoreHorizontal className="w-5 h-5 text-gray-600" />
-              </button>
-
-              {/* More Menu Dropdown */}
-              {showMoreMenu && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+                {activeSection === "bin" && onRestoreEmail ? (
                   <button
-                    onClick={() => {
-                      if (onStarToggle) onStarToggle(email.message_id);
-                      setShowMoreMenu(false);
-                    }}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
+                    onClick={() => onRestoreEmail(email.message_id)}
+                    className="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                    title="Restore conversation"
                   >
-                    <Star
-                      className={`w-4 h-4 ${
-                        email.isStarred ? "fill-yellow-400 text-yellow-400" : ""
-                      }`}
-                    />
-                    <span>{email.isStarred ? "Remove star" : "Add star"}</span>
+                    <RotateCcw className="w-4 h-4" />
                   </button>
-
-                  <button
-                    onClick={handleAddToCalendar}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
-                  >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                ) : (
+                  onDeleteEmail && (
+                    <button
+                      onClick={() => onDeleteEmail(email.message_id)}
+                      className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Delete conversation"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
-                    </svg>
-                    <span>Add to calendar</span>
-                  </button>
-
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )
+                )}
+                <div className="relative" ref={moreMenuRef}>
                   <button
-                    onClick={handlePrintEmail}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
+                    onClick={() => setShowMoreMenu(!showMoreMenu)}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                   >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
-                      />
-                    </svg>
-                    <span>Print</span>
+                    <MoreHorizontal className="w-5 h-5 text-gray-600" />
                   </button>
 
-                  <div className="border-t border-gray-100 my-1"></div>
+                  {/* More Menu Dropdown */}
+                  {showMoreMenu && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+                      <button
+                        onClick={() => {
+                          if (onStarToggle) onStarToggle(email.message_id);
+                          setShowMoreMenu(false);
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
+                      >
+                        <Star
+                          className={`w-4 h-4 ${
+                            email.isStarred
+                              ? "fill-yellow-400 text-yellow-400"
+                              : ""
+                          }`}
+                        />
+                        <span>
+                          {email.isStarred ? "Remove star" : "Add star"}
+                        </span>
+                      </button>
 
-                  <button
-                    onClick={handleReportSpam}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
-                  >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z"
-                      />
-                    </svg>
-                    <span>Report spam</span>
-                  </button>
-
-                  <button
-                    onClick={handleBlockSender}
-                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
-                  >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L5.636 5.636"
-                      />
-                    </svg>
-                    <span>Block {email.sender}</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-5xl mx-auto">
-          {sortedMessages.map((message, index) => {
-            const isExpanded =
-              expandedMessages.has(message.message_id) ||
-              (index === sortedMessages.length - 1 &&
-                !expandedMessages.has(`collapsed-${message.message_id}`));
-            const isLastMessage = index === sortedMessages.length - 1;
-            const isFromCurrentUser =
-              message.from_address === email.from_address;
-
-            return (
-              <div
-                key={message.message_id}
-                className="last:border-b-0"
-                style={{ marginBottom: 10 }}
-              >
-                <div
-                  className={`p-6 ${
-                    isFromCurrentUser ? "bg-blue-50" : "bg-gray-50"
-                  }`}
-                >
-                  {/* Message Header */}
-                  <div
-                    className="cursor-pointer hover:bg-gray-50 -m-2 p-2 rounded-lg"
-                    onClick={() => {
-                      if (isLastMessage) {
-                        // For last message, use a special collapsed state
-                        if (isExpanded) {
-                          setExpandedMessages(
-                            (prev) =>
-                              new Set([
-                                ...prev,
-                                `collapsed-${message.message_id}`,
-                              ])
-                          );
-                        } else {
-                          setExpandedMessages((prev) => {
-                            const newSet = new Set(prev);
-                            newSet.delete(`collapsed-${message.message_id}`);
-                            return newSet;
-                          });
-                        }
-                      } else {
-                        toggleMessageExpansion(message.message_id);
-                      }
-                    }}
-                    style={{ marginBottom: 10, border: "2px solid #abb1ae" }}
-                  >
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center space-x-3">
-                        <div
-                          className={`w-10 h-10 ${
-                            isFromCurrentUser
-                              ? "bg-gradient-to-br from-green-500 to-green-600"
-                              : "bg-gradient-to-br from-blue-500 to-purple-600"
-                          } rounded-full flex items-center justify-center flex-shrink-0`}
+                      <button
+                        onClick={handleAddToCalendar}
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
                         >
-                          <span className="text-white font-semibold text-sm">
-                            {message.from_address.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
+                        </svg>
+                        <span>Add to calendar</span>
+                      </button>
 
-                        {/* Left content (Name, reply type, mail icon, timestamp) */}
-                        <div className="min-w-0">
-                          <div className="flex items-center space-x-2">
-                            <p className="font-semibold text-gray-900">
-                              {message.from_address}
-                            </p>
-                            <ReplyTypeLabel replyType={message.replyType} />
-                            {isFromCurrentUser ? (
-                              <MailSend className="w-5 h-5 text-blue-600 mt-0.5" />
-                            ) : (
-                              <InboxIcon className="w-5 h-5 text-green-600 mt-0.5" />
-                            )}
-                          </div>
-                          <p className="text-sm text-gray-500">
-                            {formatTimestamp(message.created_at)}
-                          </p>
-                        </div>
-                      </div>
+                      <button
+                        onClick={handlePrintEmail}
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+                          />
+                        </svg>
+                        <span>Print</span>
+                      </button>
 
-                      {/* Right-aligned expand/collapse button */}
-                      <button className="text-gray-400 hover:text-gray-600 mt-1">
-                        {isExpanded ? (
-                          <ChevronUp className="w-6 h-6" />
-                        ) : (
-                          <ChevronDown className="w-6 h-6" />
-                        )}
+                      <div className="border-t border-gray-100 my-1"></div>
+
+                      <button
+                        onClick={handleReportSpam}
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z"
+                          />
+                        </svg>
+                        <span>Report spam</span>
+                      </button>
+
+                      <button
+                        onClick={handleBlockSender}
+                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L5.636 5.636"
+                          />
+                        </svg>
+                        <span>Block {email.sender}</span>
                       </button>
                     </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
 
-                    {/* Message Metadata - Always visible for expanded messages */}
-                    {isExpanded &&
-                      (message.cc.length > 0 || message.bcc.length > 0) && (
-                        <div className="mb-4 bg-gray-50 rounded-lg p-4 space-y-2">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                            {message.cc && message.cc.length > 0 && (
-                              <div>
-                                <span className="font-medium text-gray-700">
-                                  CC:
-                                </span>
-                                <p className="text-gray-600 mt-1">
-                                  {message.cc.join(", ")}
-                                </p>
-                              </div>
-                            )}
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="max-w-5xl mx-auto">
+              {sortedMessages.map((message, index) => {
+                const isExpanded =
+                  expandedMessages.has(message.message_id) ||
+                  (index === sortedMessages.length - 1 &&
+                    !expandedMessages.has(`collapsed-${message.message_id}`));
+                const isLastMessage = index === sortedMessages.length - 1;
+                const isFromCurrentUser =
+                  message.from_address === email.from_address;
 
-                            {message.bcc && message.bcc.length > 0 && (
-                              <div>
-                                <span className="font-medium text-gray-700">
-                                  BCC:
-                                </span>
-                                <p className="text-gray-600 mt-1">
-                                  {message.bcc.join(", ")}
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                  </div>
-
-                  {/* Message Content */}
-                  {isExpanded && (
-                    <>
+                return (
+                  <div
+                    key={message.message_id}
+                    className="last:border-b-0"
+                    style={{ marginBottom: 10 }}
+                  >
+                    <div
+                      className={`p-6 ${
+                        isFromCurrentUser ? "bg-blue-50" : "bg-gray-50"
+                      }`}
+                    >
+                      {/* Message Header */}
                       <div
-                        className="prose max-w-none mb-6"
+                        className="cursor-pointer hover:bg-gray-50 -m-2 p-2 rounded-lg"
+                        onClick={() => {
+                          if (isLastMessage) {
+                            // For last message, use a special collapsed state
+                            if (isExpanded) {
+                              setExpandedMessages(
+                                (prev) =>
+                                  new Set([
+                                    ...prev,
+                                    `collapsed-${message.message_id}`,
+                                  ])
+                              );
+                            } else {
+                              setExpandedMessages((prev) => {
+                                const newSet = new Set(prev);
+                                newSet.delete(
+                                  `collapsed-${message.message_id}`
+                                );
+                                return newSet;
+                              });
+                            }
+                          } else {
+                            toggleMessageExpansion(message.message_id);
+                          }
+                        }}
                         style={{
-                          background: "#f9fafb",
-                          marginTop: 10,
-                          borderRadius: 5,
-                          padding: 10,
+                          marginBottom: 10,
+                          border: "2px solid #abb1ae",
                         }}
                       >
-                        <div
-                          className="text-gray-800 leading-relaxed whitespace-pre-wrap"
-                          dangerouslySetInnerHTML={{
-                            __html: message.body_html || message.body_plain,
-                          }}
-                        />
-                        {/* {message.body_plain}
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex items-center space-x-3">
+                            <div
+                              className={`w-10 h-10 ${
+                                isFromCurrentUser
+                                  ? "bg-gradient-to-br from-green-500 to-green-600"
+                                  : "bg-gradient-to-br from-blue-500 to-purple-600"
+                              } rounded-full flex items-center justify-center flex-shrink-0`}
+                            >
+                              <span className="text-white font-semibold text-sm">
+                                {message.from_address.charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+
+                            {/* Left content (Name, reply type, mail icon, timestamp) */}
+                            <div className="min-w-0">
+                              <div className="flex items-center space-x-2">
+                                <p className="font-semibold text-gray-900">
+                                  {message.from_address}
+                                </p>
+                                <ReplyTypeLabel replyType={message.replyType} />
+                                {isFromCurrentUser ? (
+                                  <MailSend className="w-5 h-5 text-blue-600 mt-0.5" />
+                                ) : (
+                                  <InboxIcon className="w-5 h-5 text-green-600 mt-0.5" />
+                                )}
+                              </div>
+                              <p className="text-sm text-gray-500">
+                                {formatTimestamp(message.created_at)}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Right-aligned expand/collapse button */}
+                          <button className="text-gray-400 hover:text-gray-600 mt-1">
+                            {isExpanded ? (
+                              <ChevronUp className="w-6 h-6" />
+                            ) : (
+                              <ChevronDown className="w-6 h-6" />
+                            )}
+                          </button>
+                        </div>
+
+                        {/* Message Metadata - Always visible for expanded messages */}
+                        {isExpanded &&
+                          (message.cc.length > 0 || message.bcc.length > 0) && (
+                            <div className="mb-4 bg-gray-50 rounded-lg p-4 space-y-2">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                {message.cc && message.cc.length > 0 && (
+                                  <div>
+                                    <span className="font-medium text-gray-700">
+                                      CC:
+                                    </span>
+                                    <p className="text-gray-600 mt-1">
+                                      {message.cc.join(", ")}
+                                    </p>
+                                  </div>
+                                )}
+
+                                {message.bcc && message.bcc.length > 0 && (
+                                  <div>
+                                    <span className="font-medium text-gray-700">
+                                      BCC:
+                                    </span>
+                                    <p className="text-gray-600 mt-1">
+                                      {message.bcc.join(", ")}
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                      </div>
+
+                      {/* Message Content */}
+                      {isExpanded && (
+                        <>
+                          <div
+                            className="prose max-w-none mb-6"
+                            style={{
+                              background: "#f9fafb",
+                              marginTop: 10,
+                              borderRadius: 5,
+                              padding: 10,
+                            }}
+                          >
+                            <div
+                              className="text-gray-800 leading-relaxed whitespace-pre-wrap"
+                              dangerouslySetInnerHTML={{
+                                __html: message.body_html || message.body_plain,
+                              }}
+                            />
+                            {/* {message.body_plain}
                         </div> */}
-                      </div>
-                    </>
-                  )}
+                          </div>
+                        </>
+                      )}
 
-                  {/* Collapsed Message Preview */}
-                  {!isExpanded && (
-                    <>
-                      <div className="text-sm text-gray-500 truncate mb-3">
-                        {message?.body_plain?.substring(0, 100)}...
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Action Buttons - Hidden when AI reply is active */}
-      {AIGeneratedReply?.length === 0 && !showReply && (
-        <div className="border-t border-gray-200 p-6 bg-gray-50">
-          <div className="max-w-5xl mx-auto">
-            <div className="flex items-center justify-between flex-wrap gap-2 w-full">
-              {/* Left buttons */}
-              <div className="flex items-center gap-2 flex-wrap">
-                <button
-                  onClick={() => {
-                    setReplyType("reply");
-                    setShowReply(!showReply)
-                    setReplyContent(true)
-                  }}
-                  className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                >
-                  <Reply className="w-4 h-4" />
-                  <span>Reply</span>
-                </button>
-
-                <button
-                  onClick={handleReplyAll}
-                  className="flex items-center space-x-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
-                >
-                  <ReplyAll className="w-4 h-4" />
-                  <span>Reply All</span>
-                </button>
-
-                <button
-                  onClick={handleForward}
-                  className="flex items-center space-x-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
-                >
-                  <Forward className="w-4 h-4" />
-                  <span>Forward</span>
-                </button>
-              </div>
-
-              {/* Right button */}
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handleAiReplyGenerate}
-                  disabled={aiReplyState.isGenerating}
-                  className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-400 text-white rounded-lg transition-colors"
-                >
-                  {aiReplyState.isGenerating ? (
-                    <LoadingIndicator />
-                  ) : (
-                    <>
-                      <Sparkles className="w-4 h-4" />
-                      <span>Reply with AI</span>
-                    </>
-                  )}
-                </button>
-              </div>
+                      {/* Collapsed Message Preview */}
+                      {!isExpanded && (
+                        <>
+                          <div className="text-sm text-gray-500 truncate mb-3">
+                            {message?.body_plain?.substring(0, 100)}...
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
-        </div>
-      )}
 
-      {/* AI Reply Preview - Always positioned properly */}
-      {AIGeneratedReply.length > 0 && (
-        <div className="border-t border-gray-200 p-6 bg-gray-50">
-          <div
-            style={{
-              width:
-                windowWidth > 1580
-                  ? "100%"
-                  : windowWidth < 1580 && windowWidth > 1280
-                  ? "85%"
-                  : "65%",
-            }}
-          >
-            <div
-              ref={aiReplyRef}
-              className={`bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-4 animate-in slide-in-from-top-2 duration-300 transition-all ${
-                isAiReplyExpanded
-                  ? "fixed inset-4 z-50 bg-white shadow-2xl flex flex-col"
-                  : ""
-              }`}
-            >
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center space-x-2">
-                  <Sparkles className="w-4 h-4 text-purple-600" />
-                  <span className="font-semibold text-gray-900">
-                    AI Generated{" "}
-                    {shouldUseReplyAll(email) ? "Reply All" : "Reply"}
-                  </span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={handleToggleAiReplyExpand}
-                    className="text-purple-600 hover:text-purple-700 p-1"
-                    title={isAiReplyExpanded ? "Collapse" : "Expand"}
-                  >
-                    {isAiReplyExpanded ? (
-                      <Minimize className="w-4 h-4" />
-                    ) : (
-                      <Expand className="w-4 h-4" />
-                    )}
-                  </button>
-                  <button
-                    onClick={handleRegenerateAi}
-                    disabled={aiReplyState.isGenerating}
-                    className="text-purple-600 hover:text-purple-700 p-1 disabled:text-gray-400"
-                    title="Regenerate"
-                  >
-                    {aiReplyState.isGenerating ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <RotateCcw className="w-4 h-4" />
-                    )}
-                  </button>
-                  {isAiReplyExpanded && (
+          {/* Action Buttons - Hidden when AI reply is active */}
+          {AIGeneratedReply?.length === 0 && !showReply && (
+            <div className="border-t border-gray-200 p-6 bg-gray-50">
+              <div className="max-w-5xl mx-auto">
+                <div className="flex items-center justify-between flex-wrap gap-2 w-full">
+                  {/* Left buttons */}
+                  <div className="flex items-center gap-2 flex-wrap">
                     <button
-                      onClick={() => setIsAiReplyExpanded(false)}
-                      className="text-gray-500 hover:text-gray-700 p-1"
-                      title="Close"
+                      onClick={() => {
+                        setReplyType("reply");
+                        setShowReply(!showReply);
+                        setReplyContent(true);
+                      }}
+                      className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
                     >
-                      ×
+                      <Reply className="w-4 h-4" />
+                      <span>Reply</span>
                     </button>
-                  )}
-                </div>
-              </div>
-              <div
-                className={`bg-white border border-gray-200 rounded p-3 mb-3 ${
-                  isAiReplyExpanded ? "flex-1 overflow-y-auto" : ""
-                }`}
-                style={isAiReplyExpanded ? { minHeight: "350px" } : {}}
-              >
-                <pre className="whitespace-pre-wrap text-gray-800 text-sm font-sans">
-                  {AIGeneratedReply}
-                </pre>
-              </div>
-              <div className="flex items-center space-x-2 flex-wrap">
-                <button
-                  onClick={handleAiReply}
-                  className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm"
-                >
-                  <Reply className="w-4 h-4" />
-                  <span>Reply</span>
-                </button>
-                <button
-                  onClick={handleAiReplyAll}
-                  className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors text-sm"
-                >
-                  <ReplyAll className="w-4 h-4" />
-                  <span>Reply All</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setAIGeneratedReply("");
-                  }}
-                  className="px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors text-sm"
-                >
-                  Dismiss
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* Reply Box */}
-      {showReply && replyContent && (
-        <div
-          ref={replyBoxRef}
-          className="border-t border-gray-200 p-6 bg-gray-50"
-        >
-          <div className="max-w-5xl mx-auto">
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                {replyText.includes("--- Reply All ---")
-                  ? "Reply to All Recipients"
-                  : replyText.includes("--- Forwarded Message ---")
-                  ? "Forward Message"
-                  : "Reply"}
-              </h3>
-              <div className="text-sm text-gray-600 space-y-1 bg-white p-3 rounded-lg border">
-                <div className="space-y-1 text-sm">
-                  {/* To */}
-                  <div>
-                    <span className="font-medium">To:</span>{" "}
-                    {replyText.includes("--- Reply All ---")
-                      ? (() => {
-                          const lastMessage =
-                            sortedMessages[sortedMessages.length - 1];
-                          const allRecipients = new Set([...lastMessage.to]);
-                          return Array.from(allRecipients).join(", ");
-                        })()
-                      : replyText.includes("--- Forwarded Message ---")
-                      ? "Enter recipient email(s)"
-                      : sortedMessages[sortedMessages.length - 1]?.to?.join(
-                          ", "
-                        )}
+                    <button
+                      onClick={handleReplyAll}
+                      className="flex items-center space-x-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
+                    >
+                      <ReplyAll className="w-4 h-4" />
+                      <span>Reply All</span>
+                    </button>
+
+                    <button
+                      onClick={handleForward}
+                      className="flex items-center space-x-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
+                    >
+                      <Forward className="w-4 h-4" />
+                      <span>Forward</span>
+                    </button>
                   </div>
 
-                  {/* Cc (render only if exists) */}
-                  {replyType === 'reply' && sortedMessages[sortedMessages.length - 1]?.cc?.length >
-                    0 && (
-                    <div>
-                      <span className="font-medium">Cc:</span>{" "}
-                      {sortedMessages[sortedMessages.length - 1].cc.join(", ")}
-                    </div>
-                  )}
-
-                  {/* Bcc (render only if exists) */}
-                  {replyType === 'reply-all' && sortedMessages[sortedMessages.length - 1]?.bcc?.length >
-                    0 && (
-                    <div>
-                      <span className="font-medium">Bcc:</span>{" "}
-                      {sortedMessages[sortedMessages.length - 1].bcc.join(", ")}
-                    </div>
-                  )}
+                  {/* Right button */}
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleAiReplyGenerate}
+                      disabled={aiReplyState.isGenerating}
+                      className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-400 text-white rounded-lg transition-colors"
+                    >
+                      {aiReplyState.isGenerating ? (
+                        <LoadingIndicator />
+                      ) : (
+                        <>
+                          <Sparkles className="w-4 h-4" />
+                          <span>Reply with AI</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
-
-                <p>
-                  <span className="font-medium">Subject:</span>{" "}
-                  {replyText.includes("--- Forwarded Message ---")
-                    ? `Fwd: ${email.subject}`
-                    : `Re: ${email.subject}`}
-                </p>
               </div>
             </div>
+          )}
 
-            <div className="mb-3">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Message Content
-                <span className="text-gray-500 font-normal">
-                  {" "}
-                  - Type your reply below
-                </span>
-              </label>
-              <textarea
-                value={replyText}
-                onChange={(e) => setReplyText(e.target.value)}
-                placeholder={`${
-                  replyText.includes("--- Reply All ---")
-                    ? "Write your reply to all recipients..."
-                    : replyText.includes("--- Forwarded Message ---")
-                    ? "Add a message to forward..."
-                    : "Write your reply..."
-                }`}
-                className="w-full h-40 p-4 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
-              />
-            </div>
-
-            {replyText === aiReplyState.generatedReply &&
-              aiReplyState.generatedReply && (
-                <div className="mb-3 text-sm text-purple-600 flex items-center space-x-1 bg-purple-50 p-2 rounded">
-                  <Sparkles className="w-3 h-3" />
-                  <span>Using AI-generated reply</span>
-                </div>
-              )}
-
-            <div className="flex items-center justify-between">
-              <button
-                onClick={() => setShowReply(false)}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+          {/* AI Reply Preview - Always positioned properly */}
+          {AIGeneratedReply.length > 0 && (
+            <div className="border-t border-gray-200 p-6 bg-gray-50">
+              <div
+                style={{
+                  width:
+                    windowWidth > 1580
+                      ? "100%"
+                      : windowWidth < 1580 && windowWidth > 1280
+                      ? "85%"
+                      : "65%",
+                }}
               >
-                Cancel
-              </button>
-              <div className="flex items-center space-x-2">
-                {/* Show AI generate button if not already using AI reply */}
-                {/* {replyText !== aiReplyState.generatedReply &&
+                <div
+                  ref={aiReplyRef}
+                  className={`bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-4 animate-in slide-in-from-top-2 duration-300 transition-all ${
+                    isAiReplyExpanded
+                      ? "fixed inset-4 z-50 bg-white shadow-2xl flex flex-col"
+                      : ""
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center space-x-2">
+                      <Sparkles className="w-4 h-4 text-purple-600" />
+                      <span className="font-semibold text-gray-900">
+                        AI Generated{" "}
+                        {shouldUseReplyAll(email) ? "Reply All" : "Reply"}
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={handleToggleAiReplyExpand}
+                        className="text-purple-600 hover:text-purple-700 p-1"
+                        title={isAiReplyExpanded ? "Collapse" : "Expand"}
+                      >
+                        {isAiReplyExpanded ? (
+                          <Minimize className="w-4 h-4" />
+                        ) : (
+                          <Expand className="w-4 h-4" />
+                        )}
+                      </button>
+                      <button
+                        onClick={handleRegenerateAi}
+                        disabled={aiReplyState.isGenerating}
+                        className="text-purple-600 hover:text-purple-700 p-1 disabled:text-gray-400"
+                        title="Regenerate"
+                      >
+                        {aiReplyState.isGenerating ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <RotateCcw className="w-4 h-4" />
+                        )}
+                      </button>
+                      {isAiReplyExpanded && (
+                        <button
+                          onClick={() => setIsAiReplyExpanded(false)}
+                          className="text-gray-500 hover:text-gray-700 p-1"
+                          title="Close"
+                        >
+                          ×
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <div
+                    className={`bg-white border border-gray-200 rounded p-3 mb-3 ${
+                      isAiReplyExpanded ? "flex-1 overflow-y-auto" : ""
+                    }`}
+                    style={isAiReplyExpanded ? { minHeight: "350px" } : {}}
+                  >
+                    <pre className="whitespace-pre-wrap text-gray-800 text-sm font-sans">
+                      {AIGeneratedReply}
+                    </pre>
+                  </div>
+                  <div className="flex items-center space-x-2 flex-wrap">
+                    <button
+                      onClick={handleAiReply}
+                      className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm"
+                    >
+                      <Reply className="w-4 h-4" />
+                      <span>Reply</span>
+                    </button>
+                    <button
+                      onClick={handleAiReplyAll}
+                      className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors text-sm"
+                    >
+                      <ReplyAll className="w-4 h-4" />
+                      <span>Reply All</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setAIGeneratedReply("");
+                      }}
+                      className="px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors text-sm"
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Reply Box */}
+          {showReply && replyContent && (
+            <div
+              ref={replyBoxRef}
+              className="border-t border-gray-200 p-6 bg-gray-50"
+            >
+              <div className="max-w-5xl mx-auto">
+                <div className="mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    {replyText.includes("--- Reply All ---")
+                      ? "Reply to All Recipients"
+                      : replyText.includes("--- Forwarded Message ---")
+                      ? "Forward Message"
+                      : "Reply"}
+                  </h3>
+                  <div className="text-sm text-gray-600 space-y-1 bg-white p-3 rounded-lg border">
+                    <div className="space-y-1 text-sm">
+                      {/* To */}
+                      <div>
+                        <span className="font-medium">To:</span>{" "}
+                        {replyText.includes("--- Reply All ---")
+                          ? (() => {
+                              const lastMessage =
+                                sortedMessages[sortedMessages.length - 1];
+                              const allRecipients = new Set([
+                                ...lastMessage.to,
+                              ]);
+                              return Array.from(allRecipients).join(", ");
+                            })()
+                          : replyText.includes("--- Forwarded Message ---")
+                          ? "Enter recipient email(s)"
+                          : sortedMessages[sortedMessages.length - 1]?.to?.join(
+                              ", "
+                            )}
+                      </div>
+
+                      {/* Cc (render only if exists) */}
+                      {replyType === "reply" &&
+                        sortedMessages[sortedMessages.length - 1]?.cc?.length >
+                          0 && (
+                          <div>
+                            <span className="font-medium">Cc:</span>{" "}
+                            {sortedMessages[sortedMessages.length - 1].cc.join(
+                              ", "
+                            )}
+                          </div>
+                        )}
+
+                      {/* Bcc (render only if exists) */}
+                      {replyType === "reply-all" &&
+                        sortedMessages[sortedMessages.length - 1]?.bcc?.length >
+                          0 && (
+                          <div>
+                            <span className="font-medium">Bcc:</span>{" "}
+                            {sortedMessages[sortedMessages.length - 1].bcc.join(
+                              ", "
+                            )}
+                          </div>
+                        )}
+                    </div>
+
+                    <p>
+                      <span className="font-medium">Subject:</span>{" "}
+                      {replyText.includes("--- Forwarded Message ---")
+                        ? `Fwd: ${email.subject}`
+                        : `Re: ${email.subject}`}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mb-3">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Message Content
+                    <span className="text-gray-500 font-normal">
+                      {" "}
+                      - Type your reply below
+                    </span>
+                  </label>
+                  <textarea
+                    value={replyText}
+                    onChange={(e) => setReplyText(e.target.value)}
+                    placeholder={`${
+                      replyText.includes("--- Reply All ---")
+                        ? "Write your reply to all recipients..."
+                        : replyText.includes("--- Forwarded Message ---")
+                        ? "Add a message to forward..."
+                        : "Write your reply..."
+                    }`}
+                    className="w-full h-40 p-4 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                  />
+                </div>
+
+                {replyText === aiReplyState.generatedReply &&
+                  aiReplyState.generatedReply && (
+                    <div className="mb-3 text-sm text-purple-600 flex items-center space-x-1 bg-purple-50 p-2 rounded">
+                      <Sparkles className="w-3 h-3" />
+                      <span>Using AI-generated reply</span>
+                    </div>
+                  )}
+
+                <div className="flex items-center justify-between">
+                  <button
+                    onClick={() => setShowReply(false)}
+                    className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <div className="flex items-center space-x-2">
+                    {/* Show AI generate button if not already using AI reply */}
+                    {/* {replyText !== aiReplyState.generatedReply &&
                   !aiReplyState.showAiReply && (
                     <button
                       onClick={handleAiReplyGenerate}
@@ -1199,30 +1222,32 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                       )}
                     </button>
                   )} */}
-                <button
-                  onClick={handleSendReply}
-                  disabled={!replyText.trim()}
-                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg transition-colors"
-                >
-                  {replyText.includes("--- Reply All ---")
-                    ? "Send to All"
-                    : replyText.includes("--- Forwarded Message ---")
-                    ? "Forward"
-                    : "Send Reply"}
-                </button>
+                    <button
+                      onClick={handleSendReply}
+                      disabled={!replyText.trim()}
+                      className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg transition-colors"
+                    >
+                      {replyText.includes("--- Reply All ---")
+                        ? "Send to All"
+                        : replyText.includes("--- Forwarded Message ---")
+                        ? "Forward"
+                        : "Send Reply"}
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          )}
+
+          {/* Entities Popover */}
+          <EntitiesPopover
+            isOpen={showEntitiesPopover}
+            onClose={() => setShowEntitiesPopover(false)}
+            triggerRef={entitiesButtonRef}
+          />
         </div>
       )}
-
-      {/* Entities Popover */}
-      <EntitiesPopover
-        isOpen={showEntitiesPopover}
-        onClose={() => setShowEntitiesPopover(false)}
-        triggerRef={entitiesButtonRef}
-      />
-    </div>
+    </>
   );
 };
 

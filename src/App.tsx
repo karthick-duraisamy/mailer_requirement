@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import Header from "./components/Header";
-import Sidebar from "./components/Sidebar";
+import { NavbarSkeleton } from "./components/skeletonLoader";
 import EmailList from "./components/EmailList";
 import ConversationThread from "./components/ConversationThread";
 import ComposeModal, { ComposeEmailData } from "./components/ComposeModal";
@@ -855,9 +855,7 @@ function App() {
 
     // Handle different reply types
     if (replyType) {
-
       generatedReply = foundEmail?.ai_response;
-    
     }
 
     setAiReplyStates((prev) => ({
@@ -940,27 +938,34 @@ function App() {
               />
             ) : (
               <div className="flex flex-1 h-full">
-                <div className="flex-shrink-0">
-                  <EmailList
-                    emails={filteredEmails}
-                    selectedEmailId={selectedEmail?.message_id || null}
-                    onEmailSelect={handleEmailSelect}
-                    onStarToggle={handleStarToggle}
-                    onCheckToggle={handleCheckToggle}
-                    checkedEmails={checkedEmails}
-                    activeSection={activeItem}
-                    customLabels={customLabels}
-                    onEmailLabelsChange={handleEmailLabelsChange}
-                    onCreateLabel={handleCreateLabel}
-                    onBulkMarkAsRead={handleBulkMarkAsRead}
-                    onBulkDelete={handleBulkDelete}
-                    onBulkRestore={handleBulkRestore}
-                    onSelectAll={handleSelectAll}
-                    onUnselectAll={handleUnselectAll}
-                    setEmails={setEmails}
-                    readStatus={filters?.readStatus}
-                  />
-                </div>
+                {getMailListResponse?.isLoading ||
+                getMailListResponse?.isFetching ? (
+                  <NavbarSkeleton />
+                ) : (
+                  <div
+                    className="flex-shrink-0"
+                  >
+                    <EmailList
+                      emails={filteredEmails}
+                      selectedEmailId={selectedEmail?.message_id || null}
+                      onEmailSelect={handleEmailSelect}
+                      onStarToggle={handleStarToggle}
+                      onCheckToggle={handleCheckToggle}
+                      checkedEmails={checkedEmails}
+                      activeSection={activeItem}
+                      customLabels={customLabels}
+                      onEmailLabelsChange={handleEmailLabelsChange}
+                      onCreateLabel={handleCreateLabel}
+                      onBulkMarkAsRead={handleBulkMarkAsRead}
+                      onBulkDelete={handleBulkDelete}
+                      onBulkRestore={handleBulkRestore}
+                      onSelectAll={handleSelectAll}
+                      onUnselectAll={handleUnselectAll}
+                      setEmails={setEmails}
+                      readStatus={filters?.readStatus}
+                    />
+                  </div>
+                )}
 
                 <ConversationThread
                   email={selectedEmail}
