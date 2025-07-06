@@ -25,7 +25,10 @@ import {
 } from "lucide-react";
 import { Email, CustomLabel } from "../types/email";
 import EntitiesPopover from "./EntitiesPopover";
-import { useGetAIReplyResponseMutation, useLazyGetConversationDetailsQuery } from "../service/inboxService";
+import {
+  useGetAIReplyResponseMutation,
+  useLazyGetConversationDetailsQuery,
+} from "../service/inboxService";
 import { useScreenResolution } from "../hooks/commonFunction";
 import { ConversationSkeleton } from "./skeletonLoader";
 
@@ -91,7 +94,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   const entitiesButtonRef = useRef<HTMLButtonElement>(null);
   const [getConversationDetails, getConversationDetailsStatus] =
     useLazyGetConversationDetailsQuery();
-  const [getAIReplyResponse, getAIReplyResponseStatus] = useGetAIReplyResponseMutation()
+  const [getAIReplyResponse, getAIReplyResponseStatus] =
+    useGetAIReplyResponseMutation();
   const [msgData, setMsgData] = useState<any[]>([]);
   const moreMenuRef = useRef<HTMLDivElement>(null);
 
@@ -1058,18 +1062,28 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                           <Expand className="w-4 h-4" />
                         )}
                       </button>
-                      <button
-                        onClick={handleAiReplyGenerate}
-                        disabled={aiReplyState.isGenerating}
-                        className="text-purple-600 hover:text-purple-700 p-1 disabled:text-gray-400"
-                        title="Regenerate"
-                      >
-                        {aiReplyState.isGenerating ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <RotateCcw className="w-4 h-4" />
-                        )}
-                      </button>
+                      {getAIReplyResponseStatus?.isLoading ? (
+                        <button
+                          onClick={handleAiReplyGenerate}
+                          disabled={true}
+                          className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-400 text-white rounded-lg transition-colors"
+                        >
+                          <LoadingIndicator />
+                        </button>
+                      ) : (
+                        <button
+                          onClick={handleAiReplyGenerate}
+                          disabled={aiReplyState.isGenerating}
+                          className="text-purple-600 hover:text-purple-700 p-1 disabled:text-gray-400"
+                          title="Regenerate"
+                        >
+                          {aiReplyState.isGenerating ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <RotateCcw className="w-4 h-4" />
+                          )}
+                        </button>
+                      )}
                       {isAiReplyExpanded && (
                         <button
                           onClick={() => setIsAiReplyExpanded(false)}
@@ -1081,40 +1095,44 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                       )}
                     </div>
                   </div>
-                  <div
-                    className={`bg-white border border-gray-200 rounded p-3 mb-3 ${
-                      isAiReplyExpanded ? "flex-1 overflow-y-auto" : ""
-                    }`}
-                    style={isAiReplyExpanded ? { minHeight: "350px" } : {}}
-                  >
-                    <pre className="whitespace-pre-wrap text-gray-800 text-sm font-sans">
-                      {AIGeneratedReply}
-                    </pre>
-                  </div>
-                  <div className="flex items-center space-x-2 flex-wrap">
-                    <button
-                      onClick={handleAiReply}
-                      className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm"
+                  {!getAIReplyResponseStatus?.isLoading && (
+                    <div
+                      className={`bg-white border border-gray-200 rounded p-3 mb-3 ${
+                        isAiReplyExpanded ? "flex-1 overflow-y-auto" : ""
+                      }`}
+                      style={isAiReplyExpanded ? { minHeight: "350px" } : {}}
                     >
-                      <Reply className="w-4 h-4" />
-                      <span>Reply</span>
-                    </button>
-                    <button
-                      onClick={handleAiReplyAll}
-                      className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors text-sm"
-                    >
-                      <ReplyAll className="w-4 h-4" />
-                      <span>Reply All</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        setAIGeneratedReply("");
-                      }}
-                      className="px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors text-sm"
-                    >
-                      Dismiss
-                    </button>
-                  </div>
+                      <pre className="whitespace-pre-wrap text-gray-800 text-sm font-sans">
+                        {AIGeneratedReply}
+                      </pre>
+                    </div>
+                  )}
+                  {!getAIReplyResponseStatus?.isLoading && (
+                    <div className="flex items-center space-x-2 flex-wrap">
+                      <button
+                        onClick={handleAiReply}
+                        className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm"
+                      >
+                        <Reply className="w-4 h-4" />
+                        <span>Reply</span>
+                      </button>
+                      <button
+                        onClick={handleAiReplyAll}
+                        className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors text-sm"
+                      >
+                        <ReplyAll className="w-4 h-4" />
+                        <span>Reply All</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setAIGeneratedReply("");
+                        }}
+                        className="px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors text-sm"
+                      >
+                        Dismiss
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
