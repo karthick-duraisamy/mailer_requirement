@@ -30,7 +30,7 @@ const Header: React.FC<HeaderProps> = ({
   filters,
   onComposeClick
 }) => {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState<any>("");
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [showNotificationPreferences, setShowNotificationPreferences] =
@@ -61,8 +61,7 @@ const Header: React.FC<HeaderProps> = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value;
+  const handleSearchChange = (query: any) => {
     setSearchQuery(query);
     onSearch(query);
   };
@@ -106,7 +105,7 @@ const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between relative z-50">
-      <div className="flex items-center space-x-4" z>
+      <div className="flex items-center space-x-4">
         {/* Enhanced Menu Toggle Button */}
         {/* <button
           onClick={onMenuToggle}
@@ -137,14 +136,26 @@ const Header: React.FC<HeaderProps> = ({
       <div className="flex-1 max-w-2xl mx-8">
         <div className="flex items-center space-x-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Search mail"
-              value={searchQuery}
-              onChange={handleSearchChange}
-              className="w-full pl-10 pr-4 py-2 bg-gray-100 border border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white focus:border-blue-500 transition-all"
-            />
+            <button
+    type="button"
+    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+    onClick={() => handleSearchChange(searchQuery)}
+    tabIndex={0}
+  >
+    <Search className="w-5 h-5" />
+  </button>
+  <input
+    type="text"
+    placeholder="Search mail"
+    value={searchQuery}
+    onChange={e => setSearchQuery(e.target.value)}
+    onKeyDown={e => {
+      if (e.key === "Enter") {
+        handleSearchChange(searchQuery);
+      }
+    }}
+    className="w-full pl-10 pr-4 py-2 bg-gray-100 border border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white focus:border-blue-500 transition-all"
+  />
           </div>
 
           <EmailFilters

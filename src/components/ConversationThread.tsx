@@ -1040,6 +1040,13 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                       </span>
                     </div>
                     <div className="flex items-center space-x-2">
+                      {getAIReplyResponseStatus?.isLoading && <button
+                        onClick={handleAiReplyGenerate}
+                        disabled={true}
+                        className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-400 text-white rounded-lg transition-colors"
+                      >
+                        <LoadingIndicator />
+                      </button>}
                       <button
                         onClick={handleToggleAiReplyExpand}
                         className="text-purple-600 hover:text-purple-700 p-1"
@@ -1052,7 +1059,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                         )}
                       </button>
                       <button
-                        onClick={handleRegenerateAi}
+                        onClick={handleAiReplyGenerate}
                         disabled={aiReplyState.isGenerating}
                         className="text-purple-600 hover:text-purple-700 p-1 disabled:text-gray-400"
                         title="Regenerate"

@@ -23,7 +23,10 @@ import { Email, CustomLabel } from "../types/email";
 import EmailLabelActions from "./EmailLabelActions";
 import LabelList from "./CustomLabel";
 import { useLazyGetMailListResponseQuery } from "../service/inboxService";
-import { FilterOptions } from "../components/EmailFilters";
+// import { FilterOptions } from "../components/EmailFilters";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState } from "../store/store";
+import { FilterOptions, resetFilters, setFilterSettings } from "../store/filterSlice";
 
 interface EmailListProps {
   emails: any[];
@@ -44,6 +47,7 @@ interface EmailListProps {
   onUndo?: () => void;
   setEmails?: Function;
   readStatus: string;
+  searchFilter: any;
 }
 
 type IntentLabel = {
@@ -72,6 +76,7 @@ const EmailList: React.FC<EmailListProps> = ({
   onUndo,
   setEmails,
   readStatus,
+  searchFilter,
 }) => {
   const [toAddress, setToAddress] = useState("");
   const [width, setWidth] = useState(320); // Default width
@@ -87,11 +92,29 @@ const EmailList: React.FC<EmailListProps> = ({
     search: undefined,
   });
   const [inboxCount, setInboxCount] = useState(0);
+  const filters = useSelector((state: RootState) => state.filters);
+  console.log(filters);
+  const dispatch = useDispatch();
+  const [isFiltered, setIsFiltered] = useState(false);
+     
+  useEffect(() => {
+    // Initial call
+    if(filters?.search === '')
+    {
+      getMailList(filterData);
+      setIsFiltered(false);
+    }
+  }, [filterData, filters]);
 
   useEffect(() => {
     // Initial call
-    getMailList(filterData);
-  }, [filterData]);
+    if(filters !== undefined && Object.keys(filters).length >= 1 && filters?.search !== '')
+    {
+      if (setEmails && isFiltered === false) setEmails([]);
+      getMailList(filters);
+      setIsFiltered(true);
+    }
+  }, [filters]);
 
   useEffect(() => {
     if (getMailListResponse.isSuccess && setEmails) {
@@ -101,19 +124,19 @@ const EmailList: React.FC<EmailListProps> = ({
         setInboxCount(
           (getMailListResponse as any)?.data?.response?.data?.count || 0
         );
-        setEmails((prevEmails: any[]) => {
-          // Create a Set of existing mail_ids
-          const existingIds = new Set(prevEmails.map((email) => email.mail_id));
-          // Filter out emails that already exist
-          const newEmails = staticList
-            .filter((email: any) => !existingIds.has(email.mail_id))
-            .map((email: any) => ({
-              ...email,
-              intentLabel: email.labels || "new",
-            }));
-          // Append only new emails
-          return [...prevEmails, ...newEmails];
-        });
+          setEmails((prevEmails: any[]) => {
+            // Create a Set of existing mail_ids
+            const existingIds = new Set(prevEmails.map((email) => email.mail_id));
+            // Filter out emails that already exist
+            const newEmails = staticList
+              .filter((email: any) => !existingIds.has(email.mail_id))
+              .map((email: any) => ({
+                ...email,
+                intentLabel: email.labels || "new",
+              }));
+            // Append only new emails
+            return [...prevEmails, ...newEmails];
+          });
       }
     }
   }, [getMailListResponse]);
@@ -553,10 +576,18 @@ const EmailList: React.FC<EmailListProps> = ({
         onScroll={(e) => {
           const target = e.currentTarget;
           if (target.scrollHeight - target.scrollTop === target.clientHeight) {
-            setFilterData((prev: any) => ({
-              ...prev,
-              page: prev.page + 1,
-            }));
+            // dispatch(resetFilters());
+            if(isFiltered){
+              dispatch(setFilterSettings({ ...filters, page: filters?.page + 1 }));
+              setIsFiltered(true);
+            }
+            else{
+              setFilterData((prev: any) => ({
+                ...prev,
+                page: prev.page + 1
+              }));
+              setIsFiltered(false);
+            }
           }
         }}
       >
@@ -679,3 +710,4 @@ const EmailList: React.FC<EmailListProps> = ({
 };
 
 export default EmailList;
+

@@ -1,9 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit";
 import InboxService from "../service/service";
+import filterReducer from "./filterSlice";
 
 // ✅ Export reducer in reusable format for host apps
 export const inboxServiceReducer = {
   [InboxService.reducerPath]: InboxService.reducer,
+  filters: filterReducer,
 };
 
 // ✅ Export middleware as reusable function

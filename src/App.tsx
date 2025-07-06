@@ -9,6 +9,8 @@ import { Email, CustomLabel } from "./types/email";
 import { mockCustomLabels } from "./data/mockLabels";
 import { FilterOptions } from "./components/EmailFilters";
 import { useLazyGetMailListResponseQuery } from "./service/inboxService";
+import { useSelector, useDispatch } from "react-redux";
+import { setFilterSettings } from "./store/filterSlice";
 
 function App() {
   const [activeItem, setActiveItem] = useState("inbox");
@@ -29,6 +31,11 @@ function App() {
     dateRange: { from: "", to: "" },
     intent: "all",
   });
+  const [searchFilter, setSearchFilter] = useState<any>({
+      search: undefined,
+    });
+    const dispatch = useDispatch();
+
   // const [sidebarWidth, setSidebarWidth] = useState(64); // default to collapsed width
 
   // The following useEffect is used to set initial user and project data in localStorage
@@ -504,7 +511,10 @@ function App() {
   };
 
   const handleSearch = (query: string) => {
-    setSearchQuery(query);
+    console.log(query)
+    // setSearchFilter(query)
+    dispatch(setFilterSettings({ search: query }));
+    // setSearchQuery(query);
   };
 
   const handleSectionChange = (section: string) => {
@@ -515,6 +525,7 @@ function App() {
 
   const handleFiltersChange = (newFilters: FilterOptions) => {
     setFilters(newFilters);
+    dispatch(setFilterSettings( { is_starred: newFilters?.starred, is_read: newFilters.readStatus, has_attachment : newFilters?.hasAttachment } ));
   };
 
   const handleComposeOpen = () => {
@@ -897,7 +908,6 @@ function App() {
         onUnselectAll={handleUnselectAll}
         onUndo={handleUndo}
         hasSelection={checkedEmails.size > 0}
-        onComposeClick={handleComposeOpen}
       />
 
       <div className="flex-1 flex overflow-hidden">
@@ -964,6 +974,7 @@ function App() {
                       onUnselectAll={handleUnselectAll}
                       setEmails={setEmails}
                       readStatus={filters?.readStatus}
+                      searchFilter={searchFilter}
                     />
                   </div>
                 )}
