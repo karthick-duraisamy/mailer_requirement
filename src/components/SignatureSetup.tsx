@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { X, Edit3, Eye, Type } from 'lucide-react';
 
 interface SignatureSetupProps {
@@ -17,6 +17,7 @@ const SignatureSetup: React.FC<SignatureSetupProps> = ({ isOpen, onClose }) => {
   const [signatureContent, setSignatureContent] = useState('');
   const [isCreatingNew, setIsCreatingNew] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
+  const modalRef = useRef<HTMLDivElement>(null);
 
   const handleEdit = (signature: any) => {
     setEditingSignature(signature.id);
@@ -31,6 +32,25 @@ const SignatureSetup: React.FC<SignatureSetupProps> = ({ isOpen, onClose }) => {
     setSignatureContent('');
     setIsCreatingNew(true);
   };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        modalRef.current &&
+        !modalRef.current.contains(event.target as Node)
+      ) {
+        onClose();
+      }
+    };
+  
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+  
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen, onClose]);
 
   const handleSave = () => {
     if (isCreatingNew) {
@@ -73,7 +93,7 @@ const SignatureSetup: React.FC<SignatureSetupProps> = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div ref={modalRef} className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-xl font-semibold text-gray-900">Email Signatures</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
