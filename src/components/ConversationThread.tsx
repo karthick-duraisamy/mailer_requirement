@@ -86,6 +86,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   const [isAiReplyExpanded, setIsAiReplyExpanded] = useState(false);
   const [showEntitiesPopover, setShowEntitiesPopover] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [entitiesInfo, setEntitiesInfo] = useState<any[]>([]);
 
   // Refs for auto-scrolling
   const aiReplyRef = useRef<HTMLDivElement>(null);
@@ -165,13 +166,22 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     }
   }, [email?.mail_id]);
 
+  const mergedEntities = (emailList: any[]) => {
+    return emailList.reduce((acc, curr) => {
+      if (curr.entities && typeof curr.entities === "object") {
+        return { ...acc, ...curr.entities };
+      }
+      return acc;
+    }, {});
+  };
+
   useEffect(() => {
     if (getConversationDetailsStatus?.isSuccess) {
-      console.log(getConversationDetailsStatus);
       const msgData = (getConversationDetailsStatus as any)?.data?.response
         ?.data?.conversation;
       if (msgData) {
         setMsgData(msgData);
+        setEntitiesInfo(mergedEntities(msgData));
       }
     }
   }, [getConversationDetailsStatus]);
@@ -253,40 +263,17 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       document_id: msgData[msgData.length - 1]?.mail_id,
       prompt: "",
     };
-  
+
     try {
       const result = await getAIReplyResponse(AIReply).unwrap();
-      const reply = (result as any)?.response.data.reply
-  
+      const reply = (result as any)?.response.data.reply;
+
       if (reply) {
         setAIGeneratedReply(reply);
       }
     } catch (error) {
       console.error("AI Reply fetch failed", error);
       // Optional: handle error state
-    }
-  };
-  
-
-  const handleToneChange = (tone: "professional" | "friendly" | "concise") => {
-    onAiReplyStateChange({ ...aiReplyState, tone });
-  };
-
-  const handleUseAiReply = () => {
-    setReplyText(aiReplyState.generatedReply);
-    setShowReply(true);
-    onAiReplyStateChange({ ...aiReplyState, showAiReply: false });
-  };
-
-  const handleRegenerateAi = () => {
-    if (msgData) {
-      const useReplyAll = shouldUseReplyAll(email);
-      // Always use professional tone
-      onGenerateAiReply(
-        msgData,
-        "professional",
-        useReplyAll ? "reply-all" : "reply"
-      );
     }
   };
 
@@ -1044,13 +1031,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                       </span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      {getAIReplyResponseStatus?.isLoading && <button
-                        onClick={handleAiReplyGenerate}
-                        disabled={true}
-                        className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-400 text-white rounded-lg transition-colors"
-                      >
-                        <LoadingIndicator />
-                      </button>}
                       <button
                         onClick={handleToggleAiReplyExpand}
                         className="text-purple-600 hover:text-purple-700 p-1"
@@ -1286,6 +1266,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
             isOpen={showEntitiesPopover}
             onClose={() => setShowEntitiesPopover(false)}
             triggerRef={entitiesButtonRef}
+            entitiesInfo={entitiesInfo}
           />
         </div>
       )}

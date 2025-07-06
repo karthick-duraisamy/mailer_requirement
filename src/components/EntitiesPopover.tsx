@@ -5,13 +5,16 @@ interface EntitiesPopoverProps {
   isOpen: boolean;
   onClose: () => void;
   triggerRef: React.RefObject<HTMLButtonElement>;
+  entitiesInfo?: any[];
 }
 
 const EntitiesPopover: React.FC<EntitiesPopoverProps> = ({
   isOpen,
   onClose,
   triggerRef,
+  entitiesInfo,
 }) => {
+  console.log("Entities Info:", entitiesInfo);
   const popoverRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ top: 0, left: 0 });
 
@@ -62,6 +65,26 @@ const EntitiesPopover: React.FC<EntitiesPopoverProps> = ({
 
   if (!isOpen) return null;
 
+  const getEntityIcon = (key: string) => {
+    switch (key.toLowerCase()) {
+      case "ticket":
+      case "pnr":
+        return <Ticket className="w-4 h-4 text-green-600" />;
+      case "travel":
+      case "airline":
+      case "train":
+        return <Plane className="w-4 h-4 text-blue-600" />;
+      case "date":
+        return <FileText className="w-4 h-4 text-purple-600" />;
+      case "status":
+        return <CheckCircle className="w-4 h-4 text-green-600" />;
+      case "cancellation":
+        return <XCircle className="w-4 h-4 text-red-600" />;
+      default:
+        return <FileText className="w-4 h-4 text-gray-500" />;
+    }
+  };
+
   return (
     <>
       {/* Backdrop */}
@@ -94,53 +117,20 @@ const EntitiesPopover: React.FC<EntitiesPopoverProps> = ({
 
         {/* Content */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Plane className="w-4 h-4 text-blue-600" />
-              <span className="text-sm font-medium text-gray-700">
-                Airline:
-              </span>
-            </div>
-            <span className="text-sm text-gray-900">Delta Airlines</span>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Ticket className="w-4 h-4 text-green-600" />
-              <span className="text-sm font-medium text-gray-700">
-                Ticket Type:
-              </span>
-            </div>
-            <span className="text-sm text-gray-900">Round Trip</span>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <FileText className="w-4 h-4 text-purple-600" />
-              <span className="text-sm font-medium text-gray-700">PNR:</span>
-            </div>
-            <span className="text-sm text-gray-900 font-mono">ABC123XYZ</span>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <XCircle className="w-4 h-4 text-red-600" />
-              <span className="text-sm font-medium text-gray-700">
-                Cancellation:
-              </span>
-            </div>
-            <span className="text-sm text-gray-900">Allowed</span>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <CheckCircle className="w-4 h-4 text-green-600" />
-              <span className="text-sm font-medium text-gray-700">Status:</span>
-            </div>
-            <span className="text-sm text-green-800 bg-green-100 px-2 py-1 rounded-full">
-              Confirmed
-            </span>
-          </div>
+          {entitiesInfo &&
+            Object.entries(entitiesInfo).map(([key, value]) => (
+              <div key={key} className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  {getEntityIcon(key)}
+                  <span className="text-sm font-medium text-gray-700 capitalize">
+                    {key.replace(/_/g, " ")}:
+                  </span>
+                </div>
+                <span className="text-sm text-gray-900 font-mono truncate max-w-[150px] text-right">
+                  {String(value)}
+                </span>
+              </div>
+            ))}
         </div>
       </div>
     </>
