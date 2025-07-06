@@ -509,7 +509,7 @@ const EmailList: React.FC<EmailListProps> = ({
                   })`}
               </h2>
               <p className={`text-sm mt-1 truncate`}>
-                {(activeSectionTab === "inbox") && `To: support@atyourprice.net`}
+                {(activeSectionTab === "inbox") && `support@atyourprice.net`}
                 {/* {toAddress ? `To: ${toAddress}` : "No recipients found"} */}
               </p>
             </div>

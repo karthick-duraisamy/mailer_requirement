@@ -67,7 +67,7 @@ function App() {
     // Set interval
     const intervalId = setInterval(() => {
       getMailList({});
-    }, 300000); // 5 minutes
+    }, 150000); // Poll every 150 seconds
 
     // Cleanup on unmount
     return () => clearInterval(intervalId);
