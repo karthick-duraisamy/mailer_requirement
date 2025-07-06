@@ -676,6 +676,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
       const emailData = {
         mail_id: msgData[msgData.length - 1]?.mail_id,
+        message_id: msgData[msgData.length - 1]?.message_id,
         thread_id: msgData[msgData.length - 1]?.thread_id,
         folder: msgData[msgData.length - 1]?.folder,
         subject: msgData[msgData.length - 1]?.subject,
