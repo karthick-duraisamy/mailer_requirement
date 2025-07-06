@@ -110,7 +110,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     setAIGeneratedReply("");
   }, [email]);
 
-  useEffect(() => {getSettings({})},[]);
+  useEffect(() => { getSettings({}) }, []);
 
   useEffect(() => {
     if (getSettingsResponseStatus?.isSuccess) {
@@ -256,7 +256,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
       const settingId = matchedSetting?.setting_id;
       // setReplyText("");
-      console.log(replyText, msgData[msgData.length-1],
+      console.log(replyText, msgData[msgData.length - 1],
         {
           mail_id: msgData[msgData.length - 1]?.mail_id,
           thread_id: msgData[msgData.length - 1]?.thread_id,
@@ -271,93 +271,433 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
           edited: false,
           labels: msgData[msgData.length - 1]?.labels || [],
           ai_response: {
-              intent: msgData[msgData.length - 1]?.intent || "reply",
-              entities: msgData[msgData.length - 1]?.entities || {},
-              reply: replyText
+            intent: msgData[msgData.length - 1]?.intent || "reply",
+            entities: msgData[msgData.length - 1]?.entities || {},
+            reply: replyText
           },
           setting_id: 4
         });
 
-        const templateMessage = `<!DOCTYPE html>
-<html>
+      const templateMessage = `<!DOCTYPE html>
+<html
+  xmlns:v="urn:schemas-microsoft-com:vml"
+  xmlns:o="urn:schemas-microsoft-com:office:office"
+  lang="en"
+>
   <head>
-    <meta charset="UTF-8" />
-    <title>AYP Ticket Mail</title>
+    <title></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--[if mso
+      ]><xml
+        ><o:OfficeDocumentSettings
+          ><o:PixelsPerInch>96</o:PixelsPerInch
+          ><o:AllowSVG /></o:OfficeDocumentSettings></xml
+    ><![endif]-->
+    <!--[if !mso]><!-->
+    <!--<![endif]-->
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      a[x-apple-data-detectors] {
+        color: inherit !important;
+        text-decoration: inherit !important;
+      }
+
+      #MessageViewBody a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      p {
+        line-height: inherit;
+      }
+
+      .desktop_hide,
+      .desktop_hide table {
+        mso-hide: all;
+        display: none;
+        max-height: 0px;
+        overflow: hidden;
+      }
+
+      .image_block img + div {
+        display: none;
+      }
+
+      sup,
+      sub {
+        line-height: 0;
+        font-size: 75%;
+      }
+
+      @media (max-width: 620px) {
+        .desktop_hide table.icons-inner {
+          display: inline-block !important;
+        }
+
+        .icons-inner {
+          text-align: center;
+        }
+
+        .icons-inner td {
+          margin: 0 auto;
+        }
+
+        .mobile_hide {
+          display: none;
+        }
+
+        .row-content {
+          width: 100% !important;
+        }
+
+        .stack .column {
+          width: 100%;
+          display: block;
+        }
+
+        .mobile_hide {
+          min-height: 0;
+          max-height: 0;
+          max-width: 0;
+          overflow: hidden;
+          font-size: 0px;
+        }
+
+        .desktop_hide,
+        .desktop_hide table {
+          display: table !important;
+          max-height: none !important;
+        }
+      }
+    </style>
+    <!--[if mso
+      ]><style>
+        sup,
+        sub {
+          font-size: 100% !important;
+        }
+        sup {
+          mso-text-raise: 10%;
+        }
+        sub {
+          mso-text-raise: -10%;
+        }
+      </style>
+    <![endif]-->
   </head>
-  <body style="margin: 0; padding: 0; background-color: #f2f2f2;"><center>
-    <table width="100%" cellpadding="0" cellspacing="0" border="0" align="center">
-      <tbody><tr>
-        <td align="center">
-          <!-- Main Container -->
-          <table width="600" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff; padding: 20px 0;">
-            <!-- Logo + Title Row -->
-            <tbody><tr>
-              <td align="center">
-                <table cellpadding="0" cellspacing="0" border="0" align="center">
-                  <tbody><tr>
-                    <!-- Logo -->
-                    <td style="padding-right: 15px;">
-                      <img src="https://www.atyourprice.net/wp-content/uploads/2024/07/a_y_p_1.gif" alt="AYP Logo" width="80" style="vertical-align: middle; display: block;">
-                    </td>
 
-                    <!-- Centered Title -->
-                    <td>
-                      <div style="font-family: Georgia, serif; font-size: 28px; color: #1a1aa3; white-space: nowrap;">
-                        AYP SAMPLE MAIL
-                      </div>
-                    </td>
-                  </tr>
-                </tbody></table>
-              </td>
-            </tr>
-
-            <!-- Dynamic Content Row -->
-            <tr>
-              <td align="center" style="padding-top: 20px; padding-left: 40px; padding-right: 40px;">
-                <div style="font-family: Arial, sans-serif; font-size: 16px; color: #333333;">
-                  $<<dynamic_data>>
-                </div>
-              </td>
-            </tr>
-          </tbody></table>
-        </td>
-      </tr>
-    </tbody></table>
+  <body
+    class="body"
+    style="
+      background-color: #ffffff;
+      margin: 0;
+      padding: 0;
+      -webkit-text-size-adjust: none;
+      text-size-adjust: none;
+    "
+  ><center>
+    <table class="nl-container" width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="
+        mso-table-lspace: 0pt;
+        mso-table-rspace: 0pt;
+        background-color: #ffffff;
+      ">
+      <tbody>
+        <tr>
+          <td>
+            <table class="row row-1" align="center" width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt">
+              <tbody>
+                <tr>
+                  <td>
+                    <table class="row-content stack" align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="
+                        mso-table-lspace: 0pt;
+                        mso-table-rspace: 0pt;
+                        background-color: #1a4da1;
+                        color: #000000;
+                        width: 650px;
+                        margin: 0 auto;
+                      " width="650">
+                      <tbody>
+                        <tr>
+                          <td class="column column-1" width="25%" style="
+                              mso-table-lspace: 0pt;
+                              mso-table-rspace: 0pt;
+                              font-weight: 400;
+                              text-align: left;
+                              padding-bottom: 5px;
+                              padding-top: 5px;
+                              vertical-align: middle;
+                              border-top: 0px;
+                              border-right: 0px;
+                              border-bottom: 0px;
+                              border-left: 0px;
+                            ">
+                            <table class="image_block block-1" width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="
+                                mso-table-lspace: 0pt;
+                                mso-table-rspace: 0pt;
+                              ">
+                              <tbody><tr>
+                                <td class="pad" style="
+                                    padding-bottom: 15px;
+                                    padding-top: 15px;
+                                    width: 100%;
+                                    padding-right: 0px;
+                                    padding-left: 20px;
+                                  ">
+                                  <div class="alignment" align="center" style="line-height: 5px">
+                                    <div style="max-width: 90px">
+                                      <img src="https://www.atyourprice.net/wp-content/uploads/2024/07/a_y_p_1.gif" style="
+                                          display: block;
+                                          height: auto;
+                                          border: 0;
+                                          width: 100%;
+                                        " width="90" height="auto">
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+                            </tbody></table>
+                          </td>
+                          <td class="column column-2" width="75%" style="
+                              mso-table-lspace: 0pt;
+                              mso-table-rspace: 0pt;
+                              font-weight: 400;
+                              text-align: left;
+                              padding-bottom: 5px;
+                              padding-top: 5px;
+                              vertical-align: middle;
+                              border-top: 0px;
+                              border-right: 0px;
+                              border-bottom: 0px;
+                              border-left: 0px;
+                            ">
+                            <table class="heading_block block-1" width="100%" border="0" cellpadding="10" cellspacing="0" role="presentation" style="
+                                mso-table-lspace: 0pt;
+                                mso-table-rspace: 0pt;
+                              ">
+                              <tbody><tr>
+                                <td class="pad">
+                                  <h1 style="
+                                      margin: 0;
+                                      color: #ffffff;
+                                      direction: ltr;
+                                      font-family: 'Segoe UI', Arial, sans-serif;
+                                      font-size: 24px;
+                                      font-weight: 700;
+                                      letter-spacing: 0.5px;
+                                      line-height: 120%;
+                                      text-align: center;
+                                      mso-line-height-alt: 28px;
+                                    ">
+                                    AYP AI Agent – Smart Email Reply
+                                  </h1>
+                                </td>
+                              </tr>
+                            </tbody></table>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <table class="row row-2" align="center" width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt">
+              <tbody>
+                <tr>
+                  <td>
+                    <table class="row-content stack" align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="
+                        mso-table-lspace: 0pt;
+                        mso-table-rspace: 0pt;
+                        background-color: #ffffff;
+                        color: #000000;
+                        width: 600px;
+                        margin: 0 auto;
+                      " width="600"><tbody><tr><td class="column column-1" width="100%" style="
+                              mso-table-lspace: 0pt;
+                              mso-table-rspace: 0pt;
+                              font-weight: 400;
+                              text-align: left;
+                              padding-bottom: 5px;
+                              padding-top: 5px;
+                              vertical-align: top;
+                              border-top: 0px;
+                              border-right: 0px;
+                              border-bottom: 0px;
+                              border-left: 0px;
+                            "><table class="paragraph_block block-2" width="100%" border="0" cellpadding="10" cellspacing="0" role="presentation" style="
+                                mso-table-lspace: 0pt;
+                                mso-table-rspace: 0pt;
+                                word-break: break-word;
+                              "><tbody><tr><td class="pad"><div style="
+                                      color: #101112;
+                                      direction: ltr;
+                                      font-family: Arial, Helvetica, sans-serif;
+                                      font-size: 18px;
+                                      font-weight: 400;
+                                      letter-spacing: 0px;
+                                      line-height: 140%;
+                                      text-align: left;
+                                      mso-line-height-alt: 19.2px;
+                                    "><p style="margin: 0; margin-bottom: 16px">$[[dynamic_content]]</p>
+                                  </div>
+                                </td>
+                              </tr>
+                            </tbody></table>
+                            <table class="paragraph_block block-4" width="100%" border="0" cellpadding="10" cellspacing="0" role="presentation" style="
+                                mso-table-lspace: 0pt;
+                                mso-table-rspace: 0pt;
+                                word-break: break-word;
+                              ">
+                              <tbody><tr>
+                                <td class="pad">
+                                  <div style="
+                                      color: #101112;
+                                      direction: ltr;
+                                      font-family: Arial, Helvetica, sans-serif;
+                                      font-size: 18px;
+                                      font-weight: 400;
+                                      letter-spacing: 0px;
+                                      line-height: 150%;
+                                      text-align: left;
+                                      mso-line-height-alt: 19.2px;
+                                    ">
+                                    <p style="margin: 0">
+                                      Stay secure,<br>
+                                      Team AtYourPrice
+                                    </p>
+                                  </div>
+                                </td>
+                              </tr>
+                            </tbody></table>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <table class="row row-3" align="center" width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt">
+              <tbody>
+                <tr>
+                  <td>
+                    <table class="row-content stack" align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="
+                        mso-table-lspace: 0pt;
+                        mso-table-rspace: 0pt;
+                        background-color: #1a4da1;
+                        color: #000000;
+                        width: 650px;
+                        margin: 0 auto;
+                      " width="650">
+                      <tbody>
+                        <tr>
+                          <td class="column column-1" width="100%" style="
+                              mso-table-lspace: 0pt;
+                              mso-table-rspace: 0pt;
+                              font-weight: 400;
+                              text-align: left;
+                              padding-bottom: 5px;
+                              padding-top: 5px;
+                              vertical-align: top;
+                              border-top: 0px;
+                              border-right: 0px;
+                              border-bottom: 0px;
+                              border-left: 0px;
+                            ">
+                            <table class="heading_block block-1" width="100%" border="0" cellpadding="10" cellspacing="0" role="presentation" style="
+                                mso-table-lspace: 0pt;
+                                mso-table-rspace: 0pt;
+                              ">
+                              <tbody><tr>
+                                <td class="pad">
+                                  <h1 style="
+                                      margin: 0;
+                                      color: #7747ff;
+                                      direction: ltr;
+                                      font-family: Arial, Helvetica, sans-serif;
+                                      font-size: 12px;
+                                      font-weight: 700;
+                                      letter-spacing: normal;
+                                      line-height: 140%;
+                                      text-align: center;
+                                      margin-top: 0;
+                                      margin-bottom: 0;
+                                      mso-line-height-alt: 13.2px;
+                                    ">
+                                    <span style="
+                                        word-break: break-word;
+                                        color: #ffffff;
+                                      ">If you have any questions or need
+                                      immediate assistance, please don't
+                                      hesitate to contact us at&nbsp;<a href="mailto:support@atyourprice.net" style="
+                                          text-decoration: underline;
+                                          color: #7ff;
+                                        ">support@atyourprice.net</a>
+                                    </span>
+                                    <span style="
+                                        word-break: break-word;
+                                        color: #ffffff;
+                                      ">|<a href="https://operations.atyourprice.net" style="
+                                          text-decoration: underline;
+                                          color: #7ff;
+                                        ">
+                                        operations.atyourprice.net</a>.</span>
+                                  </h1>
+                                </td>
+                              </tr>
+                            </tbody></table>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <!-- End -->
   </center>
-  <footer style="background-color: #f2f2f2; padding: 20px 0; text-align: center; font-family: Arial, sans-serif; font-size: 12px; color: #666666;">
-      <div>
-         $<<signature>>
-      </div>
-</footer>
-</body>
-</head>`;
-      const filledHtml = templateMessage.replace('$<<dynamic_data>>', replyText);
+
+</body></head>`;
+      const filledHtml = templateMessage.replace('$[[dynamic_content]]', replyText);
       const finalHtml = filledHtml.replace('$<<signature>>', sessionStorage.getItem("defaultSignature") || "");
 
       const emailData = {
-          mail_id: msgData[msgData.length - 1]?.mail_id,
-          thread_id: msgData[msgData.length - 1]?.thread_id,
-          folder: msgData[msgData.length - 1]?.folder,
-          subject: msgData[msgData.length - 1]?.subject,
-          // to: [msgData[msgData.length - 1]?.from_address],
-          to: ['madhivanan.e@infinitisoftware.net'],
-          cc: msgData[msgData.length - 1]?.cc,
-          bcc: msgData[msgData.length - 1]?.bcc,
-          body_plain: replyText,
-          body_html: finalHtml,
-          reply_type: replyType,
-          edited: false,
-          labels: msgData[msgData.length - 1]?.labels || [],
-          ai_response: {
-              intent: msgData[msgData.length - 1]?.intent || "reply",
-              entities: msgData[msgData.length - 1]?.entities || {},
-              reply: replyText+"\n"+finalHtml
-          },
-          setting_id: 30
-        };
+        mail_id: msgData[msgData.length - 1]?.mail_id,
+        thread_id: msgData[msgData.length - 1]?.thread_id,
+        folder: msgData[msgData.length - 1]?.folder,
+        subject: msgData[msgData.length - 1]?.subject,
+        // to: [msgData[msgData.length - 1]?.from_address],
+        to: ['madhivanan.e@infinitisoftware.net'],
+        cc: msgData[msgData.length - 1]?.cc,
+        bcc: msgData[msgData.length - 1]?.bcc,
+        body_plain: replyText,
+        body_html: finalHtml,
+        reply_type: replyType,
+        edited: false,
+        labels: msgData[msgData.length - 1]?.labels || [],
+        ai_response: {
+          intent: msgData[msgData.length - 1]?.intent || "reply",
+          entities: msgData[msgData.length - 1]?.entities || {},
+          reply: replyText + "\n" + finalHtml
+        },
+        setting_id: 30
+      };
       sentMail(emailData);
       setShowReply(false);
-      setReplyText(replyText+"\n"+finalHtml);
+      setReplyText(replyText + "\n" + finalHtml);
       onAiReplyStateChange({
         ...aiReplyState,
         showAiReply: false,
@@ -366,6 +706,14 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       });
     }
   };
+  //html render value
+  function stripHtml(html: string): string {
+    const div = document.createElement("div");
+    div.innerHTML = html;
+    return div.textContent || div.innerText || "";
+  }
+
+
 
   // Determine if this should be a reply-all based on email context
   const shouldUseReplyAll = (email: Email): any => {
@@ -415,25 +763,23 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
   // Handle AI Reply All button click
   const handleAiReplyAll = () => {
-
-    console.log(replyText,"Arunnnnn")
     // if (msgData && sortedMessages.length > 0) {
-      const lastMessage = sortedMessages[sortedMessages.length - 1];
-      // Get all unique recipients (to, cc) excluding our own email if needed
-      const allRecipients = new Set([
-        ...lastMessage.to,
-        ...(lastMessage.cc || []),
-      ]);
-      // Optionally remove your own email from recipients here
+    const lastMessage = sortedMessages[sortedMessages.length - 1];
+    // Get all unique recipients (to, cc) excluding our own email if needed
+    const allRecipients = new Set([
+      ...lastMessage.to,
+      ...(lastMessage.cc || []),
+    ]);
+    // Optionally remove your own email from recipients here
 
-      // Set reply text with appropriate header and AI reply
-      const replyAllText = `\n\n--- Reply All ---\nTo: ${Array.from(
-        allRecipients
-      ).join(", ")}\n\n${aiReplyState.generatedReply}`;
-      setShowReply(true);
-      // setReplyText(replyAllText);x
-      setReplyContent(true);
-      onAiReplyStateChange({ ...aiReplyState, showAiReply: false });
+    // Set reply text with appropriate header and AI reply
+    const replyAllText = `\n\n--- Reply All ---\nTo: ${Array.from(
+      allRecipients
+    ).join(", ")}\n\n${aiReplyState.generatedReply}`;
+    setShowReply(true);
+    // setReplyText(replyAllText);x
+    setReplyContent(true);
+    onAiReplyStateChange({ ...aiReplyState, showAiReply: false });
     // }
   };
 
@@ -468,13 +814,10 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     if (msgData) {
       const lastMessage = sortedMessages[sortedMessages.length - 1];
       // Format the forwarded message
-      const forwardedText = `\n\n--- Forwarded Message ---\nFrom: ${
-        lastMessage.from_address
-      }\nDate: ${formatTimestamp(lastMessage.create_to)}\nSubject: ${
-        lastMessage.subject
-      }\nTo: ${lastMessage.to.join(", ")}\n${
-        lastMessage.cc ? `Cc: ${lastMessage.cc.join(", ")}\n` : ""
-      }\n${lastMessage.body_plain}`;
+      const forwardedText = `\n\n--- Forwarded Message ---\nFrom: ${lastMessage.from_address
+        }\nDate: ${formatTimestamp(lastMessage.create_to)}\nSubject: ${lastMessage.subject
+        }\nTo: ${lastMessage.to.join(", ")}\n${lastMessage.cc ? `Cc: ${lastMessage.cc.join(", ")}\n` : ""
+        }\n${lastMessage.body_plain}`;
 
       setReplyText(aiReplyState.generatedReply);
       setShowReply(true);
@@ -684,10 +1027,35 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     </div>
   );
 
+
+  const messageBody = () => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(replyText, 'text/html');
+    if (Array.from(doc.body.childNodes).some(node => node.nodeType === 1)) {
+      return <div dangerouslySetInnerHTML={{ __html: replyText }} />
+    }
+    else {
+      return (
+        <textarea
+          value={stripHtml(replyText)}
+          onChange={(e) => setReplyText(e.target.value)}
+          placeholder={`${replyText.includes("--- Reply All ---")
+            ? "Write your reply to all recipients..."
+            : replyText.includes("--- Forwarded Message ---")
+              ? "Add a message to forward..."
+              : "Write your reply..."
+            }`}
+          className="w-full h-40 p-4 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+        />
+      )
+    }
+
+  }
+
   return (
     <>
       {getConversationDetailsStatus?.isLoading ||
-      getConversationDetailsStatus?.isFetching ? (
+        getConversationDetailsStatus?.isFetching ? (
         <ConversationSkeleton />
       ) : (
         <div ref={containerRef} className="flex-1 flex flex-col bg-white">
@@ -804,11 +1172,10 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                         className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
                       >
                         <Star
-                          className={`w-4 h-4 ${
-                            email.isStarred
-                              ? "fill-yellow-400 text-yellow-400"
-                              : ""
-                          }`}
+                          className={`w-4 h-4 ${email.isStarred
+                            ? "fill-yellow-400 text-yellow-400"
+                            : ""
+                            }`}
                         />
                         <span>
                           {email.isStarred ? "Remove star" : "Add star"}
@@ -922,15 +1289,14 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                     style={{ marginBottom: 10 }}
                   >
                     <div
-                      className={`p-6 ${
-                        isFromCurrentUser ? "bg-blue-50" : "bg-gray-50"
-                      }`}
+                      className={`p-6 ${isFromCurrentUser ? "bg-blue-50" : "bg-gray-50"
+                        }`}
                       style={{
-                          marginBottom: 10,
-                          // border: "2px solid #abb1ae",
-                          borderRadius: 5,
-                          boxShadow: "0 1px 3px #abb1ae" ,
-                        }}
+                        marginBottom: 10,
+                        // border: "2px solid #abb1ae",
+                        borderRadius: 5,
+                        boxShadow: "0 1px 3px #abb1ae",
+                      }}
                     >
                       {/* Message Header */}
                       <div
@@ -963,11 +1329,10 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex items-center space-x-3">
                             <div
-                              className={`w-10 h-10 ${
-                                isFromCurrentUser
-                                  ? "bg-gradient-to-br from-green-500 to-green-600"
-                                  : "bg-gradient-to-br from-blue-500 to-purple-600"
-                              } rounded-full flex items-center justify-center flex-shrink-0`}
+                              className={`w-10 h-10 ${isFromCurrentUser
+                                ? "bg-gradient-to-br from-green-500 to-green-600"
+                                : "bg-gradient-to-br from-blue-500 to-purple-600"
+                                } rounded-full flex items-center justify-center flex-shrink-0`}
                             >
                               <span className="text-white font-semibold text-sm">
                                 {message.from_address.charAt(0).toUpperCase()}
@@ -1076,7 +1441,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
           {/* Action Buttons - Hidden when AI reply is active */}
           {AIGeneratedReply?.length === 0 && !showReply && (
             <div className="border-t border-gray-200 p-6 bg-gray-50">
-              <div className="max-w-5xl mx-auto">
+              <div className="mx-auto">
                 <div className="flex items-center justify-between flex-wrap gap-2 w-full">
                   {/* Left buttons */}
                   <div className="flex items-center gap-2 flex-wrap">
@@ -1140,17 +1505,16 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                     windowWidth > 1580
                       ? "100%"
                       : windowWidth < 1580 && windowWidth > 1280
-                      ? "85%"
-                      : "65%",
+                        ? "85%"
+                        : "65%",
                 }}
               >
                 <div
                   ref={aiReplyRef}
-                  className={`bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-4 animate-in slide-in-from-top-2 duration-300 transition-all ${
-                    isAiReplyExpanded
-                      ? "fixed inset-4 z-50 bg-white shadow-2xl flex flex-col"
-                      : ""
-                  }`}
+                  className={`bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-4 animate-in slide-in-from-top-2 duration-300 transition-all ${isAiReplyExpanded
+                    ? "fixed inset-4 z-50 bg-white shadow-2xl flex flex-col"
+                    : ""
+                    }`}
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center space-x-2">
@@ -1161,6 +1525,15 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                       </span>
                     </div>
                     <div className="flex items-center space-x-2">
+                      <h1 className="text-sm text-gray-500">
+                        Intent : eticket
+                      </h1>
+                      <EntitiesPopover
+                        isOpen={showEntitiesPopover}
+                        onClose={() => setShowEntitiesPopover(false)}
+                        triggerRef={entitiesButtonRef}
+                        entitiesInfo={entitiesInfo}
+                      />
                       <button
                         onClick={handleToggleAiReplyExpand}
                         className="text-purple-600 hover:text-purple-700 p-1"
@@ -1207,9 +1580,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                   </div>
                   {!getAIReplyResponseStatus?.isLoading && (
                     <div
-                      className={`bg-white border border-gray-200 rounded p-3 mb-3 ${
-                        isAiReplyExpanded ? "flex-1 overflow-y-auto" : ""
-                      }`}
+                      className={`bg-white border border-gray-200 rounded p-3 mb-3 ${isAiReplyExpanded ? "flex-1 overflow-y-auto" : ""
+                        }`}
                       style={isAiReplyExpanded ? { minHeight: "350px" } : {}}
                     >
                       <pre className="whitespace-pre-wrap text-gray-800 text-sm font-sans">
@@ -1254,14 +1626,14 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
               ref={replyBoxRef}
               className="border-t border-gray-200 p-6 bg-gray-50"
             >
-              <div className="max-w-5xl mx-auto">
+              <div className="mx-auto">
                 <div className="mb-4">
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
                     {replyText.includes("--- Reply All ---")
                       ? "Reply to All Recipients"
                       : replyText.includes("--- Forwarded Message ---")
-                      ? "Forward Message"
-                      : "Reply"}
+                        ? "Forward Message"
+                        : "Reply"}
                   </h3>
                   <div className="text-sm text-gray-600 space-y-1 bg-white p-3 rounded-lg border">
                     <div className="space-y-1 text-sm">
@@ -1270,26 +1642,26 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                         <span className="font-medium">To:</span>{" "}
                         {replyText.includes("--- Reply All ---")
                           ? (() => {
-                              const lastMessage =
-                                sortedMessages[sortedMessages.length - 1];
-                              const allRecipients = new Set([
-                                ...lastMessage.to,
-                              ]);
-                              return Array.from(allRecipients).join(", ");
-                            })()
+                            const lastMessage =
+                              sortedMessages[sortedMessages.length - 1];
+                            const allRecipients = new Set([
+                              ...lastMessage.to,
+                            ]);
+                            return Array.from(allRecipients).join(", ");
+                          })()
                           : replyText.includes("--- Forwarded Message ---")
-                          ? "Enter recipient email(s)"
-                          : sortedMessages[sortedMessages.length - 1]?.to?.join(
+                            ? "Enter recipient email(s)"
+                            : sortedMessages[sortedMessages.length - 1]?.to?.join(
                               ", "
                             )}
 
-                          {replyContent}
+                        {replyContent}
                       </div>
 
                       {/* Cc (render only if exists) */}
                       {replyType === "reply" &&
                         sortedMessages[sortedMessages.length - 1]?.cc?.length >
-                          0 && (
+                        0 && (
                           <div>
                             <span className="font-medium">Cc:</span>{" "}
                             {sortedMessages[sortedMessages.length - 1].cc.join(
@@ -1301,7 +1673,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                       {/* Bcc (render only if exists) */}
                       {replyType === "reply-all" &&
                         sortedMessages[sortedMessages.length - 1]?.bcc?.length >
-                          0 && (
+                        0 && (
                           <div>
                             <span className="font-medium">Bcc:</span>{" "}
                             {sortedMessages[sortedMessages.length - 1].bcc.join(
@@ -1328,19 +1700,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                       - Type your reply below
                     </span>
                   </label>
-                  <textarea
-                    value={replyText}
-                    onChange={(e) => setReplyText(e.target.value)}
-                    placeholder={`${
-                      replyText.includes("--- Reply All ---")
-                        ? "Write your reply to all recipients..."
-                        : replyText.includes("--- Forwarded Message ---")
-                        ? "Add a message to forward..."
-                        : "Write your reply..."
-                    }`}
-                    className="w-full h-40 p-4 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
-                  />
-                </div>
+                  <div dangerouslySetInnerHTML={{ __html: replyText }} /></div>
 
                 {replyText === aiReplyState.generatedReply &&
                   aiReplyState.generatedReply && (
@@ -1384,8 +1744,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                       {replyText.includes("--- Reply All ---")
                         ? "Send to All"
                         : replyText.includes("--- Forwarded Message ---")
-                        ? "Forward"
-                        : "Send Reply"}
+                          ? "Forward"
+                          : "Send Reply"}
                     </button>
                   </div>
                 </div>

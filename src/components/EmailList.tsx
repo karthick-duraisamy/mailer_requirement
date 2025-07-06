@@ -436,6 +436,39 @@ const EmailList: React.FC<EmailListProps> = ({
       >
         <div className="bg-gray-300 group-hover:bg-blue-400 h-6 w-0.5 rounded-full transition-colors" />
       </div>
+      <div className="border-b border-gray-300 mb-4" >
+        <nav className="flex space-x-6" style={{justifyContent: "space-around", padding:"10px"}}>          <span
+            onClick={() => {
+              setActiveSectionTab("inbox");
+              setFilterData((prev: any) => ({
+                ...prev,
+                folder: 'inbox',
+              }));
+            }}
+            className={`cursor-pointer py-2 px-1 text-sm font-medium ${activeSectionTab === "inbox"
+              ? "border-b-2 border-blue-600 text-blue-600"
+              : "text-gray-500 hover:text-gray-700"
+              }`}
+          >
+            INBOX
+          </span>
+          <span
+            onClick={() => {
+              setActiveSectionTab("sent");
+              setFilterData((prev: any) => ({
+                ...prev,
+                folder: 'sent',
+              }));
+            }}
+            className={`cursor-pointer py-2 px-1 text-sm font-medium ${activeSectionTab === "sent"
+              ? "border-b-2 border-blue-600 text-blue-600"
+              : "text-gray-500 hover:text-gray-700"
+              }`}
+          >
+            SENT
+          </span>
+        </nav>
+      </div>
       <div
         className="p-4 border-b border-gray-200"
         style={{ backgroundColor: "#eef7fe" }}
@@ -468,35 +501,15 @@ const EmailList: React.FC<EmailListProps> = ({
             </button>
 
             <div style={{ height: "100%" }}>
-              <div className="border-b border-gray-300 mb-4">
-                <nav className="flex space-x-6">
-                  <span
-                    onClick={() => setActiveSectionTab("inbox")}
-                    className={`cursor-pointer py-2 px-1 text-sm font-medium ${activeSectionTab === "inbox"
-                      ? "border-b-2 border-blue-600 text-blue-600"
-                      : "text-gray-500 hover:text-gray-700"
-                      }`}
-                  >
-                    INBOX
-                  </span>
-                  <span
-                    onClick={() => setActiveSectionTab("sent")}
-                    className={`cursor-pointer py-2 px-1 text-sm font-medium ${activeSectionTab === "sent"
-                      ? "border-b-2 border-blue-600 text-blue-600"
-                      : "text-gray-500 hover:text-gray-700"
-                      }`}
-                  >
-                    SENT
-                  </span>
-                </nav>
-              </div>
+
               <h2 className="text-lg font-semibold text-gray-900">
-                {getSectionTitle(activeSection)}
+                {/* {getSectionTitle(activeSection)} */}
+                {activeSectionTab === "sent" ? "Sent" : "Inbox"}
                 {` (${emails.filter((email) => !email.is_read).length}/${readStatus === "all" ? inboxCount : emails.length
                   })`}
               </h2>
               <p className={`text-sm mt-1 truncate`}>
-                {toAddress ? `To: support@atyourprice.net` : "No recipients found"}
+                {(activeSectionTab === "inbox") && `To: support@atyourprice.net`}
                 {/* {toAddress ? `To: ${toAddress}` : "No recipients found"} */}
               </p>
             </div>
