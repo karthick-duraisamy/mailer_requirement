@@ -1586,7 +1586,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                       style={isAiReplyExpanded ? { minHeight: "350px" } : {}}
                     >
                       <pre className="whitespace-pre-wrap text-gray-800 text-sm font-sans">
-                        {AIGeneratedReply}
+                        <div dangerouslySetInnerHTML={{ __html: AIGeneratedReply }} />
                       </pre>
                     </div>
                   )}
