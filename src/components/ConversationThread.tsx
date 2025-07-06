@@ -72,8 +72,10 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 }) => {
   const { width: windowWidth } = useScreenResolution();
   const [replyText, setReplyText] = useState("");
+  const [replyContent, setReplyContent] = useState(false);
   const [AIGeneratedReply, setAIGeneratedReply] = useState("");
   const [showReply, setShowReply] = useState(false);
+  const [replyType, setReplyType] = useState<undefined | string>(undefined);
   const [expandedMessages, setExpandedMessages] = useState<Set<string>>(
     new Set()
   );
@@ -109,6 +111,11 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       }, 100);
     }
   }, [aiReplyState.showAiReply]);
+
+  useEffect(() => {
+    setReplyContent(false);
+    setShowReply(false)
+  }, [email])
 
   // Auto-scroll to reply box when AI reply is used
   useEffect(() => {
@@ -294,6 +301,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   };
 
   const handleReplyAll = () => {
+    setReplyType("reply-all");
+    setReplyContent(true);
     if (email) {
       const lastMessage = sortedMessages[sortedMessages.length - 1];
       // Get all unique recipients (to, cc) excluding our own email
@@ -341,19 +350,19 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     }
   };
 
-  const handleDeleteEmail = () => {
-    if (email) {
-      onDeleteEmail(email.message_id);
-      onClose(); // Close the conversation thread after deletion
-    }
-  };
+  // const handleDeleteEmail = () => {
+  //   if (email) {
+  //     onDeleteEmail(email.message_id);
+  //     onClose(); // Close the conversation thread after deletion
+  //   }
+  // };
 
-  const handleRestoreEmail = () => {
-    if (email && onRestoreEmail) {
-      onRestoreEmail(email.message_id);
-      onClose();
-    }
-  };
+  // const handleRestoreEmail = () => {
+  //   if (email && onRestoreEmail) {
+  //     onRestoreEmail(email.message_id);
+  //     onClose();
+  //   }
+  // };
 
   const handleAddToCalendar = () => {
     if (!email) return;
@@ -919,7 +928,11 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
               {/* Left buttons */}
               <div className="flex items-center gap-2 flex-wrap">
                 <button
-                  onClick={() => setShowReply(!showReply)}
+                  onClick={() => {
+                    setReplyType("reply");
+                    setShowReply(!showReply)
+                    setReplyContent(true)
+                  }}
                   className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
                 >
                   <Reply className="w-4 h-4" />
@@ -1069,7 +1082,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       )}
 
       {/* Reply Box */}
-      {showReply && (
+      {showReply && replyContent && (
         <div
           ref={replyBoxRef}
           className="border-t border-gray-200 p-6 bg-gray-50"
@@ -1103,7 +1116,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                   </div>
 
                   {/* Cc (render only if exists) */}
-                  {sortedMessages[sortedMessages.length - 1]?.cc?.length >
+                  {replyType === 'reply' && sortedMessages[sortedMessages.length - 1]?.cc?.length >
                     0 && (
                     <div>
                       <span className="font-medium">Cc:</span>{" "}
@@ -1112,7 +1125,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                   )}
 
                   {/* Bcc (render only if exists) */}
-                  {sortedMessages[sortedMessages.length - 1]?.bcc?.length >
+                  {replyType === 'reply-all' && sortedMessages[sortedMessages.length - 1]?.bcc?.length >
                     0 && (
                     <div>
                       <span className="font-medium">Bcc:</span>{" "}
