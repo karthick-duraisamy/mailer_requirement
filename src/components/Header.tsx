@@ -1,23 +1,40 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Search, Settings, Menu, User, Bell, LogOut, UserCircle } from 'lucide-react';
-import EmailFilters, { FilterOptions } from './EmailFilters';
-import NotificationPreferences from './NotificationPreferences';
-import SignatureSetup from './SignatureSetup';
-import EmailDisplayOptions from './EmailDisplayOptions';
-import GeneralSettings from './GeneralSettings';
+import React, { useState, useRef, useEffect } from "react";
+import {
+  Search,
+  Settings,
+  Menu,
+  User,
+  Bell,
+  LogOut,
+  UserCircle,
+  Plus,
+} from "lucide-react";
+import EmailFilters, { FilterOptions } from "./EmailFilters";
+import NotificationPreferences from "./NotificationPreferences";
+import SignatureSetup from "./SignatureSetup";
+import EmailDisplayOptions from "./EmailDisplayOptions";
+import GeneralSettings from "./GeneralSettings";
 
 interface HeaderProps {
   onMenuToggle: () => void;
   onSearch: (query: string) => void;
   onFiltersChange: (filters: FilterOptions) => void;
   filters: FilterOptions;
+  onComposeClick: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ onMenuToggle, onSearch, onFiltersChange, filters }) => {
-  const [searchQuery, setSearchQuery] = useState('');
+const Header: React.FC<HeaderProps> = ({
+  onMenuToggle,
+  onSearch,
+  onFiltersChange,
+  filters,
+  onComposeClick
+}) => {
+  const [searchQuery, setSearchQuery] = useState("");
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
-  const [showNotificationPreferences, setShowNotificationPreferences] = useState(false);
+  const [showNotificationPreferences, setShowNotificationPreferences] =
+    useState(false);
   const [showSignatureSetup, setShowSignatureSetup] = useState(false);
   const [showEmailDisplayOptions, setShowEmailDisplayOptions] = useState(false);
   const [showGeneralSettings, setShowGeneralSettings] = useState(false);
@@ -26,16 +43,22 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, onSearch, onFiltersChange
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
+      if (
+        settingsRef.current &&
+        !settingsRef.current.contains(event.target as Node)
+      ) {
         setShowSettingsDropdown(false);
       }
-      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(event.target as Node)
+      ) {
         setShowProfileDropdown(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -46,18 +69,18 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, onSearch, onFiltersChange
 
   const handleLogout = () => {
     // Handle logout logic here
-    console.log('Logging out...');
+    console.log("Logging out...");
     setShowProfileDropdown(false);
   };
 
   const handleClearFilters = () => {
     onFiltersChange({
-      readStatus: 'all',
+      readStatus: "all",
       starred: false,
       hasAttachment: false,
-      sortBy: 'newest',
-      dateRange: { from: '', to: '' },
-      intent: 'all',
+      sortBy: "newest",
+      dateRange: { from: "", to: "" },
+      intent: "all",
     });
   };
 
@@ -83,15 +106,15 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, onSearch, onFiltersChange
 
   return (
     <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between relative z-50">
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center space-x-4" z>
         {/* Enhanced Menu Toggle Button */}
         {/* <button
           onClick={onMenuToggle}
           className="p-2 hover:bg-gray-100 rounded-lg transition-colors md:hidden"
         > */}
-          {/* <div className="relative w-5 h-5">
+        {/* <div className="relative w-5 h-5">
             {/* Animated hamburger/close icon */}
-            {/* <span className={`absolute block w-5 h-0.5 bg-gray-600 transform transition-all duration-300 ease-in-out ${
+        {/* <span className={`absolute block w-5 h-0.5 bg-gray-600 transform transition-all duration-300 ease-in-out ${
               sidebarOpen ? 'rotate-45 translate-y-0' : '-translate-y-1.5'
             }`} />
             <span className={`absolute block w-5 h-0.5 bg-gray-600 transform transition-all duration-300 ease-in-out ${
@@ -102,7 +125,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, onSearch, onFiltersChange
             }`} />
           </div>
         </button> */}
-        
+
         <div className="flex items-center space-x-2">
           {/* <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-sm">M</span>
@@ -134,8 +157,8 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, onSearch, onFiltersChange
 
       <div className="flex items-center space-x-2">
         {/* Settings Dropdown */}
-        {/* <div className="relative" ref={settingsRef}>
-          <button 
+        <div className="relative" ref={settingsRef}>
+          <button
             onClick={() => setShowSettingsDropdown(!showSettingsDropdown)}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >
@@ -144,7 +167,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, onSearch, onFiltersChange
 
           {showSettingsDropdown && (
             <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
-              <div className="px-4 py-2 border-b border-gray-100">
+              {/* <div className="px-4 py-2 border-b border-gray-100">
                 <h3 className="font-semibold text-gray-900">Settings</h3>
               </div>
 
@@ -154,9 +177,9 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, onSearch, onFiltersChange
               >
                 <Bell className="w-4 h-4 text-gray-500" />
                 <span className="text-gray-700">Notification Preferences</span>
-              </button>
+              </button> */}
 
-              <button 
+              <button
                 onClick={handleOpenSignatureSetup}
                 className="w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors flex items-center space-x-3"
               >
@@ -164,7 +187,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, onSearch, onFiltersChange
                 <span className="text-gray-700">Signature Setup</span>
               </button>
 
-              <button 
+              {/* <button 
                 onClick={handleOpenEmailDisplayOptions}
                 className="w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors flex items-center space-x-3"
               >
@@ -178,60 +201,37 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, onSearch, onFiltersChange
               >
                 <Settings className="w-4 h-4 text-gray-500" />
                 <span className="text-gray-700">General Settings</span>
-              </button>
+              </button> */}
             </div>
           )}
-        </div> */}
-
-        {/* Profile Dropdown */}
-        {/* <div className="relative" ref={profileRef}>
-          <button 
-            onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-            className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center hover:bg-blue-200 transition-colors"
-          >
-            <User className="w-5 h-5 text-blue-600" />
-          </button>
-
-          {showProfileDropdown && (
-            <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
-              <div className="px-4 py-3 border-b border-gray-100">
-                <p className="font-semibold text-gray-900">John Doe</p>
-                <p className="text-sm text-gray-500">john.doe@company.com</p>
-              </div>
-
-              <button className="w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors flex items-center space-x-3">
-                <UserCircle className="w-4 h-4 text-gray-500" />
-                <span className="text-gray-700">View Profile</span>
-              </button>
-
-              <button 
-                onClick={handleLogout}
-                className="w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors flex items-center space-x-3 text-red-600"
-              >
-                <LogOut className="w-4 h-4" />
-                <span>Logout</span>
-              </button>
-            </div>
-          )}
-        </div>*/}
-      </div> 
+        </div>
+        <button
+          className="group flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors hover:bg-blue-700 bg-blue-600 text-white"
+          onClick={onComposeClick}
+        >
+          <Plus className="w-5 h-5" />
+          <span className="ml-2 whitespace-nowrap hidden md:inline">
+            Compose
+          </span>
+        </button>
+      </div>
 
       {/* Settings Modals */}
       <NotificationPreferences
         isOpen={showNotificationPreferences}
         onClose={() => setShowNotificationPreferences(false)}
       />
-      
+
       <SignatureSetup
         isOpen={showSignatureSetup}
         onClose={() => setShowSignatureSetup(false)}
       />
-      
+
       <EmailDisplayOptions
         isOpen={showEmailDisplayOptions}
         onClose={() => setShowEmailDisplayOptions(false)}
       />
-      
+
       <GeneralSettings
         isOpen={showGeneralSettings}
         onClose={() => setShowGeneralSettings(false)}
