@@ -7,16 +7,33 @@ const service = InboxService.enhanceEndpoints({
   endpoints: (builder: any) => ({
     getMailListResponse: builder.query({
       // query: () => `/mail-server/?project=${localStorage.getItem("project")}&page=1&page_size=100`, // dynamic project ID
-      query: (param : any) => ({ url: `/mail-server/?project=${localStorage.getItem("project")}`, method: 'GET', params: param }),
+      query: (param: any) => ({
+        url: `/mail-server/?project=${localStorage.getItem("project")}`,
+        method: "GET",
+        params: param,
+      }),
     }),
     getConvoResponse: builder.query({
       query: () => "staticResponse/convoResponse.json",
     }),
     getConversationDetails: builder.query({
-      query: (param: any) => `/mail-server/${param.id}/?project=${localStorage.getItem("project")}`
+      query: (param: any) =>
+        `/mail-server/${param.id}/?project=${localStorage.getItem("project")}`,
+    }),
+    getAIReplyResponse: builder.mutation({
+      query: (body: any) => ({
+        url: `/mail-server/ai-replay/`,
+        method: 'POST',
+        body
+      }),
+      invalidatesTags: ['mailer']
     }),
   }),
 });
 
-export const { useLazyGetMailListResponseQuery, useLazyGetConvoResponseQuery, useLazyGetConversationDetailsQuery } =
-  service;
+export const {
+  useLazyGetMailListResponseQuery,
+  useLazyGetConvoResponseQuery,
+  useLazyGetConversationDetailsQuery,
+  useGetAIReplyResponseMutation,
+} = service;

@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import { Email, CustomLabel } from "../types/email";
 import EntitiesPopover from "./EntitiesPopover";
-import { useLazyGetConversationDetailsQuery } from "../service/inboxService";
+import { useGetAIReplyResponseMutation, useLazyGetConversationDetailsQuery } from "../service/inboxService";
 import { useScreenResolution } from "../hooks/commonFunction";
 import { ConversationSkeleton } from "./skeletonLoader";
 
@@ -91,6 +91,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   const entitiesButtonRef = useRef<HTMLButtonElement>(null);
   const [getConversationDetails, getConversationDetailsStatus] =
     useLazyGetConversationDetailsQuery();
+  const [getAIReplyResponse, getAIReplyResponseStatus] = useGetAIReplyResponseMutation()
   const [msgData, setMsgData] = useState<any[]>([]);
   const moreMenuRef = useRef<HTMLDivElement>(null);
 
@@ -244,7 +245,12 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   };
 
   const handleAiReplyGenerate = () => {
-    setAIGeneratedReply(msgData[msgData.length - 1]?.ai_response);
+    let AIReply = {
+      document_id: msgData[msgData.length - 1]?.mail_id,
+      prompt: "",
+    }
+    getAIReplyResponse(AIReply)
+    // setAIGeneratedReply(msgData[msgData.length - 1]?.mail_id);
   };
 
   const handleToneChange = (tone: "professional" | "friendly" | "concise") => {
@@ -975,10 +981,10 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                   <div className="flex items-center gap-2">
                     <button
                       onClick={handleAiReplyGenerate}
-                      disabled={aiReplyState.isGenerating}
+                      disabled={getAIReplyResponseStatus?.isLoading}
                       className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-400 text-white rounded-lg transition-colors"
                     >
-                      {aiReplyState.isGenerating ? (
+                      {getAIReplyResponseStatus?.isLoading ? (
                         <LoadingIndicator />
                       ) : (
                         <>
