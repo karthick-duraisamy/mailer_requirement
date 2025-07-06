@@ -244,14 +244,25 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     return totalRecipients > 1 || (lastMessage.cc && lastMessage.cc.length > 0);
   };
 
-  const handleAiReplyGenerate = () => {
+  const handleAiReplyGenerate = async () => {
     let AIReply = {
       document_id: msgData[msgData.length - 1]?.mail_id,
       prompt: "",
+    };
+  
+    try {
+      const result = await getAIReplyResponse(AIReply).unwrap();
+      const reply = (result as any)?.response.data.reply
+  
+      if (reply) {
+        setAIGeneratedReply(reply);
+      }
+    } catch (error) {
+      console.error("AI Reply fetch failed", error);
+      // Optional: handle error state
     }
-    getAIReplyResponse(AIReply)
-    // setAIGeneratedReply(msgData[msgData.length - 1]?.mail_id);
   };
+  
 
   const handleToneChange = (tone: "professional" | "friendly" | "concise") => {
     onAiReplyStateChange({ ...aiReplyState, tone });
