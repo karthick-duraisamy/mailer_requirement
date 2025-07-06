@@ -135,27 +135,45 @@ const Header: React.FC<HeaderProps> = ({
 
       <div className="flex-1 max-w-2xl mx-8">
         <div className="flex items-center space-x-3">
-          <div className="relative flex-1">
+<div className="relative flex-1">
+            {/* Search Icon Button */}
             <button
-    type="button"
-    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-    onClick={() => handleSearchChange(searchQuery)}
-    tabIndex={0}
-  >
-    <Search className="w-5 h-5" />
-  </button>
-  <input
-    type="text"
-    placeholder="Search mail"
-    value={searchQuery}
-    onChange={e => setSearchQuery(e.target.value)}
-    onKeyDown={e => {
-      if (e.key === "Enter") {
-        handleSearchChange(searchQuery);
-      }
-    }}
-    className="w-full pl-10 pr-4 py-2 bg-gray-100 border border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white focus:border-blue-500 transition-all"
-  />
+              type="button"
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+              onClick={() => handleSearchChange(searchQuery)}
+              tabIndex={0}
+            >
+              <Search className="w-5 h-5" />
+            </button>
+
+            {/* Input Field */}
+            <input
+              type="text"
+              placeholder="Search mail"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleSearchChange(searchQuery);
+                }
+              }}
+              className="w-full pl-10 pr-10 py-2 bg-gray-100 border border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white focus:border-blue-500 transition-all"
+            />
+
+            {/* Cancel (×) Button */}
+            {searchQuery && (
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                onClick={() => {
+                  setSearchQuery("");
+                  handleSearchChange("");
+                }}
+                tabIndex={0}
+              >
+                ×
+              </button>
+            )}
           </div>
 
           <EmailFilters

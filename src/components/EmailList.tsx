@@ -96,11 +96,10 @@ const EmailList: React.FC<EmailListProps> = ({
   console.log(filters);
   const dispatch = useDispatch();
   const [isFiltered, setIsFiltered] = useState(false);
-     
+  const [activeSectionTab, setActiveSectionTab] = useState("inbox");
   useEffect(() => {
     // Initial call
-    if(filters?.search === '')
-    {
+    if (filters?.search === '') {
       getMailList(filterData);
       setIsFiltered(false);
     }
@@ -108,8 +107,7 @@ const EmailList: React.FC<EmailListProps> = ({
 
   useEffect(() => {
     // Initial call
-    if(filters !== undefined && Object.keys(filters).length >= 1 && filters?.search !== '')
-    {
+    if (filters !== undefined && Object.keys(filters).length >= 1 && filters?.search !== '') {
       if (setEmails && isFiltered === false) setEmails([]);
       getMailList(filters);
       setIsFiltered(true);
@@ -118,25 +116,34 @@ const EmailList: React.FC<EmailListProps> = ({
 
   useEffect(() => {
     if (getMailListResponse.isSuccess && setEmails) {
-      const staticList = (getMailListResponse as any)?.data?.response?.data
-        ?.results;
+      const staticList = (getMailListResponse as any)?.data?.response?.data?.results;
+      console.log(staticList, "Arunkumarr");
+
       if (staticList && Array.isArray(staticList)) {
         setInboxCount(
           (getMailListResponse as any)?.data?.response?.data?.count || 0
         );
-          setEmails((prevEmails: any[]) => {
-            // Create a Set of existing mail_ids
-            const existingIds = new Set(prevEmails.map((email) => email.mail_id));
-            // Filter out emails that already exist
-            const newEmails = staticList
-              .filter((email: any) => !existingIds.has(email.mail_id))
-              .map((email: any) => ({
+
+        setEmails((prevEmails: any[]) => {
+          // Create a map of previous emails for quick lookup
+          const prevEmailMap = new Map(prevEmails.map(email => [email.mail_id, email]));
+
+          // Go through the staticList and keep those already in prevEmails, or add new ones
+          const updatedEmails = staticList.map((email: any) => {
+            if (prevEmailMap.has(email.mail_id)) {
+              // Return the existing email from previous state (preserves any local modifications)
+              return prevEmailMap.get(email.mail_id);
+            } else {
+              // New email, enrich it with default intentLabel
+              return {
                 ...email,
                 intentLabel: email.labels || "new",
-              }));
-            // Append only new emails
-            return [...prevEmails, ...newEmails];
+              };
+            }
           });
+
+          return updatedEmails;
+        });
       }
     }
   }, [getMailListResponse]);
@@ -316,11 +323,11 @@ const EmailList: React.FC<EmailListProps> = ({
           {section === "starred"
             ? "Star important conversations to find them quickly here."
             : section === "snoozed"
-            ? "Snoozed conversations will appear here when it's time to deal with them."
-            : section.startsWith("custom-label-") ||
-              section.startsWith("label-")
-            ? `Conversations with the "${title}" label will appear here.`
-            : `No conversations available yet.`}
+              ? "Snoozed conversations will appear here when it's time to deal with them."
+              : section.startsWith("custom-label-") ||
+                section.startsWith("label-")
+                ? `Conversations with the "${title}" label will appear here.`
+                : `No conversations available yet.`}
         </p>
       </div>
     );
@@ -461,14 +468,36 @@ const EmailList: React.FC<EmailListProps> = ({
             </button>
 
             <div style={{ height: "100%" }}>
+              <div className="border-b border-gray-300 mb-4">
+                <nav className="flex space-x-6">
+                  <span
+                    onClick={() => setActiveSectionTab("inbox")}
+                    className={`cursor-pointer py-2 px-1 text-sm font-medium ${activeSectionTab === "inbox"
+                      ? "border-b-2 border-blue-600 text-blue-600"
+                      : "text-gray-500 hover:text-gray-700"
+                      }`}
+                  >
+                    INBOX
+                  </span>
+                  <span
+                    onClick={() => setActiveSectionTab("sent")}
+                    className={`cursor-pointer py-2 px-1 text-sm font-medium ${activeSectionTab === "sent"
+                      ? "border-b-2 border-blue-600 text-blue-600"
+                      : "text-gray-500 hover:text-gray-700"
+                      }`}
+                  >
+                    SENT
+                  </span>
+                </nav>
+              </div>
               <h2 className="text-lg font-semibold text-gray-900">
                 {getSectionTitle(activeSection)}
-                {` (${emails.filter((email) => !email.is_read).length}/${
-                  readStatus === "all" ? inboxCount : emails.length
-                })`}
+                {` (${emails.filter((email) => !email.is_read).length}/${readStatus === "all" ? inboxCount : emails.length
+                  })`}
               </h2>
               <p className={`text-sm mt-1 truncate`}>
-                {toAddress ? `To: ${toAddress}` : "No recipients found"}
+                {toAddress ? `To: support@atyourprice.net` : "No recipients found"}
+                {/* {toAddress ? `To: ${toAddress}` : "No recipients found"} */}
               </p>
             </div>
           </div>
@@ -577,11 +606,11 @@ const EmailList: React.FC<EmailListProps> = ({
           const target = e.currentTarget;
           if (target.scrollHeight - target.scrollTop === target.clientHeight) {
             // dispatch(resetFilters());
-            if(isFiltered){
-              dispatch(setFilterSettings({ ...filters, page: filters?.page + 1 }));
-              setIsFiltered(true);
+            if (isFiltered) {
+              // dispatch(setFilterSettings({ ...filters, page: filters?.page + 1 }));
+              // setIsFiltered(true);
             }
-            else{
+            else {
               setFilterData((prev: any) => ({
                 ...prev,
                 page: prev.page + 1
@@ -634,11 +663,10 @@ const EmailList: React.FC<EmailListProps> = ({
                   className="mt-1 transition-colors"
                 >
                   <Star
-                    className={`w-4 h-4 ${
-                      email.is_starred
-                        ? "text-yellow-500 fill-yellow-500"
-                        : "text-gray-400 hover:text-yellow-500"
-                    }`}
+                    className={`w-4 h-4 ${email.is_starred
+                      ? "text-yellow-500 fill-yellow-500"
+                      : "text-gray-400 hover:text-yellow-500"
+                      }`}
                   />
                 </button>
 
@@ -648,11 +676,10 @@ const EmailList: React.FC<EmailListProps> = ({
                       <p
                         className={`
                         text-sm mt-1
-                        ${
-                          !email.is_read
+                        ${!email.is_read
                             ? "font-bold text-black"
                             : "font-semibold text-gray-400"
-                        }
+                          }
                         line-clamp-2
                       `}
                       >
@@ -668,9 +695,8 @@ const EmailList: React.FC<EmailListProps> = ({
                           {React.createElement(
                             getIntentLabel(email.intent).icon,
                             {
-                              className: `w-3 h-3 mr-1 ${
-                                getIntentLabel(email.intent).iconColor
-                              }`,
+                              className: `w-3 h-3 mr-1 ${getIntentLabel(email.intent).iconColor
+                                }`,
                             }
                           )}
                           {getIntentLabel(email.intent).text}
@@ -685,11 +711,10 @@ const EmailList: React.FC<EmailListProps> = ({
                   <p
                     className={`
                     text-sm mt-1 truncate
-                    ${
-                      !email.is_read
+                    ${!email.is_read
                         ? "text-gray-700 font-medium"
                         : "text-gray-400"
-                    }
+                      }
                   `}
                   >
                     {email.snippet}

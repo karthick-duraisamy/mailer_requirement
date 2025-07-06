@@ -28,6 +28,8 @@ import EntitiesPopover from "./EntitiesPopover";
 import {
   useGetAIReplyResponseMutation,
   useLazyGetConversationDetailsQuery,
+  useLazyGetSettingsQuery,
+  useSentMailMutation,
 } from "../service/inboxService";
 import { useScreenResolution } from "../hooks/commonFunction";
 import { ConversationSkeleton } from "./skeletonLoader";
@@ -99,12 +101,23 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     useGetAIReplyResponseMutation();
   const [msgData, setMsgData] = useState<any[]>([]);
   const moreMenuRef = useRef<HTMLDivElement>(null);
+  const [settings, setSettings] = useState<any>();
+  const [getSettings, getSettingsResponseStatus] = useLazyGetSettingsQuery();
+  const [sentMail, sentMailResponseStatus] = useSentMailMutation();
 
   // When the conversation changes, reset AI reply state
   useEffect(() => {
     setAIGeneratedReply("");
   }, [email]);
 
+  useEffect(() => {getSettings({})},[]);
+
+  useEffect(() => {
+    if (getSettingsResponseStatus?.isSuccess) {
+      console.log("Settings fetched successfully", (getSettingsResponseStatus as any)?.data?.response?.data);
+      setSettings((getSettingsResponseStatus as any)?.data?.response?.data);
+    }
+  }, [getSettingsResponseStatus])
   // Auto-scroll to AI reply when it becomes available
   useEffect(() => {
     if (aiReplyState.showAiReply && aiReplyRef.current) {
@@ -119,10 +132,10 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     }
   }, [aiReplyState.showAiReply]);
 
-  useEffect(() => {
-    setReplyContent(false);
-    setShowReply(false);
-  }, [email]);
+  // useEffect(() => {
+  //   setReplyContent(false);
+  //   setShowReply(false);
+  // }, [email]);
 
   // Auto-scroll to reply box when AI reply is used
   useEffect(() => {
@@ -219,24 +232,132 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   const handleSendReply = () => {
     if (replyText.trim()) {
       // Determine reply type based on whether AI was used
-      let replyType: "manual" | "ai" | "partial-ai" = "manual";
+      let replyType: "MANUAL" | "AI" | "AI_EDITED" = "MANUAL";
       if (
         replyText === aiReplyState.generatedReply &&
         aiReplyState.generatedReply
       ) {
-        replyType = "ai";
+        replyType = "AI";
       } else if (
         aiReplyState.generatedReply &&
         replyText.includes(aiReplyState.generatedReply)
       ) {
-        replyType = "partial-ai";
+        replyType = "AI_EDITED";
       }
 
       // Handle reply logic here - would typically save the message with replyType
       console.log("Reply sent with type:", replyType);
 
-      setReplyText("");
+      const lastFromAddress = msgData[msgData.length - 1]?.from_address;
+
+      const matchedSetting = settings?.find(
+        (s: any) => s.from_email_id === lastFromAddress
+      );
+
+      const settingId = matchedSetting?.setting_id;
+      // setReplyText("");
+      console.log(replyText, msgData[msgData.length-1],
+        {
+          mail_id: msgData[msgData.length - 1]?.mail_id,
+          thread_id: msgData[msgData.length - 1]?.thread_id,
+          folder: msgData[msgData.length - 1]?.folder,
+          subject: msgData[msgData.length - 1]?.subject,
+          to: [msgData[msgData.length - 1]?.from_address],
+          cc: msgData[msgData.length - 1]?.cc,
+          bcc: msgData[msgData.length - 1]?.bcc,
+          body_plain: msgData[msgData.length - 1]?.body_plain,
+          body_html: msgData[msgData.length - 1]?.body_html,
+          reply_type: replyType,
+          edited: false,
+          labels: msgData[msgData.length - 1]?.labels || [],
+          ai_response: {
+              intent: msgData[msgData.length - 1]?.intent || "reply",
+              entities: msgData[msgData.length - 1]?.entities || {},
+              reply: replyText
+          },
+          setting_id: 4
+        });
+
+        const templateMessage = `<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>AYP Ticket Mail</title>
+  </head>
+  <body style="margin: 0; padding: 0; background-color: #f2f2f2;"><center>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" align="center">
+      <tbody><tr>
+        <td align="center">
+          <!-- Main Container -->
+          <table width="600" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff; padding: 20px 0;">
+            <!-- Logo + Title Row -->
+            <tbody><tr>
+              <td align="center">
+                <table cellpadding="0" cellspacing="0" border="0" align="center">
+                  <tbody><tr>
+                    <!-- Logo -->
+                    <td style="padding-right: 15px;">
+                      <img src="https://www.atyourprice.net/wp-content/uploads/2024/07/a_y_p_1.gif" alt="AYP Logo" width="80" style="vertical-align: middle; display: block;">
+                    </td>
+
+                    <!-- Centered Title -->
+                    <td>
+                      <div style="font-family: Georgia, serif; font-size: 28px; color: #1a1aa3; white-space: nowrap;">
+                        AYP SAMPLE MAIL
+                      </div>
+                    </td>
+                  </tr>
+                </tbody></table>
+              </td>
+            </tr>
+
+            <!-- Dynamic Content Row -->
+            <tr>
+              <td align="center" style="padding-top: 20px; padding-left: 40px; padding-right: 40px;">
+                <div style="font-family: Arial, sans-serif; font-size: 16px; color: #333333;">
+                  $<<dynamic_data>>
+                </div>
+              </td>
+            </tr>
+          </tbody></table>
+        </td>
+      </tr>
+    </tbody></table>
+  </center>
+  <footer style="background-color: #f2f2f2; padding: 20px 0; text-align: center; font-family: Arial, sans-serif; font-size: 12px; color: #666666;">
+      <div>
+         $<<signature>>
+      </div>
+</footer>
+</body>
+</head>`;
+      const filledHtml = templateMessage.replace('$<<dynamic_data>>', replyText);
+      const finalHtml = filledHtml.replace('$<<signature>>', sessionStorage.getItem("defaultSignature") || "");
+
+      const emailData = {
+          mail_id: msgData[msgData.length - 1]?.mail_id,
+          thread_id: msgData[msgData.length - 1]?.thread_id,
+          folder: msgData[msgData.length - 1]?.folder,
+          subject: msgData[msgData.length - 1]?.subject,
+          // to: [msgData[msgData.length - 1]?.from_address],
+          to: ['madhivanan.e@infinitisoftware.net'],
+          cc: msgData[msgData.length - 1]?.cc,
+          bcc: msgData[msgData.length - 1]?.bcc,
+          body_plain: replyText,
+          body_html: finalHtml,
+          reply_type: replyType,
+          edited: false,
+          labels: msgData[msgData.length - 1]?.labels || [],
+          ai_response: {
+              intent: msgData[msgData.length - 1]?.intent || "reply",
+              entities: msgData[msgData.length - 1]?.entities || {},
+              reply: replyText+"\n"+finalHtml
+          },
+          setting_id: 30
+        };
+      sentMail(emailData);
       setShowReply(false);
+      setReplyText(replyText+"\n"+finalHtml);
       onAiReplyStateChange({
         ...aiReplyState,
         showAiReply: false,
@@ -268,6 +389,9 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       const result = await getAIReplyResponse(AIReply).unwrap();
       const reply = (result as any)?.response.data.reply;
 
+      console.log("AI Reply generated:", reply);
+      setReplyText(reply);
+
       if (reply) {
         setAIGeneratedReply(reply);
       }
@@ -283,14 +407,17 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
   // Handle AI Reply button click
   const handleAiReply = () => {
-    setReplyText(aiReplyState.generatedReply);
+    // setReplyText(replyText);
     setShowReply(true);
+    setReplyContent(true);
     onAiReplyStateChange({ ...aiReplyState, showAiReply: false });
   };
 
   // Handle AI Reply All button click
   const handleAiReplyAll = () => {
-    if (msgData && sortedMessages.length > 0) {
+
+    console.log(replyText,"Arunnnnn")
+    // if (msgData && sortedMessages.length > 0) {
       const lastMessage = sortedMessages[sortedMessages.length - 1];
       // Get all unique recipients (to, cc) excluding our own email if needed
       const allRecipients = new Set([
@@ -303,10 +430,11 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       const replyAllText = `\n\n--- Reply All ---\nTo: ${Array.from(
         allRecipients
       ).join(", ")}\n\n${aiReplyState.generatedReply}`;
-      setReplyText(replyAllText);
       setShowReply(true);
+      // setReplyText(replyAllText);x
+      setReplyContent(true);
       onAiReplyStateChange({ ...aiReplyState, showAiReply: false });
-    }
+    // }
   };
 
   const handleReplyAll = () => {
@@ -325,7 +453,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       const replyAllText = `\n\n--- Reply All ---\nTo: ${Array.from(
         allRecipients
       ).join(", ")}\n\n`;
-      setReplyText(replyAllText);
+      setReplyText(aiReplyState.generatedReply);
       setShowReply(true);
       onAiReplyStateChange({
         ...aiReplyState,
@@ -348,7 +476,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
         lastMessage.cc ? `Cc: ${lastMessage.cc.join(", ")}\n` : ""
       }\n${lastMessage.body_plain}`;
 
-      setReplyText(forwardedText);
+      setReplyText(aiReplyState.generatedReply);
       setShowReply(true);
       onAiReplyStateChange({
         ...aiReplyState,
@@ -954,8 +1082,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                   <div className="flex items-center gap-2 flex-wrap">
                     <button
                       onClick={() => {
-                        setReplyType("reply");
-                        setShowReply(!showReply);
+                        setReplyType("AI");
+                        // setShowReply(!showReply);
                         setReplyContent(true);
                       }}
                       className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
@@ -1154,6 +1282,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                           : sortedMessages[sortedMessages.length - 1]?.to?.join(
                               ", "
                             )}
+
+                          {replyContent}
                       </div>
 
                       {/* Cc (render only if exists) */}

@@ -24,6 +24,13 @@ const SignatureSetup: React.FC<SignatureSetupProps> = ({ isOpen, onClose }) => {
   const [previewMode, setPreviewMode] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    const defaultSignature = signatures.find(sig => sig.isDefault);
+    if (defaultSignature) {
+      sessionStorage.setItem("defaultSignature", defaultSignature.content);
+    }
+  }, [signatures]);
+
   const handleEdit = (signature: any) => {
     setEditingSignature(signature.id);
     setSignatureName(signature.name);

@@ -28,7 +28,21 @@ const service = InboxService.enhanceEndpoints({
       }),
       invalidatesTags: ['mailer']
     }),
-  }),
+    getSettings: builder.query({
+      query: (param : any) => ({
+        url: `/setting/?ordering=-setting&nolimit=Y&project=${localStorage.getItem("project")}`,
+        method: 'GET'
+      }),
+    }),
+    sentMail: builder.mutation({
+      query: (body: any) => ({
+        url: `/mail-sent/`,
+        method: 'POST',
+        body
+      }),
+      invalidatesTags: ['mailer']
+    }),
+  })
 });
 
 export const {
@@ -36,4 +50,6 @@ export const {
   useLazyGetConvoResponseQuery,
   useLazyGetConversationDetailsQuery,
   useGetAIReplyResponseMutation,
+  useLazyGetSettingsQuery,
+  useSentMailMutation,
 } = service;
