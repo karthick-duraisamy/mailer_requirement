@@ -908,6 +908,7 @@ function App() {
         onUnselectAll={handleUnselectAll}
         onUndo={handleUndo}
         hasSelection={checkedEmails.size > 0}
+        onComposeClick={handleComposeOpen}
       />
 
       <div className="flex-1 flex overflow-hidden">

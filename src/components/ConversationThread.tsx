@@ -777,7 +777,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto">
-            <div className="max-w-5xl mx-auto">
+            <div style={{ width: '98%', margin: '0 auto' }}>
               {sortedMessages.map((message, index) => {
                 const isExpanded =
                   expandedMessages.has(message.message_id) ||
@@ -797,6 +797,12 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                       className={`p-6 ${
                         isFromCurrentUser ? "bg-blue-50" : "bg-gray-50"
                       }`}
+                      style={{
+                          marginBottom: 10,
+                          // border: "2px solid #abb1ae",
+                          borderRadius: 5,
+                          boxShadow: "0 1px 3px #abb1ae" ,
+                        }}
                     >
                       {/* Message Header */}
                       <div
@@ -824,10 +830,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                           } else {
                             toggleMessageExpansion(message.message_id);
                           }
-                        }}
-                        style={{
-                          marginBottom: 10,
-                          border: "2px solid #abb1ae",
                         }}
                       >
                         <div className="flex items-start justify-between mb-4">
