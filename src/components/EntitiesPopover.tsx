@@ -126,7 +126,7 @@ const EntitiesPopover: React.FC<EntitiesPopoverProps> = ({
                     {key.replace(/_/g, " ")}:
                   </span>
                 </div>
-                <span className="text-sm text-gray-900 font-mono truncate max-w-[150px] text-right">
+                <span title={String(value)} className="text-sm text-gray-900 font-mono truncate max-w-[150px] text-right">
                   {String(value)}
                 </span>
               </div>
