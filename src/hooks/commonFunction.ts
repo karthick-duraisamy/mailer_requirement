@@ -99,5 +99,23 @@ const getIntentLabel = (intent: string): IntentLabel => {
     };
   };
 
+  export const getSenderName = (fromAddress: string): string => {
+    if (!fromAddress) return "";
+  
+    // Step 1: Extract display name if in format "Name <email>"
+    const match = fromAddress.match(/^(.*?)\s*<.*?>$/);
+    let namePart = match ? match[1] : fromAddress;
+  
+    // Step 2: Remove quotes, content inside parentheses, brackets, etc.
+    namePart = namePart
+      .replace(/["']/g, "") // Remove quotes
+      .replace(/\(.*?\)/g, "") // Remove content in ()
+      .replace(/\[.*?\]/g, "") // Remove content in []
+      .trim();
+  
+    // Step 3: Return cleaned name
+    return namePart;
+  };
+
 
 export { useScreenResolution , getIntentLabel };

@@ -31,7 +31,7 @@ import {
   useLazyGetSettingsQuery,
   useSentMailMutation,
 } from "../service/inboxService";
-import { getIntentLabel, useScreenResolution } from "../hooks/commonFunction";
+import { getIntentLabel, getSenderName, useScreenResolution } from "../hooks/commonFunction";
 import { ConversationSkeleton } from "./skeletonLoader";
 import { SendIcon, InboxIcon } from "./Icons";
 
@@ -1344,7 +1344,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                                 } rounded-full flex items-center justify-center flex-shrink-0`}
                             >
                               <span className="text-white font-semibold text-sm">
-                                {message.from_address.charAt(0).toUpperCase()}
+                                {getSenderName(message?.from_address)?.charAt(0).toUpperCase()}
                               </span>
                             </div>
 

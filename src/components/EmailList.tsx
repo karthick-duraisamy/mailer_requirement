@@ -27,7 +27,7 @@ import { useLazyGetMailListResponseQuery } from "../service/inboxService";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../store/store";
 import { FilterOptions, resetFilters, setFilterSettings } from "../store/filterSlice";
-import { getIntentLabel } from "../hooks/commonFunction";
+import { getIntentLabel, getSenderName } from "../hooks/commonFunction";
 
 interface EmailListProps {
   emails: any[];
@@ -89,7 +89,7 @@ const EmailList: React.FC<EmailListProps> = ({
   const [getMailList, getMailListResponse] = useLazyGetMailListResponseQuery();
   const [filterData, setFilterData] = useState<any>({
     page: 1,
-    page_size: 20,
+    page_size: 100,
     search: undefined,
   });
   const [inboxCount, setInboxCount] = useState(0);
@@ -289,24 +289,6 @@ const EmailList: React.FC<EmailListProps> = ({
     },
     [width]
   );
-
-  const getSenderName = (fromAddress: string): string => {
-    if (!fromAddress) return "";
-
-    // Step 1: Extract display name if in format "Name <email>"
-    const match = fromAddress.match(/^(.*?)\s*<.*?>$/);
-    let namePart = match ? match[1] : fromAddress;
-
-    // Step 2: Remove quotes, content inside parentheses, brackets, etc.
-    namePart = namePart
-      .replace(/["']/g, "") // Remove quotes
-      .replace(/\(.*?\)/g, "") // Remove content in ()
-      .replace(/\[.*?\]/g, "") // Remove content in []
-      .trim();
-
-    // Step 3: Return cleaned name
-    return namePart;
-  };
 
   const handleResize = useCallback(
     (e: MouseEvent) => {
