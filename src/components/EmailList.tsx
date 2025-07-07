@@ -26,7 +26,11 @@ import { useLazyGetMailListResponseQuery } from "../service/inboxService";
 // import { FilterOptions } from "../components/EmailFilters";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../store/store";
-import { FilterOptions, resetFilters, setFilterSettings } from "../store/filterSlice";
+import {
+  FilterOptions,
+  resetFilters,
+  setFilterSettings,
+} from "../store/filterSlice";
 
 interface EmailListProps {
   emails: any[];
@@ -99,7 +103,7 @@ const EmailList: React.FC<EmailListProps> = ({
   const [activeSectionTab, setActiveSectionTab] = useState("inbox");
   useEffect(() => {
     // Initial call
-    if (filters?.search === '') {
+    if (filters?.search === "") {
       getMailList(filterData);
       setIsFiltered(false);
     }
@@ -107,7 +111,11 @@ const EmailList: React.FC<EmailListProps> = ({
 
   useEffect(() => {
     // Initial call
-    if (filters !== undefined && Object.keys(filters).length >= 1 && filters?.search !== '') {
+    if (
+      filters !== undefined &&
+      Object.keys(filters).length >= 1 &&
+      filters?.search !== ""
+    ) {
       if (setEmails && isFiltered === false) setEmails([]);
       getMailList(filters);
       setIsFiltered(true);
@@ -116,7 +124,8 @@ const EmailList: React.FC<EmailListProps> = ({
 
   useEffect(() => {
     if (getMailListResponse.isSuccess && setEmails) {
-      const staticList = (getMailListResponse as any)?.data?.response?.data?.results;
+      const staticList = (getMailListResponse as any)?.data?.response?.data
+        ?.results;
       console.log(staticList, "Arunkumarr");
 
       if (staticList && Array.isArray(staticList)) {
@@ -126,7 +135,9 @@ const EmailList: React.FC<EmailListProps> = ({
 
         setEmails((prevEmails: any[]) => {
           // Create a map of previous emails for quick lookup
-          const prevEmailMap = new Map(prevEmails.map(email => [email.mail_id, email]));
+          const prevEmailMap = new Map(
+            prevEmails.map((email) => [email.mail_id, email])
+          );
 
           // Go through the staticList and keep those already in prevEmails, or add new ones
           const updatedEmails = staticList.map((email: any) => {
@@ -323,11 +334,11 @@ const EmailList: React.FC<EmailListProps> = ({
           {section === "starred"
             ? "Star important conversations to find them quickly here."
             : section === "snoozed"
-              ? "Snoozed conversations will appear here when it's time to deal with them."
-              : section.startsWith("custom-label-") ||
-                section.startsWith("label-")
-                ? `Conversations with the "${title}" label will appear here.`
-                : `No conversations available yet.`}
+            ? "Snoozed conversations will appear here when it's time to deal with them."
+            : section.startsWith("custom-label-") ||
+              section.startsWith("label-")
+            ? `Conversations with the "${title}" label will appear here.`
+            : `No conversations available yet.`}
         </p>
       </div>
     );
@@ -350,10 +361,22 @@ const EmailList: React.FC<EmailListProps> = ({
     [width]
   );
 
-  const getSenderName = (fromAddress: any) => {
-    if (!fromAddress) return '';
+  const getSenderName = (fromAddress: string): string => {
+    if (!fromAddress) return "";
+
+    // Step 1: Extract display name if in format "Name <email>"
     const match = fromAddress.match(/^(.*?)\s*<.*?>$/);
-    return match ? match[1] : fromAddress;
+    let namePart = match ? match[1] : fromAddress;
+
+    // Step 2: Remove quotes, content inside parentheses, brackets, etc.
+    namePart = namePart
+      .replace(/["']/g, "") // Remove quotes
+      .replace(/\(.*?\)/g, "") // Remove content in ()
+      .replace(/\[.*?\]/g, "") // Remove content in []
+      .trim();
+
+    // Step 3: Return cleaned name
+    return namePart;
   };
 
   const handleResize = useCallback(
@@ -507,15 +530,15 @@ const EmailList: React.FC<EmailListProps> = ({
             </button>
 
             <div style={{ height: "100%" }}>
-
               <h2 className="text-lg font-semibold text-gray-900">
                 {/* {getSectionTitle(activeSection)} */}
                 {activeSectionTab === "sent" ? "Sent" : "Conversations"}
-                {` (${emails.filter((email) => !email.is_read).length}/${readStatus === "all" ? inboxCount : emails.length
-                  })`}
+                {` (${emails.filter((email) => !email.is_read).length}/${
+                  readStatus === "all" ? inboxCount : emails.length
+                })`}
               </h2>
               <p className={`text-sm mt-1 truncate`}>
-                {(activeSectionTab === "inbox") && `support@atyourprice.net`}
+                {activeSectionTab === "inbox" && `support@atyourprice.net`}
                 {/* {toAddress ? `To: ${toAddress}` : "No recipients found"} */}
               </p>
             </div>
@@ -628,11 +651,10 @@ const EmailList: React.FC<EmailListProps> = ({
             if (isFiltered) {
               // dispatch(setFilterSettings({ ...filters, page: filters?.page + 1 }));
               // setIsFiltered(true);
-            }
-            else {
+            } else {
               setFilterData((prev: any) => ({
                 ...prev,
-                page: prev.page + 1
+                page: prev.page + 1,
               }));
               setIsFiltered(false);
             }
@@ -682,31 +704,32 @@ const EmailList: React.FC<EmailListProps> = ({
                   className="mt-1 transition-colors"
                 >
                   <Star
-                    className={`w-4 h-4 ${email.is_starred
-                      ? "text-yellow-500 fill-yellow-500"
-                      : "text-gray-400 hover:text-yellow-500"
-                      }`}
+                    className={`w-4 h-4 ${
+                      email.is_starred
+                        ? "text-yellow-500 fill-yellow-500"
+                        : "text-gray-400 hover:text-yellow-500"
+                    }`}
                   />
                 </button>
 
-                <div className="flex-1 min-w-0" >
+                <div className="flex-1 min-w-0">
                   {/* <p>{JSON.stringify(email?.from_address)}</p> */}
                   <div className="flex items-center justify-between">
-                    
                     <div className="flex items-center space-x-2 min-w-0">
                       <p
                         className={`
                         text-sm mt-1
-                        ${!email.is_read
+                        ${
+                          !email.is_read
                             ? "font-bold text-black"
                             : "font-semibold text-gray-400"
-                          }
+                        }
                         line-clamp-2
                       `}
                       >
                         {getSenderName(email.from_address)}
                       </p>
-                      {email?.intent && (
+                      {/* {email?.intent && (
                         <div
                           className={`
                           inline-flex items-center px-2 py-1 rounded-full text-xs font-medium flex-shrink-0
@@ -722,22 +745,22 @@ const EmailList: React.FC<EmailListProps> = ({
                           )}
                           {getIntentLabel(email.intent).text}
                         </div>
-                      )}
+                      )} */}
                     </div>
                     <p className="text-xs text-gray-500 ml-2 flex-shrink-0">
                       {formatTime(email.created_at)}
                     </p>
                   </div>
                   <div className="flex items-center justify-between">
-                    
                     <div className="flex items-center space-x-2 min-w-0">
                       <p
                         className={`
                         text-sm mt-1
-                        ${!email.is_read
+                        ${
+                          !email.is_read
                             ? "font-bold text-black"
                             : "font-semibold text-gray-400"
-                          }
+                        }
                         line-clamp-2
                       `}
                       >
@@ -769,18 +792,35 @@ const EmailList: React.FC<EmailListProps> = ({
                   <p
                     className={`
                     text-sm mt-1 truncate
-                    ${!email.is_read
+                    ${
+                      !email.is_read
                         ? "text-gray-700 font-medium"
                         : "text-gray-400"
-                      }
+                    }
                   `}
                   >
                     {email.snippet}
                   </p>
 
                   {/* Custom Labels */}
-                  {emailLabels.length > 0 && (
+                  {/* {emailLabels.length > 0 && (
                     <LabelList emailLabels={email?.labels as string[]} />
+                  )} */}
+
+                  {email?.intent && (
+                    <div
+                      className={`
+                  inline-flex items-center px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 mt-[5px] 
+                  ${getIntentLabel(email.intent).color}
+                `}
+                    >
+                      {React.createElement(getIntentLabel(email.intent).icon, {
+                        className: `w-3 h-3 mr-1 ${
+                          getIntentLabel(email.intent).iconColor
+                        }`,
+                      })}
+                      {getIntentLabel(email.intent).text}
+                    </div>
                   )}
                 </div>
               </div>
@@ -793,4 +833,3 @@ const EmailList: React.FC<EmailListProps> = ({
 };
 
 export default EmailList;
-
