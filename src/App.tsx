@@ -95,6 +95,9 @@ function App() {
           setDifferentNotificationCount(latestCount - notificationState);
           setShowNotification(true);
           console.log('difference generated')
+          if (localStorage.getItem("notify") === "true") {
+            alert(`You have ${differentNotificationCount} new messages`);
+          }
           const timer = setTimeout(() => {
             setShowNotification(false);
           }, 3000); // hide after 3 seconds
