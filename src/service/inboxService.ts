@@ -42,7 +42,11 @@ const service = InboxService.enhanceEndpoints({
       }),
       invalidatesTags: ['mailer']
     }),
+    getTemplate: builder.query({
+      query: () => `/template/107/?folder=17`
+    }),
   })
+  
 });
 
 export const {
@@ -52,4 +56,5 @@ export const {
   useGetAIReplyResponseMutation,
   useLazyGetSettingsQuery,
   useSentMailMutation,
+  useLazyGetTemplateQuery,
 } = service;
