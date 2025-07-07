@@ -1273,7 +1273,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto">
-            <div style={{ width: '98%', margin: '0 auto' }}>
+            <div style={{ width: '98%', margin: '10px auto 0 auto' }}>
               {sortedMessages.map((message, index) => {
                 const isExpanded =
                   expandedMessages.has(message.message_id) ||
@@ -1414,8 +1414,9 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                           >
                             <div
                               className="text-gray-800 leading-relaxed whitespace-pre-wrap"
+                              style={{wordBreak: "break-word"}}
                               dangerouslySetInnerHTML={{
-                                __html: message.body_html || message.body_plain,
+                                __html: message?.body_html || message?.body_plain || message?.snippet,
                               }}
                             />
                             {/* {message.body_plain}
