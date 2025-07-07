@@ -87,6 +87,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   const [expandedMessages, setExpandedMessages] = useState<Set<string>>(
     new Set()
   );
+  const [listWidth, setListWidth] = useState<string>(localStorage.getItem('listwidth') || '320px');
   const [isAiReplyExpanded, setIsAiReplyExpanded] = useState(false);
   const [showEntitiesPopover, setShowEntitiesPopover] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
@@ -1093,7 +1094,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
         getConversationDetailsStatus?.isFetching ? (
         <ConversationSkeleton />
       ) : (
-        <div ref={containerRef} className="flex-1 flex flex-col bg-white">
+        <div ref={containerRef} className="flex-1 flex flex-col bg-white" style={{maxWidth: `calc(100vw - ${listWidth})`}}>
           {/* Header */}
           <div className="border-b border-gray-200 p-6">
             <div className="flex items-center justify-between">
