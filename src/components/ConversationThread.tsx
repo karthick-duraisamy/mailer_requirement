@@ -20,8 +20,8 @@ import {
   User,
   Bot,
   UserCog,
-  Send as MailSend,
-  Inbox as InboxIcon,
+  // Send as MailSend,
+  // Inbox as InboxIcon,
 } from "lucide-react";
 import { Email, CustomLabel } from "../types/email";
 import EntitiesPopover from "./EntitiesPopover";
@@ -31,8 +31,9 @@ import {
   useLazyGetSettingsQuery,
   useSentMailMutation,
 } from "../service/inboxService";
-import { useScreenResolution } from "../hooks/commonFunction";
+import { getIntentLabel, useScreenResolution } from "../hooks/commonFunction";
 import { ConversationSkeleton } from "./skeletonLoader";
+import { SendIcon, InboxIcon } from "./Icons";
 
 interface AiReplyState {
   isGenerating: boolean;
@@ -95,6 +96,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   const replyBoxRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const entitiesButtonRef = useRef<HTMLButtonElement>(null);
+  const entitiesButtonRefAi = useRef<HTMLButtonElement>(null);
+  const [entitiesButtonPosition, setEntitiesButtonPosition] = useState<any>();
   const [getConversationDetails, getConversationDetailsStatus] =
     useLazyGetConversationDetailsQuery();
   const [getAIReplyResponse, getAIReplyResponseStatus] =
@@ -104,6 +107,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   const [settings, setSettings] = useState<any>();
   const [getSettings, getSettingsResponseStatus] = useLazyGetSettingsQuery();
   const [sentMail, sentMailResponseStatus] = useSentMailMutation();
+  const [intent, setIntent] = useState<string>("");
 
   // When the conversation changes, reset AI reply state
   useEffect(() => {
@@ -737,7 +741,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     try {
       const result = await getAIReplyResponse(AIReply).unwrap();
       const reply = (result as any)?.response.data.reply;
-
+      setEntitiesInfo((result as any)?.response.data.entities || []);
+      setIntent((result as any)?.response.data.intent || "");
       console.log("AI Reply generated:", reply);
       setReplyText(reply);
 
@@ -1127,7 +1132,10 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
             /> */}
                 <button
                   ref={entitiesButtonRef}
-                  onClick={() => setShowEntitiesPopover(!showEntitiesPopover)}
+                  onClick={() => {
+                    setShowEntitiesPopover(!showEntitiesPopover);
+                    setEntitiesButtonPosition(entitiesButtonRef);
+                  }}
                   className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                   <FileText className="w-4 h-4 mr-1" />
@@ -1347,10 +1355,15 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                                   {message.from_address}
                                 </p>
                                 <ReplyTypeLabel replyType={message.replyType} />
-                                {isFromCurrentUser ? (
+                                {/* {isFromCurrentUser ? (
                                   <MailSend className="w-5 h-5 text-blue-600 mt-0.5" />
                                 ) : (
                                   <InboxIcon className="w-5 h-5 text-green-600 mt-0.5" />
+                                )} */}
+                                {isFromCurrentUser ? (
+                                  <SendIcon />
+                                ) : (
+                                  <InboxIcon />
                                 )}
                               </div>
                               <p className="text-sm text-gray-500">
@@ -1441,7 +1454,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
           </div>
 
           {/* Action Buttons - Hidden when AI reply is active */}
-          {AIGeneratedReply?.length === 0 && !showReply && (
+          {(AIGeneratedReply === "" || AIGeneratedReply.length === 0) && !showReply && (
             <div className="border-t border-gray-200 p-6 bg-gray-50">
               <div className="mx-auto">
                 <div className="flex items-center justify-between flex-wrap gap-2 w-full">
@@ -1450,7 +1463,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                     <button
                       onClick={() => {
                         setReplyType("AI");
-                        // setShowReply(!showReply);
+                        setShowReply(!showReply);
                         setReplyContent(true);
                       }}
                       className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
@@ -1527,15 +1540,34 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                       </span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <h1 className="text-sm text-gray-500">
-                        Intent : eticket
-                      </h1>
-                      <EntitiesPopover
-                        isOpen={showEntitiesPopover}
-                        onClose={() => setShowEntitiesPopover(false)}
-                        triggerRef={entitiesButtonRef}
-                        entitiesInfo={entitiesInfo}
-                      />
+                      <div
+                        className={`
+                                    inline-flex items-center px-2 py-1 rounded-full text-xs font-medium flex-shrink-0
+                                    ${getIntentLabel(intent).color}
+                                  `}
+                      >
+                        {React.createElement(
+                          getIntentLabel(intent).icon,
+                          {
+                            className: `w-3 h-3 mr-1 ${getIntentLabel(intent).iconColor
+                              }`,
+                          }
+                        )}
+                        {getIntentLabel(intent).text}
+                      </div>
+                      <button
+                        ref={entitiesButtonRefAi}
+                        onClick={() => {
+                          setShowEntitiesPopover(!showEntitiesPopover);
+                          setEntitiesButtonPosition(entitiesButtonRefAi);
+                        }}
+                        className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+                      >
+                        <FileText className="w-4 h-4 mr-1" />
+                        <span className="text-sm text-gray-600 hover:text-gray-800">
+                          Entities
+                        </span>
+                      </button>
                       <button
                         onClick={handleToggleAiReplyExpand}
                         className="text-purple-600 hover:text-purple-700 p-1"
@@ -1759,7 +1791,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
           <EntitiesPopover
             isOpen={showEntitiesPopover}
             onClose={() => setShowEntitiesPopover(false)}
-            triggerRef={entitiesButtonRef}
+            triggerRef={entitiesButtonPosition}
             entitiesInfo={entitiesInfo}
           />
         </div>
