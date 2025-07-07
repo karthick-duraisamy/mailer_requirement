@@ -29,6 +29,7 @@ import {
   useGetAIReplyResponseMutation,
   useLazyGetConversationDetailsQuery,
   useLazyGetSettingsQuery,
+  useLazyGetTemplateQuery,
   useSentMailMutation,
 } from "../service/inboxService";
 import { getIntentLabel, getSenderName, useScreenResolution } from "../hooks/commonFunction";
@@ -108,13 +109,19 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   const [getSettings, getSettingsResponseStatus] = useLazyGetSettingsQuery();
   const [sentMail, sentMailResponseStatus] = useSentMailMutation();
   const [intent, setIntent] = useState<string>("");
+  const [ getTemplate, getTemplateResponseStatus ] = useLazyGetTemplateQuery();
+  const [ template, setTemplate ] = useState<any>();  
 
   // When the conversation changes, reset AI reply state
   useEffect(() => {
     setAIGeneratedReply("");
   }, [email]);
 
-  useEffect(() => { getSettings({}) }, []);
+  useEffect(() => { 
+    getSettings({});
+     getTemplate({});
+     localStorage.setItem('notify', 'true');
+ }, []);
 
   useEffect(() => {
     if (getSettingsResponseStatus?.isSuccess) {
@@ -157,6 +164,28 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       }, 100);
     }
   }, [showReply, replyText, aiReplyState.generatedReply]);
+
+  // To sent the mail sent successfully
+  useEffect(() => {
+    if(sentMailResponseStatus?.isSuccess){
+      const responseData = (sentMailResponseStatus as any)?.data?.response?.data?.message;
+      setAIGeneratedReply("");
+      if((sentMailResponseStatus as any)?.data?.response?.data?.success === true && localStorage.getItem('notify') === 'true'){
+        window.alert(responseData || "Mail sent successfully!");
+      }
+      else if (localStorage.getItem('notify') === 'true'){
+          const errorData = (sentMailResponseStatus as any)?.data?.response?.data?.message;
+          window.alert(errorData || "Failed to send mail.");
+        }
+    }
+    
+  },[sentMailResponseStatus]);
+
+  useEffect(() => {
+    if(getTemplateResponseStatus?.isSuccess){
+      setTemplate((getTemplateResponseStatus as any)?.data?.response?.data?.template_content)
+    }
+  }, [getTemplateResponseStatus])
 
   // Handle click outside for more menu
   useEffect(() => {
@@ -675,7 +704,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   </center>
 
 </body></head>`;
-      const filledHtml = templateMessage.replace('$[[dynamic_content]]', replyText);
+      const filledHtml = template.replace('$[[dynamic_content]]', replyText);
       const finalHtml = filledHtml.replace('$<<signature>>', sessionStorage.getItem("defaultSignature") || "");
 
       const emailData = {
@@ -1660,7 +1689,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
               ref={replyBoxRef}
               className="border-t border-gray-200 p-6 bg-gray-50"
             >
-              <div className="mx-auto">
+              <div >
                 <div className="mb-4">
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
                     {replyText.includes("--- Reply All ---")
@@ -1734,7 +1763,19 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                       - Type your reply below
                     </span>
                   </label>
-                  <div dangerouslySetInnerHTML={{ __html: replyText }} /></div>
+                  <textarea
+                      value={stripHtml(replyText)}
+                      onChange={(e) => setReplyText(e.target.value)}
+                      placeholder={
+                        replyText.includes("--- Reply All ---")
+                          ? "Write your reply to all recipients..."
+                          : replyText.includes("--- Forwarded Message ---")
+                          ? "Add a message to forward..."
+                          : "Write your reply..."
+                      }
+                      className="w-full h-40 p-4 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                    />
+                  </div>
 
                 {replyText === aiReplyState.generatedReply &&
                   aiReplyState.generatedReply && (
