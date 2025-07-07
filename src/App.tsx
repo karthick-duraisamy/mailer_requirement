@@ -21,6 +21,8 @@ function App() {
   const [deletedEmails, setDeletedEmails] = useState<any[]>([]);
   const [customLabels, setCustomLabels] =
     useState<CustomLabel[]>(mockCustomLabels);
+  const [showNotification, setShowNotification] = useState(false);
+  const [differentNotificationCount, setDifferentNotificationCount] = useState<number | undefined>(undefined)
   const [checkedEmails, setCheckedEmails] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<FilterOptions>({
@@ -31,10 +33,13 @@ function App() {
     dateRange: { from: "", to: "" },
     intent: "all",
   });
+  const [notificationState, setNotificationState] = useState<
+    number | undefined
+  >(undefined);
   const [searchFilter, setSearchFilter] = useState<any>({
-      search: undefined,
-    });
-    const dispatch = useDispatch();
+    search: undefined,
+  });
+  const dispatch = useDispatch();
 
   // const [sidebarWidth, setSidebarWidth] = useState(64); // default to collapsed width
 
@@ -56,9 +61,9 @@ function App() {
     tone: "professional",
   });
 
-  useEffect(() => {
-    getMailList({});
-  }, []);
+  // useEffect(() => {
+  //   getMailList({});
+  // }, []);
 
   useEffect(() => {
     // Initial call
@@ -67,16 +72,37 @@ function App() {
     // Set interval
     const intervalId = setInterval(() => {
       getMailList({});
-    }, 150000); // Poll every 150 seconds
+    }, 10000); // Poll every 150 seconds
 
     // Cleanup on unmount
     return () => clearInterval(intervalId);
   }, [getMailList]);
 
   useEffect(() => {
+    console.log(notificationState);
+  }, [notificationState]);
+
+  useEffect(() => {
     if (getMailListResponse?.isSuccess) {
       const staticList = (getMailListResponse as any)?.data?.response?.data
         ?.results;
+      const latestCount = Number(
+        (getMailListResponse as any)?.data?.response?.data?.count
+      );
+
+      if (notificationState !== undefined) {
+        if (notificationState !== latestCount) {
+          setDifferentNotificationCount(latestCount - notificationState);
+          setShowNotification(true);
+          console.log('difference generated')
+          const timer = setTimeout(() => {
+            setShowNotification(false);
+          }, 3000); // hide after 3 seconds
+
+          return () => clearTimeout(timer); // clean up
+        }
+      }
+      setNotificationState(latestCount);
       if (staticList && Array.isArray(staticList)) {
         setEmails(
           staticList.map((email: any) => ({
@@ -323,7 +349,6 @@ function App() {
           );
       }
     });
-    console.log(filtered);
     return filtered;
   };
 
@@ -494,7 +519,6 @@ function App() {
   };
 
   const handleCheckToggle = (emailId: string) => {
-    console.log("toggle", emailId);
     setCheckedEmails((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(emailId)) {
@@ -511,7 +535,6 @@ function App() {
   };
 
   const handleSearch = (query: string) => {
-    console.log(query)
     // setSearchFilter(query)
     dispatch(setFilterSettings({ search: query }));
     // setSearchQuery(query);
@@ -525,7 +548,13 @@ function App() {
 
   const handleFiltersChange = (newFilters: FilterOptions) => {
     setFilters(newFilters);
-    dispatch(setFilterSettings( { is_starred: newFilters?.starred, is_read: newFilters.readStatus, has_attachment : newFilters?.hasAttachment } ));
+    dispatch(
+      setFilterSettings({
+        is_starred: newFilters?.starred,
+        is_read: newFilters.readStatus,
+        has_attachment: newFilters?.hasAttachment,
+      })
+    );
   };
 
   const handleComposeOpen = () => {
@@ -537,9 +566,6 @@ function App() {
   };
 
   const handleSendEmail = async (emailData: ComposeEmailData) => {
-    // Simulate API call to send email
-    console.log("Sending email:", emailData);
-
     // In a real app, you would make an API call here
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
@@ -551,9 +577,6 @@ function App() {
   };
 
   const handleSaveDraft = async (emailData: ComposeEmailData) => {
-    // Simulate API call to save draft
-    console.log("Saving draft:", emailData);
-
     // In a real app, you would make an API call here
     await new Promise((resolve) => setTimeout(resolve, 500));
 
@@ -581,9 +604,6 @@ function App() {
     };
 
     setCustomLabels((prev) => [...prev, newLabel]);
-
-    // In a real app, you would make an API call here
-    console.log("Creating label:", newLabel);
   };
 
   const handleUpdateLabel = (
@@ -597,7 +617,7 @@ function App() {
     );
 
     // In a real app, you would make an API call here
-    console.log("Updating label:", labelId, updates);
+    // console.log("Updating label:", labelId, updates);
   };
 
   const handleDeleteLabel = (labelId: string) => {
@@ -619,7 +639,7 @@ function App() {
     }
 
     // In a real app, you would make an API call here
-    console.log("Deleting label:", labelId);
+    // console.log("Deleting label:", labelId);
   };
 
   const handleEmailLabelsChange = (emailIds: string[], labelIds: string[]) => {
@@ -634,7 +654,7 @@ function App() {
     // Clear checked emails after label operation
     setCheckedEmails(new Set());
 
-    console.log(`Updated labels for ${emailIds.length} emails:`, labelIds);
+    // console.log(`Updated labels for ${emailIds.length} emails:`, labelIds);
   };
 
   const handleBulkMarkAsRead = (emailIds: string[], isRead: boolean) => {
@@ -660,9 +680,9 @@ function App() {
     // Clear checked emails after action
     setCheckedEmails(new Set());
 
-    console.log(
-      `Marked ${emailIds.length} emails as ${isRead ? "read" : "unread"}`
-    );
+    // console.log(
+    //   `Marked ${emailIds.length} emails as ${isRead ? "read" : "unread"}`
+    // );
   };
 
   const handleBulkDelete = (emailIds: string[]) => {
@@ -699,7 +719,7 @@ function App() {
       setSelectedEmail(null);
     }
 
-    console.log(`Deleted ${emailIds} emails`);
+    // console.log(`Deleted ${emailIds} emails`);
   };
 
   const handleSelectAll = () => {
@@ -733,7 +753,7 @@ function App() {
       setSelectedEmail(null);
     }
 
-    console.log(`Email moved to bin: ${emailToDelete.subject}`);
+    // console.log(`Email moved to bin: ${emailToDelete.subject}`);
   };
 
   const handleRestoreEmail = (emailId: string) => {
@@ -779,7 +799,7 @@ function App() {
       setSelectedEmail(null);
     }
 
-    console.log(`Restored ${emailIds.length} emails from bin`);
+    // console.log(`Restored ${emailIds.length} emails from bin`);
   };
   const handleUndo = () => {
     if (!lastAction) return;
@@ -818,7 +838,7 @@ function App() {
     }
 
     setLastAction(null);
-    console.log("Undid last action");
+    // console.log("Undid last action");
   };
 
   const getAiReplyState = (emailId: string): any => {
@@ -859,7 +879,7 @@ function App() {
     // Simulate AI generation delay
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    console.log(email);
+    // console.log(email);
     // Generate contextual reply based on email content and tone
     let generatedReply = "";
     const foundEmail = emails[emails.length - 1];
@@ -896,6 +916,11 @@ function App() {
 
   return (
     <div className="h-screen flex flex-col bg-gray-50">
+      {/* {showNotification && (
+        <div className="fixed top-4 right-4 bg-green-100 text-green-800 px-4 py-2 rounded shadow-md text-sm transition-opacity duration-300">
+          🔔 You have {differentNotificationCount} new messages
+        </div>
+      )} */}
       <Header
         onMenuToggle={handleMenuToggle}
         onSearch={handleSearch}
@@ -954,9 +979,7 @@ function App() {
                 getMailListResponse?.isFetching ? (
                   <NavbarSkeleton />
                 ) : (
-                  <div
-                    className="flex-shrink-0"
-                  >
+                  <div className="flex-shrink-0">
                     <EmailList
                       emails={filteredEmails}
                       selectedEmailId={selectedEmail?.message_id || null}

@@ -94,7 +94,7 @@ const EmailList: React.FC<EmailListProps> = ({
   });
   const [inboxCount, setInboxCount] = useState(0);
   const filters = useSelector((state: RootState) => state.filters);
-  console.log(filters);
+  // console.log(filters);
   const dispatch = useDispatch();
   const [isFiltered, setIsFiltered] = useState(false);
   const [activeSectionTab, setActiveSectionTab] = useState("inbox");
@@ -123,7 +123,7 @@ const EmailList: React.FC<EmailListProps> = ({
     if (getMailListResponse.isSuccess && setEmails) {
       const staticList = (getMailListResponse as any)?.data?.response?.data
         ?.results;
-      console.log(staticList, "Arunkumarr");
+      // console.log(staticList, "Arunkumarr");
 
       if (staticList && Array.isArray(staticList)) {
         setInboxCount(
@@ -302,6 +302,7 @@ const EmailList: React.FC<EmailListProps> = ({
       // Use requestAnimationFrame for smoother updates
       requestAnimationFrame(() => {
         setWidth(clampedWidth);
+        localStorage.setItem('listwidth', clampedWidth.toString() + 'px');
       });
     },
     [isResizing]
