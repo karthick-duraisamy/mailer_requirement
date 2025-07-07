@@ -350,6 +350,12 @@ const EmailList: React.FC<EmailListProps> = ({
     [width]
   );
 
+  const getSenderName = (fromAddress: any) => {
+    if (!fromAddress) return '';
+    const match = fromAddress.match(/^(.*?)\s*<.*?>$/);
+    return match ? match[1] : fromAddress;
+  };
+
   const handleResize = useCallback(
     (e: MouseEvent) => {
       if (!isResizing) return;
@@ -436,7 +442,7 @@ const EmailList: React.FC<EmailListProps> = ({
       >
         <div className="bg-gray-300 group-hover:bg-blue-400 h-6 w-0.5 rounded-full transition-colors" />
       </div>
-      <div className="border-b border-gray-300 mb-4" >
+      {/* <div className="border-b border-gray-300 mb-4" >
         <nav className="flex space-x-6" style={{justifyContent: "space-around", padding:"10px"}}>          <span
             onClick={() => {
               setActiveSectionTab("inbox");
@@ -468,7 +474,7 @@ const EmailList: React.FC<EmailListProps> = ({
             SENT
           </span>
         </nav>
-      </div>
+      </div> */}
       <div
         className="p-4 border-b border-gray-200"
         style={{ backgroundColor: "#eef7fe" }}
@@ -504,7 +510,7 @@ const EmailList: React.FC<EmailListProps> = ({
 
               <h2 className="text-lg font-semibold text-gray-900">
                 {/* {getSectionTitle(activeSection)} */}
-                {activeSectionTab === "sent" ? "Sent" : "Inbox"}
+                {activeSectionTab === "sent" ? "Sent" : "Conversations"}
                 {` (${emails.filter((email) => !email.is_read).length}/${readStatus === "all" ? inboxCount : emails.length
                   })`}
               </h2>
@@ -683,8 +689,10 @@ const EmailList: React.FC<EmailListProps> = ({
                   />
                 </button>
 
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0" >
+                  {/* <p>{JSON.stringify(email?.from_address)}</p> */}
                   <div className="flex items-center justify-between">
+                    
                     <div className="flex items-center space-x-2 min-w-0">
                       <p
                         className={`
@@ -696,7 +704,7 @@ const EmailList: React.FC<EmailListProps> = ({
                         line-clamp-2
                       `}
                       >
-                        {email.subject}
+                        {getSenderName(email.from_address)}
                       </p>
                       {email?.intent && (
                         <div
@@ -719,6 +727,43 @@ const EmailList: React.FC<EmailListProps> = ({
                     <p className="text-xs text-gray-500 ml-2 flex-shrink-0">
                       {formatTime(email.created_at)}
                     </p>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    
+                    <div className="flex items-center space-x-2 min-w-0">
+                      <p
+                        className={`
+                        text-sm mt-1
+                        ${!email.is_read
+                            ? "font-bold text-black"
+                            : "font-semibold text-gray-400"
+                          }
+                        line-clamp-2
+                      `}
+                      >
+                        {email.subject}
+                      </p>
+                      {/* {email?.intent && (
+                        <div
+                          className={`
+                          inline-flex items-center px-2 py-1 rounded-full text-xs font-medium flex-shrink-0
+                          ${getIntentLabel(email.intent).color}
+                        `}
+                        >
+                          {React.createElement(
+                            getIntentLabel(email.intent).icon,
+                            {
+                              className: `w-3 h-3 mr-1 ${getIntentLabel(email.intent).iconColor
+                                }`,
+                            }
+                          )}
+                          {getIntentLabel(email.intent).text}
+                        </div>
+                      )} */}
+                    </div>
+                    {/* <p className="text-xs text-gray-500 ml-2 flex-shrink-0">
+                      {formatTime(email.created_at)}
+                    </p> */}
                   </div>
 
                   <p
