@@ -61,18 +61,25 @@ function App() {
     tone: "professional",
   });
 
+  const [filterData, setFilterData] = useState<any>({
+      page: 1,
+      page_size: 50,
+      search: undefined,
+      folder: 'inbox'
+    });
+
   // useEffect(() => {
   //   getMailList({});
   // }, []);
 
   useEffect(() => {
     // Initial call
-    getMailList({});
+    getMailList(filterData);
 
     // Set interval
     const intervalId = setInterval(() => {
-      getMailList({});
-    }, 10000); // Poll every 150 seconds
+      getMailList(filterData);
+    }, 60000); // Poll every 150 seconds
 
     // Cleanup on unmount
     return () => clearInterval(intervalId);
@@ -96,7 +103,7 @@ function App() {
           setShowNotification(true);
           console.log('difference generated')
           if (localStorage.getItem("notify") === "true") {
-            alert(`You have ${differentNotificationCount} new messages`);
+            // alert(`You have ${differentNotificationCount} new messages`);
           }
           const timer = setTimeout(() => {
             setShowNotification(false);
@@ -573,7 +580,7 @@ function App() {
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     // Show success message
-    alert("Email sent successfully!");
+    // alert("Email sent successfully!");
 
     // Close compose panel
     setComposePanelOpen(false);
@@ -589,7 +596,7 @@ function App() {
       emailData.subject.trim() ||
       emailData.body.trim()
     ) {
-      alert("Draft saved successfully!");
+      // alert("Draft saved successfully!");
     }
 
     // Close compose panel
@@ -918,7 +925,7 @@ function App() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
+    <div className=" flex flex-col bg-gray-50">
       {/* {showNotification && (
         <div className="fixed top-4 right-4 bg-green-100 text-green-800 px-4 py-2 rounded shadow-md text-sm transition-opacity duration-300">
           🔔 You have {differentNotificationCount} new messages

@@ -208,11 +208,11 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
 
     const validFiles = files.filter((file) => {
       if (file.size > maxSize) {
-        alert(`File ${file.name} is too large. Maximum size is 25MB.`);
+        // alert(`File ${file.name} is too large. Maximum size is 25MB.`);
         return false;
       }
       if (!allowedTypes.includes(file.type)) {
-        alert(`File type ${file.type} is not allowed.`);
+        // alert(`File type ${file.type} is not allowed.`);
         return false;
       }
       return true;

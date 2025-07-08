@@ -36,7 +36,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ isOpen, onClose }) =>
   const handleExportData = () => {
     // Implement data export functionality
     console.log('Exporting user data...');
-    alert('Data export initiated. You will receive a download link via email.');
+    // alert('Data export initiated. You will receive a download link via email.');
   };
 
   const handleDeleteAccount = () => {
@@ -46,7 +46,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ isOpen, onClose }) =>
     );
     if (confirmed) {
       console.log('Account deletion requested...');
-      alert('Account deletion request submitted. Please check your email for confirmation.');
+      // alert(n'Account deletion request submitted. Please check your email for confirmation.');
     }
   };
 

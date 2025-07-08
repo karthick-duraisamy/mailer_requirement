@@ -172,11 +172,11 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       const responseData = (sentMailResponseStatus as any)?.data?.response?.data?.message;
       setAIGeneratedReply("");
       if((sentMailResponseStatus as any)?.data?.response?.data?.success === true && localStorage.getItem('notify') === 'true'){
-        window.alert(responseData || "Mail sent successfully!");
+        // window.alert(responseData || "Mail sent successfully!");
       }
       else if (localStorage.getItem('notify') === 'true'){
           const errorData = (sentMailResponseStatus as any)?.data?.response?.data?.message;
-          window.alert(errorData || "Failed to send mail.");
+          // window.alert(errorData || "Failed to send mail.");
         }
     }
     
@@ -964,7 +964,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       // 2. Move email to spam folder
       // 3. Update email status
 
-      alert("Email reported as spam successfully");
+      // alert("Email reported as spam successfully");
 
       // Close the conversation and go back to list
       onClose();

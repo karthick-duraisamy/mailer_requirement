@@ -91,6 +91,7 @@ const EmailList: React.FC<EmailListProps> = ({
     page: 1,
     page_size: 100,
     search: undefined,
+    folder: 'inbox'
   });
   const [inboxCount, setInboxCount] = useState(0);
   const filters = useSelector((state: RootState) => state.filters);
@@ -555,7 +556,7 @@ const EmailList: React.FC<EmailListProps> = ({
       </div>
 
       <div
-        className="divide-y divide-gray-100 overflow-y-auto max-h-[calc(100vh-8rem)] thin-scrollbar"
+        className="divide-y divide-gray-100 overflow-y-auto thin-scrollbar"
         onScroll={(e) => {
           const target = e.currentTarget;
           if (target.scrollHeight - target.scrollTop === target.clientHeight) {
