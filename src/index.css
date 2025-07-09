@@ -50,3 +50,17 @@ body {
 .thin-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(148, 163, 184, 0.3);
 }
+
+
+/* customizations */
+
+.cls-sending-status{
+  top: 0;
+  position: absolute;
+  z-index: 50;
+  font-size: 14px;
+  left: calc(50% - 48px);
+  background: antiquewhite;
+  border: 1px solid darkorange;
+  padding: 10px;
+}

@@ -9,6 +9,9 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { CustomLabel } from "../types/email";
+import EmailFilters, { FilterOptions } from "./EmailFilters";
+import { useSelector, useDispatch } from "react-redux";
+import { setFilterSettings } from "../store/filterSlice";
 
 interface SidebarProps {
   activeItem: string;
@@ -35,6 +38,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const [labelsExpanded, setLabelsExpanded] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const dispatch = useDispatch();
 
   const navigationItems = [
     {
@@ -55,6 +59,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const [isIntentOpen, setIsIntentOpen] = useState(false);
   const [isCorporateOpen, setIsCorporateOpen] = useState(false);
+  
 
   const intentLabels = customLabels.filter(
     (label) => label.category === "intent"
@@ -71,12 +76,45 @@ const Sidebar: React.FC<SidebarProps> = ({
     );
   };
 
+  const [filters, setFilters] = useState<FilterOptions>({
+    readStatus: "all",
+    starred: false,
+    hasAttachment: false,
+    sortBy: "newest",
+    dateRange: { from: "", to: "" },
+    intent: "all",
+  });
+
   const handleLabelClick = (labelId: string, isSystem: boolean) => {
     if (isSystem) {
       onItemSelect(`label-${labelId}`);
     } else {
       onItemSelect(`custom-label-${labelId}`);
     }
+  };
+  
+
+  const handleFiltersChange = (newFilters: FilterOptions) => {
+    setFilters(newFilters);
+    dispatch(
+      setFilterSettings({
+        is_starred: newFilters?.starred,
+        is_read: newFilters.readStatus === 'all' ? undefined : newFilters.readStatus === 'read' ? true : false,
+        has_attachment: newFilters?.hasAttachment,
+      })
+    );
+    // dispatch(setInputStatus(true));
+  };
+
+   const handleClearFilters = () => {
+    setFilters({
+      readStatus: "all",
+      starred: false,
+      hasAttachment: false,
+      sortBy: "newest",
+      dateRange: { from: "", to: "" },
+      intent: "all",
+    });
   };
 
   // Close search panel when clicking outside
@@ -285,11 +323,16 @@ const Sidebar: React.FC<SidebarProps> = ({
           {/* Right side - Actions */}
           <div className="flex items-center space-x-2">
             {/* Filters Button */}
-            <div className="relative">
+            {/* <div className="relative">
               <button className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900">
                 <span className="hidden sm:inline">Filters</span>
               </button>
-            </div>
+            </div> */}
+             <EmailFilters
+            filters={filters}
+            onFiltersChange={handleFiltersChange}
+            onClearFilters={handleClearFilters}
+          />
 
             {/* Settings Button */}
             <div className="relative">

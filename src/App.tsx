@@ -12,6 +12,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setFilterSettings } from "./store/filterSlice";
 import Sidebar from "./components/Sidebar";
 import { notification } from "antd";
+import { useScreenResolution } from "./hooks/commonFunction";
 
 function App() {
   const [activeItem, setActiveItem] = useState("inbox");
@@ -96,6 +97,8 @@ function App() {
     dummyCountRef.current = dummyCount;
   }, [dummyCount]);
   
+  const isInputFilled = useSelector((state:any)=>state?.alignment?.isInputFilled)
+
   useEffect(() => {
     getMailList({}).then(() => setInitialLoading(false));
   
@@ -106,9 +109,10 @@ function App() {
   
         console.log("countena", newVal);
   
-        // if (newVal % 2 === 0) {
+        if (newVal % 2 === 0 && isInputFilled.length === 0) {
           getMailList({page_size: 50});
-        // } else {
+        }
+        //  else {
           // getMailList({ page: 2 });
         // }
             console.log(mailStatus, "check");
@@ -118,7 +122,7 @@ function App() {
     }, 10000);
 
     return () => clearInterval(intervalId);
-  }, [getMailList]);
+  }, [getMailList, isInputFilled]);
 
   useEffect(() => {
     console.log(notificationState);
@@ -178,6 +182,7 @@ function App() {
   const [isFullPageView, setIsFullPageView] = useState(false);
   const [composePanelOpen, setComposePanelOpen] = useState(false);
   const [lastAction, setLastAction] = useState<any>(null);
+  const { width: windowWidth } = useScreenResolution();
 
   // Calculate email counts for sidebar
   const calculateEmailCounts = () => {
@@ -896,7 +901,7 @@ function App() {
   };
 
   return (
-    <div className=" flex flex-col bg-gray-50" style={{ height: `calc(100vh - 80px)` }}>
+    <div className=" flex flex-col bg-gray-50" style={{ height: `calc(100vh - ${windowWidth < 1470 ? "80px" : "155px"})` }}>
       {/* {showNotification && (
         <div className="fixed top-4 right-4 bg-green-100 text-green-800 px-4 py-2 rounded shadow-md text-sm transition-opacity duration-300">
           🔔 You have {differentNotificationCount} new messages

@@ -13,6 +13,7 @@ import {
   RotateCcw,
   Wand2,
 } from "lucide-react";
+import { notification, Modal } from "antd";
 
 interface ComposeModalProps {
   isOpen: boolean;
@@ -254,7 +255,9 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
   // AI Functions
   const generateAIContent = async (tone: ToneType, regenerate = false) => {
     if (!subject.trim()) {
-      alert("Please enter a subject first to generate AI content.");
+      notification.warning({
+        message: `Please enter a subject first to generate AI content.`,
+      });
       return;
     }
 
@@ -622,21 +625,7 @@ Best regards`,
     }
   };
 
-  const handleClose = () => {
-    const hasContent =
-      to.length > 0 || subject.trim() || body.trim() || attachments.length > 0;
-
-    if (hasContent) {
-      const shouldSave = window.confirm(
-        "You have unsaved changes. Would you like to save this as a draft before closing?"
-      );
-      if (shouldSave) {
-        handleSaveDraft();
-        return;
-      }
-    }
-
-    // Reset form
+  const resetForm = () => {
     setTo([]);
     setCc([]);
     setBcc([]);
@@ -656,8 +645,30 @@ Best regards`,
       selectedTone: "professional",
       hasGenerated: false,
     });
-
     onClose();
+  };
+
+  const handleClose = async () => {
+    const hasContent =
+      to.length > 0 || subject.trim() || body.trim() || attachments.length > 0;
+
+    if (hasContent) {
+      Modal.confirm({
+        title: "You have unsaved changes.",
+        content: "Would you like to save this as a draft before closing?",
+        okText: "Save Draft",
+        cancelText: "Discard",
+        onOk: async () => {
+          await handleSaveDraft();
+        },
+        onCancel: () => {
+          resetForm();
+        },
+      });
+      return;
+    }
+
+    resetForm();
   };
 
   if (!isOpen) return null;
@@ -741,21 +752,19 @@ Best regards`,
               <div className="flex space-x-1">
                 <button
                   onClick={() => setShowCc(!showCc)}
-                  className={`text-sm px-2 py-1 rounded transition-colors ${
-                    showCc
+                  className={`text-sm px-2 py-1 rounded transition-colors ${showCc
                       ? "bg-blue-100 text-blue-700"
                       : "text-gray-500 hover:text-gray-700"
-                  }`}
+                    }`}
                 >
                   Cc
                 </button>
                 <button
                   onClick={() => setShowBcc(!showBcc)}
-                  className={`text-sm px-2 py-1 rounded transition-colors ${
-                    showBcc
-                      ? "bg-blue-100 text-blue-700"
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
+                  className={`text-sm px-2 py-1 rounded transition-colors ${showBcc
+                    ? "bg-blue-100 text-blue-700"
+                    : "text-gray-500 hover:text-gray-700"
+                    }`}
                 >
                   Bcc
                 </button>

@@ -744,6 +744,9 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
   return (
     <>
+      {sentMailResponseStatus?.isLoading &&
+        <p className="cls-sending-status">Sending mail ...</p>
+      }
       {getConversationDetailsStatus?.isLoading ||
         getConversationDetailsStatus?.isFetching ? (
         <ConversationSkeleton />

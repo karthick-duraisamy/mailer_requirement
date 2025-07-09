@@ -32,7 +32,8 @@ import {
   setFilterSettings,
 } from "../store/filterSlice";
 import { getIntentLabel, getSenderName } from "../hooks/commonFunction";
-import { setWidthAlign } from "../store/alignmentSlice";
+import { setInputFilled, setWidthAlign } from "../store/alignmentSlice";
+
 
 interface EmailListProps {
   emails: any[];
@@ -105,6 +106,8 @@ const EmailList: React.FC<EmailListProps> = ({
   const dispatch = useDispatch();
   const [isFiltered, setIsFiltered] = useState(false);
   const [activeSectionTab, setActiveSectionTab] = useState("inbox");
+  const [inputValue, setInputValue] = useState("");
+  const [searchQuery, setSearchQuery] = useState<any>("");
   useEffect(() => {
     // Initial call
     if (filters?.search === "") {
@@ -338,72 +341,91 @@ const EmailList: React.FC<EmailListProps> = ({
     };
   }, [isResizing, handleResize, handleResizeStop]);
 
-  if (emails.length === 0) {
-    return (
-      <div
-        className="bg-white border-r border-gray-200 relative"
-        ref={containerRef}
-        style={{
-          width: `${width}px`,
-          minWidth: "240px",
-          maxWidth: "800px",
-          height: "100%",
-          overflow: "auto",
-        }}
-        onScroll={(e) => {
-          const target = e.currentTarget;
-          const totalPages = Math.ceil(inboxCount / filterData.page_size);
+  // if (emails.length === 0) {
+  //   return (
+  //     <div
+  //       className="bg-white border-r border-gray-200 relative"
+  //       ref={containerRef}
+  //       style={{
+  //         width: `${width}px`,
+  //         minWidth: "365px",
+  //         maxWidth: "800px",
+  //         height: "100%",
+  //         overflow: "auto",
+  //       }}
+  //       onScroll={(e) => {
+  //         const target = e.currentTarget;
+  //         const totalPages = Math.ceil(inboxCount / filterData.page_size);
 
-          // Scroll to bottom: load next page
-          if (target.scrollHeight - target.scrollTop === target.clientHeight) {
-            if (filterData.page < totalPages) {
-              if (isFiltered) {
-                // dispatch(setFilterSettings({ ...filters, page: filters?.page + 1 }));
-                // setIsFiltered(true);
-              } else {
-                setFilterData((prev: any) => ({
-                  ...prev,
-                  page: prev.page + 1,
-                }));
-                setIsFiltered(false);
-              }
-            }
-          }
+  //         // Scroll to bottom: load next page
+  //         if (target.scrollHeight - target.scrollTop === target.clientHeight) {
+  //           if (filterData.page < totalPages) {
+  //             if (isFiltered) {
+  //               // dispatch(setFilterSettings({ ...filters, page: filters?.page + 1 }));
+  //               // setIsFiltered(true);
+  //             } else {
+  //               setFilterData((prev: any) => ({
+  //                 ...prev,
+  //                 page: prev.page + 1,
+  //               }));
+  //               setIsFiltered(false);
+  //             }
+  //           }
+  //         }
 
-          // Scroll to top: load previous page (if not on first page)
-          if (target.scrollTop === 10) {
-            if (filterData.page > 1) {
-              if (isFiltered) {
-                // dispatch(setFilterSettings({ ...filters, page: filters?.page - 1 }));
-                // setIsFiltered(true);
-              } else {
-                setFilterData((prev: any) => ({
-                  ...prev,
-                  page: prev.page - 1,
-                }));
-                setIsFiltered(false);
-              }
-            }
-          }
-        }}
+  //         // Scroll to top: load previous page (if not on first page)
+  //         if (target.scrollTop === 10) {
+  //           if (filterData.page > 1) {
+  //             if (isFiltered) {
+  //               // dispatch(setFilterSettings({ ...filters, page: filters?.page - 1 }));
+  //               // setIsFiltered(true);
+  //             } else {
+  //               setFilterData((prev: any) => ({
+  //                 ...prev,
+  //                 page: prev.page - 1,
+  //               }));
+  //               setIsFiltered(false);
+  //             }
+  //           }
+  //         }
+  //       }}
 
-      >
-        {/* Resizer */}
-        <div
-          className="absolute top-0 right-0 h-full w-2 cursor-col-resize flex items-center justify-center hover:bg-blue-50 transition-colors group z-10"
-          onMouseDown={handleResizeStart}
-        >
-          <div className="bg-gray-300 group-hover:bg-blue-400 h-6 w-0.5 rounded-full transition-colors" />
-        </div>
-        <div className="p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">
-            {getSectionTitle(activeSection)}
-          </h2>
-        </div>
-        <EmptyState section={activeSection} />
-      </div>
-    );
-  }
+  //     >
+  //       {/* Resizer */}
+  //       <div
+  //         className="absolute top-0 right-0 h-full w-2 cursor-col-resize flex items-center justify-center hover:bg-blue-50 transition-colors group z-10"
+  //         onMouseDown={handleResizeStart}
+  //       >
+  //         <div className="bg-gray-300 group-hover:bg-blue-400 h-6 w-0.5 rounded-full transition-colors" />
+  //       </div>
+  //       <div className="p-4 border-b border-gray-200" style={{ backgroundColor: "#dbeafe" }}>
+  //         <h2 className="text-lg font-semibold text-gray-900">
+  //           {getSectionTitle(activeSection)}
+  //         </h2>
+  //       </div>
+  //       <EmptyState section={activeSection} />
+  //     </div>
+  //   );
+  // }
+
+
+  const isInputFilled = useSelector((state:any)=>state?.alignment?.isInputFilled)
+
+  const handleChange = (e:any) => {
+    const value = e.target.value;
+    setInputValue(value);
+
+    // Dispatch true if input is not empty, false if empty
+    dispatch(setInputFilled(value));
+    console.log(isInputFilled,"rag2");
+    // console.log(value,"rag1");
+    
+  };
+
+  const handleSearchChange = (query: any) => {
+    setSearchQuery(query);
+    dispatch(setFilterSettings({ search: query }));
+  };
 
   return (
     <div
@@ -411,7 +433,7 @@ const EmailList: React.FC<EmailListProps> = ({
       ref={containerRef}
       style={{
         width: `${width}px`,
-        minWidth: "240px",
+        minWidth: "365px",
         maxWidth: "800px",
         height: "100%",
         overflow: "auto",
@@ -424,8 +446,8 @@ const EmailList: React.FC<EmailListProps> = ({
         if (target.scrollHeight - target.scrollTop === target.clientHeight) {
           if (filterData.page < totalPages) {
             if (isFiltered) {
-              // dispatch(setFilterSettings({ ...filters, page: filters?.page + 1 }));
-              // setIsFiltered(true);
+              dispatch(setFilterSettings({ ...filters, page: filters?.page + 1 }));
+              setIsFiltered(true);
             } else {
               setFilterData((prev: any) => ({
                 ...prev,
@@ -534,13 +556,17 @@ const EmailList: React.FC<EmailListProps> = ({
                     <input
                       type="text"
                       placeholder="Search..."
-                      value={searchText}
-                      onChange={(e) => setSearchText(e.target.value)}
-                      onKeyDown={(e: any) => console.log(e.target.value)}
+                      value={searchQuery}
+                      onChange={(e) => {setSearchQuery(e.target.value); handleChange(e);}}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          handleSearchChange(searchQuery);
+                        }
+                      }}
                       className="w-full border rounded-md py-1.5 pl-3 pr-8 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500"
                     />
                     <button
-                      onClick={() => console.log(searchText)}
+                      onClick={() => {handleSearchChange(searchQuery)}}
                       className="absolute inset-y-0 right-2 flex items-center text-gray-500 hover:text-blue-600"
                     >
                       🔍
