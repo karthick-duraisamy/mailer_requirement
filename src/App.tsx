@@ -109,7 +109,7 @@ function App() {
   
         console.log("countena", newVal);
   
-        if (newVal % 2 === 0 && isInputFilled.length === 0) {
+        if (newVal % 2 === 0 && (isInputFilled === undefined || isInputFilled === '')) {
           getMailList({page_size: 50});
         }
         //  else {
