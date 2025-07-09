@@ -1,7 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit";
 import InboxService from "../service/service";
 import filterReducer from "./filterSlice";
-
+import alignmentReducer from "./alignmentSlice";
 // ✅ Export reducer in reusable format for host apps
 export const inboxServiceReducer = {
   [InboxService.reducerPath]: InboxService.reducer,
@@ -16,6 +16,7 @@ export const inboxServiceMiddleware = (getDefaultMiddleware: any) =>
 export const store = configureStore({
   reducer: {
     ...inboxServiceReducer,
+    alignment: alignmentReducer, // Assuming alignmentReducer is defined elsewhere
   },
   middleware: inboxServiceMiddleware,
 });

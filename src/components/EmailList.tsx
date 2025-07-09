@@ -28,6 +28,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../store/store";
 import { FilterOptions, resetFilters, setFilterSettings } from "../store/filterSlice";
 import { getIntentLabel, getSenderName } from "../hooks/commonFunction";
+import { setWidthAlign } from "../store/alignmentSlice";
 
 interface EmailListProps {
   emails: any[];
@@ -264,11 +265,11 @@ const EmailList: React.FC<EmailListProps> = ({
           {section === "starred"
             ? "Star important conversations to find them quickly here."
             : section === "snoozed"
-            ? "Snoozed conversations will appear here when it's time to deal with them."
-            : section.startsWith("custom-label-") ||
-              section.startsWith("label-")
-            ? `Conversations with the "${title}" label will appear here.`
-            : `No conversations available yet.`}
+              ? "Snoozed conversations will appear here when it's time to deal with them."
+              : section.startsWith("custom-label-") ||
+                section.startsWith("label-")
+                ? `Conversations with the "${title}" label will appear here.`
+                : `No conversations available yet.`}
         </p>
       </div>
     );
@@ -302,8 +303,9 @@ const EmailList: React.FC<EmailListProps> = ({
 
       // Use requestAnimationFrame for smoother updates
       requestAnimationFrame(() => {
+        dispatch(setWidthAlign(clampedWidth.toString()));
         setWidth(clampedWidth);
-        localStorage.setItem('listwidth', clampedWidth.toString() + 'px');
+        localStorage.setItem('listwidth', width.toString() + 'px');
       });
     },
     [isResizing]
@@ -317,6 +319,7 @@ const EmailList: React.FC<EmailListProps> = ({
   }, []);
 
   React.useEffect(() => {
+    localStorage.setItem('listwidth', width.toString() + 'px');
     if (isResizing) {
       document.addEventListener("mousemove", handleResize, { passive: false });
       document.addEventListener("mouseup", handleResizeStop);
@@ -341,7 +344,45 @@ const EmailList: React.FC<EmailListProps> = ({
           minWidth: "240px",
           maxWidth: "800px",
           height: "100%",
+          overflow: "auto",
         }}
+        onScroll={(e) => {
+          const target = e.currentTarget;
+          const totalPages = Math.ceil(inboxCount / filterData.page_size);
+
+          // Scroll to bottom: load next page
+          if (target.scrollHeight - target.scrollTop === target.clientHeight) {
+            if (filterData.page < totalPages) {
+              if (isFiltered) {
+                // dispatch(setFilterSettings({ ...filters, page: filters?.page + 1 }));
+                // setIsFiltered(true);
+              } else {
+                setFilterData((prev: any) => ({
+                  ...prev,
+                  page: prev.page + 1,
+                }));
+                setIsFiltered(false);
+              }
+            }
+          }
+
+          // Scroll to top: load previous page (if not on first page)
+          if (target.scrollTop === 10) {
+            if (filterData.page > 1) {
+              if (isFiltered) {
+                // dispatch(setFilterSettings({ ...filters, page: filters?.page - 1 }));
+                // setIsFiltered(true);
+              } else {
+                setFilterData((prev: any) => ({
+                  ...prev,
+                  page: prev.page - 1,
+                }));
+                setIsFiltered(false);
+              }
+            }
+          }
+        }}
+
       >
         {/* Resizer */}
         <div
@@ -369,6 +410,43 @@ const EmailList: React.FC<EmailListProps> = ({
         minWidth: "240px",
         maxWidth: "800px",
         height: "100%",
+        overflow: "auto",
+      }}
+      onScroll={(e) => {
+        const target = e.currentTarget;
+        const totalPages = Math.ceil(inboxCount / filterData.page_size);
+
+        // Scroll to bottom: load next page
+        if (target.scrollHeight - target.scrollTop === target.clientHeight) {
+          if (filterData.page < totalPages) {
+            if (isFiltered) {
+              // dispatch(setFilterSettings({ ...filters, page: filters?.page + 1 }));
+              // setIsFiltered(true);
+            } else {
+              setFilterData((prev: any) => ({
+                ...prev,
+                page: prev.page + 1,
+              }));
+              setIsFiltered(false);
+            }
+          }
+        }
+
+        // Scroll to top: load previous page (if not on first page)
+        if (target.scrollTop === 0) {
+          if (filterData.page > 1) {
+            if (isFiltered) {
+              // dispatch(setFilterSettings({ ...filters, page: filters?.page - 1 }));
+              // setIsFiltered(true);
+            } else {
+              setFilterData((prev: any) => ({
+                ...prev,
+                page: prev.page - 1,
+              }));
+              setIsFiltered(false);
+            }
+          }
+        }
       }}
     >
       {/* Resizer */}
@@ -446,9 +524,8 @@ const EmailList: React.FC<EmailListProps> = ({
               <h2 className="text-lg font-semibold text-gray-900">
                 {/* {getSectionTitle(activeSection)} */}
                 {activeSectionTab === "sent" ? "Sent" : "Conversations"}
-                {` (${emails.filter((email) => !email.is_read).length}/${
-                  readStatus === "all" ? inboxCount : emails.length
-                })`}
+                {` (${emails.filter((email) => !email.is_read).length}/${readStatus === "all" ? inboxCount : emails.length
+                  })`}
               </h2>
               <p className={`text-sm mt-1 truncate`}>
                 {activeSectionTab === "inbox" && `support@atyourprice.net`}
@@ -557,22 +634,6 @@ const EmailList: React.FC<EmailListProps> = ({
 
       <div
         className="divide-y divide-gray-100 overflow-y-auto thin-scrollbar"
-        onScroll={(e) => {
-          const target = e.currentTarget;
-          if (target.scrollHeight - target.scrollTop === target.clientHeight) {
-            // dispatch(resetFilters());
-            if (isFiltered) {
-              // dispatch(setFilterSettings({ ...filters, page: filters?.page + 1 }));
-              // setIsFiltered(true);
-            } else {
-              setFilterData((prev: any) => ({
-                ...prev,
-                page: prev.page + 1,
-              }));
-              setIsFiltered(false);
-            }
-          }
-        }}
       >
         {emails.map((email) => {
           const isSelected = selectedEmailId === email.message_id;
@@ -617,11 +678,10 @@ const EmailList: React.FC<EmailListProps> = ({
                   className="mt-1 transition-colors"
                 >
                   <Star
-                    className={`w-4 h-4 ${
-                      email.is_starred
-                        ? "text-yellow-500 fill-yellow-500"
-                        : "text-gray-400 hover:text-yellow-500"
-                    }`}
+                    className={`w-4 h-4 ${email.is_starred
+                      ? "text-yellow-500 fill-yellow-500"
+                      : "text-gray-400 hover:text-yellow-500"
+                      }`}
                   />
                 </button>
 
@@ -633,11 +693,10 @@ const EmailList: React.FC<EmailListProps> = ({
                         <p
                           className={`
                           text-sm mt-1
-                          ${
-                            !email.is_read
+                          ${!email.is_read
                               ? "font-bold text-black"
                               : "font-semibold text-gray-400"
-                          }
+                            }
                           line-clamp-2
                         `}
                         >
@@ -653,11 +712,10 @@ const EmailList: React.FC<EmailListProps> = ({
                         <p
                           className={`
                           text-sm mt-1
-                          ${
-                            !email.is_read
+                          ${!email.is_read
                               ? "font-bold text-black"
                               : "font-semibold text-gray-400"
-                          }
+                            }
                           line-clamp-2
                         `}
                         >
@@ -669,11 +727,10 @@ const EmailList: React.FC<EmailListProps> = ({
                     <p
                       className={`
                       text-sm mt-1 truncate
-                      ${
-                        !email.is_read
+                      ${!email.is_read
                           ? "text-gray-700 font-medium"
                           : "text-gray-400"
-                      }
+                        }
                     `}
                     >
                       {email.snippet}
@@ -696,9 +753,8 @@ const EmailList: React.FC<EmailListProps> = ({
                       `}
                       >
                         {React.createElement(getIntentLabel(email.intent).icon, {
-                          className: `w-3 h-3 mr-1 sm:w-3 sm:h-3 xs:w-2 xs:h-2 ${
-                            getIntentLabel(email.intent).iconColor
-                          }`,
+                          className: `w-3 h-3 mr-1 sm:w-3 sm:h-3 xs:w-2 xs:h-2 ${getIntentLabel(email.intent).iconColor
+                            }`,
                         })}
                         <span className="hidden sm:inline">
                           {getIntentLabel(email.intent).text}
@@ -708,7 +764,7 @@ const EmailList: React.FC<EmailListProps> = ({
                         </span>
                       </div>
                     )}
-                    
+
                     {/* Corporate/Custom Labels */}
                     {emailLabels.length > 0 && (
                       <div className="flex flex-col items-end space-y-1 max-w-[120px] sm:max-w-[160px]">

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { NavbarSkeleton } from "./components/skeletonLoader";
 import EmailList from "./components/EmailList";
 import ConversationThread from "./components/ConversationThread";
@@ -8,9 +8,10 @@ import { Email, CustomLabel } from "./types/email";
 import { mockCustomLabels } from "./data/mockLabels";
 import { FilterOptions } from "./components/EmailFilters";
 import { useLazyGetMailListResponseQuery } from "./service/inboxService";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setFilterSettings } from "./store/filterSlice";
 import Sidebar from "./components/Sidebar";
+import { notification } from "antd";
 
 function App() {
   const [activeItem, setActiveItem] = useState("inbox");
@@ -42,6 +43,10 @@ function App() {
     search: undefined,
   });
   const dispatch = useDispatch();
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [dummyCount,setDummyContent] = useState(0);
+  const dummyCountRef = useRef(dummyCount);
+  const mailStatus = useSelector((state: any) => state.alignment?.status);
 
   // const [sidebarWidth, setSidebarWidth] = useState(64); // default to collapsed width
 
@@ -74,16 +79,44 @@ function App() {
   //   getMailList({});
   // }, []);
 
+  // useEffect(() => {
+  //   // Initial call
+  //   getMailList(filterData);
+
+  //   // Set interval
+  //   const intervalId = setInterval(() => {
+  //     getMailList(filterData);
+  //   }, 60000); // Poll every 150 seconds
+
+  //   // Cleanup on unmount
+  //   return () => clearInterval(intervalId);
+  // }, [getMailList]);
+
   useEffect(() => {
-    // Initial call
-    getMailList(filterData);
-
-    // Set interval
+    dummyCountRef.current = dummyCount;
+  }, [dummyCount]);
+  
+  useEffect(() => {
+    getMailList({}).then(() => setInitialLoading(false));
+  
     const intervalId = setInterval(() => {
-      getMailList(filterData);
-    }, 60000); // Poll every 150 seconds
+      setDummyContent(prev => {
+        const newVal = prev + 1;
+        dummyCountRef.current = newVal;
+  
+        console.log("countena", newVal);
+  
+        // if (newVal % 2 === 0) {
+          getMailList({page_size: 50});
+        // } else {
+          // getMailList({ page: 2 });
+        // }
+            console.log(mailStatus, "check");
 
-    // Cleanup on unmount
+        return newVal;
+      });
+    }, 10000);
+
     return () => clearInterval(intervalId);
   }, [getMailList]);
 
@@ -104,8 +137,10 @@ function App() {
           setDifferentNotificationCount(latestCount - notificationState);
           setShowNotification(true);
           console.log("difference generated");
-          if (localStorage.getItem("notify") === "true") {
-            // alert(`You have ${differentNotificationCount} new messages`);
+          if (differentNotificationCount) {
+            notification.success({
+              message: `You have ${differentNotificationCount} new messages`,
+            });
           }
           const timer = setTimeout(() => {
             setShowNotification(false);
@@ -497,7 +532,7 @@ function App() {
     dispatch(
       setFilterSettings({
         is_starred: newFilters?.starred,
-        is_read: newFilters.readStatus,
+        is_read: newFilters.readStatus === 'all' ? undefined : newFilters.readStatus === 'read' ? true : false,
         has_attachment: newFilters?.hasAttachment,
       })
     );
@@ -861,7 +896,7 @@ function App() {
   };
 
   return (
-    <div className=" flex flex-col bg-gray-50">
+    <div className=" flex flex-col bg-gray-50" style={{ height: `calc(100vh - 80px)` }}>
       {/* {showNotification && (
         <div className="fixed top-4 right-4 bg-green-100 text-green-800 px-4 py-2 rounded shadow-md text-sm transition-opacity duration-300">
           🔔 You have {differentNotificationCount} new messages
@@ -908,8 +943,9 @@ function App() {
               />
             ) : (
               <div className="flex flex-1 h-full">
-                {getMailListResponse?.isLoading ||
-                getMailListResponse?.isFetching ? (
+                {/* {getMailListResponse?.isLoading ||
+                getMailListResponse?.isFetching ? ( */}
+                {initialLoading ? (
                   <NavbarSkeleton />
                 ) : (
                   <div className="flex-shrink-0">

@@ -13,6 +13,7 @@
     "@radix-ui/react-tooltip": "^1.2.7",
     "@reduxjs/toolkit": "^2.8.2",
     "@tailwindcss/line-clamp": "^0.4.4",
+    "antd": "^5.26.4",
     "crypto-js": "^4.2.0",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",

@@ -12,7 +12,7 @@ export interface FilterOptions {
     from: string;
     to: string;
   };
-  intent: 'all' | 'meetings' | 'notifications' | 'campaigns' | 'support';
+  intent: 'all' | 'meetings' | 'notifications' | 'campaigns' | 'support' | 'new';
 }
 
 interface EmailFiltersProps {
