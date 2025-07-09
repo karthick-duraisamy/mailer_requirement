@@ -23,10 +23,12 @@ const LabelManager: React.FC<LabelManagerProps> = ({
   const [newLabelName, setNewLabelName] = useState('');
   const [newLabelColor, setNewLabelColor] = useState(labelColors[0]);
   const [newLabelDescription, setNewLabelDescription] = useState('');
+  const [newLabelCategory, setNewLabelCategory] = useState<'intent' | 'corporate' | ''>('');
   const [editingLabel, setEditingLabel] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [editColor, setEditColor] = useState('');
   const [editDescription, setEditDescription] = useState('');
+  const [editCategory, setEditCategory] = useState<'intent' | 'corporate' | ''>('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -37,8 +39,21 @@ const LabelManager: React.FC<LabelManagerProps> = ({
       }
     };
 
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
+    const handleClickOutside = (e: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+      document.addEventListener('mousedown', handleClickOutside);
+      
+      return () => {
+        document.removeEventListener('keydown', handleEscape);
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
   }, [isOpen, onClose]);
 
   const validateLabelName = (name: string, excludeId?: string): boolean => {
@@ -78,11 +93,13 @@ const LabelManager: React.FC<LabelManagerProps> = ({
       color: newLabelColor,
       description: newLabelDescription.trim() || undefined,
       isSystem: false,
+      category: newLabelCategory || undefined,
     });
 
     setNewLabelName('');
     setNewLabelColor(labelColors[0]);
     setNewLabelDescription('');
+    setNewLabelCategory('');
     setErrors({});
   };
 
@@ -91,6 +108,7 @@ const LabelManager: React.FC<LabelManagerProps> = ({
     setEditName(label.name);
     setEditColor(label.color);
     setEditDescription(label.description || '');
+    setEditCategory(label.category || '');
     setErrors({});
   };
 
@@ -102,12 +120,14 @@ const LabelManager: React.FC<LabelManagerProps> = ({
       name: editName.trim(),
       color: editColor,
       description: editDescription.trim() || undefined,
+      category: editCategory || undefined,
     });
 
     setEditingLabel(null);
     setEditName('');
     setEditColor('');
     setEditDescription('');
+    setEditCategory('');
     setErrors({});
   };
 
@@ -116,6 +136,7 @@ const LabelManager: React.FC<LabelManagerProps> = ({
     setEditName('');
     setEditColor('');
     setEditDescription('');
+    setEditCategory('');
     setErrors({});
   };
 
@@ -157,10 +178,19 @@ const LabelManager: React.FC<LabelManagerProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+      onClick={(e) => {
+        // Close modal when clicking on backdrop
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
       <div
         ref={modalRef}
         className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] flex flex-col"
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
@@ -218,6 +248,21 @@ const LabelManager: React.FC<LabelManagerProps> = ({
                   selectedColor={newLabelColor}
                   onColorChange={setNewLabelColor}
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Category (Optional)
+                </label>
+                <select
+                  value={newLabelCategory}
+                  onChange={(e) => setNewLabelCategory(e.target.value as 'intent' | 'corporate' | '')}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                >
+                  <option value="">General Label</option>
+                  <option value="intent">Intent Label</option>
+                  <option value="corporate">Corporate Label</option>
+                </select>
               </div>
 
               <div>
@@ -296,6 +341,16 @@ const LabelManager: React.FC<LabelManagerProps> = ({
                           />
                         </div>
                         
+                        <select
+                          value={editCategory}
+                          onChange={(e) => setEditCategory(e.target.value as 'intent' | 'corporate' | '')}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="">General Label</option>
+                          <option value="intent">Intent Label</option>
+                          <option value="corporate">Corporate Label</option>
+                        </select>
+                        
                         <input
                           type="text"
                           value={editDescription}
@@ -335,6 +390,16 @@ const LabelManager: React.FC<LabelManagerProps> = ({
                               {label.isSystem && (
                                 <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full font-medium">
                                   System
+                                </span>
+                              )}
+                              {label.category === 'intent' && (
+                                <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full font-medium">
+                                  Intent
+                                </span>
+                              )}
+                              {label.category === 'corporate' && (
+                                <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded-full font-medium">
+                                  Corporate
                                 </span>
                               )}
                             </div>

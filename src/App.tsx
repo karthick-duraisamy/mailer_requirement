@@ -1,5 +1,4 @@
 import { useState, useMemo, useEffect } from "react";
-import Header from "./components/Header";
 import { NavbarSkeleton } from "./components/skeletonLoader";
 import EmailList from "./components/EmailList";
 import ConversationThread from "./components/ConversationThread";
@@ -9,8 +8,9 @@ import { Email, CustomLabel } from "./types/email";
 import { mockCustomLabels } from "./data/mockLabels";
 import { FilterOptions } from "./components/EmailFilters";
 import { useLazyGetMailListResponseQuery } from "./service/inboxService";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch } from "react-redux";
 import { setFilterSettings } from "./store/filterSlice";
+import Sidebar from "./components/Sidebar";
 
 function App() {
   const [activeItem, setActiveItem] = useState("inbox");
@@ -22,7 +22,9 @@ function App() {
   const [customLabels, setCustomLabels] =
     useState<CustomLabel[]>(mockCustomLabels);
   const [showNotification, setShowNotification] = useState(false);
-  const [differentNotificationCount, setDifferentNotificationCount] = useState<number | undefined>(undefined)
+  const [differentNotificationCount, setDifferentNotificationCount] = useState<
+    number | undefined
+  >(undefined);
   const [checkedEmails, setCheckedEmails] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<FilterOptions>({
@@ -62,11 +64,11 @@ function App() {
   });
 
   const [filterData, setFilterData] = useState<any>({
-      page: 1,
-      page_size: 50,
-      search: undefined,
-      folder: 'inbox'
-    });
+    page: 1,
+    page_size: 50,
+    search: undefined,
+    folder: "inbox",
+  });
 
   // useEffect(() => {
   //   getMailList({});
@@ -101,7 +103,7 @@ function App() {
         if (notificationState !== latestCount) {
           setDifferentNotificationCount(latestCount - notificationState);
           setShowNotification(true);
-          console.log('difference generated')
+          console.log("difference generated");
           if (localStorage.getItem("notify") === "true") {
             // alert(`You have ${differentNotificationCount} new messages`);
           }
@@ -152,7 +154,9 @@ function App() {
         (email) => (!email.is_read || email.is_read) && !email.is_deleted
       ).length || 0;
     counts.starred = emails?.filter((email) => email.is_starred).length || 0;
-    counts.snoozed = 0; // Mock data doesn't have snoozed emails
+    counts.sent =
+      emails?.filter((email) => email.folder === "[Gmail]/Sent Mail").length ||
+      0;
     counts.bin = deletedEmails.filter((email) => email.is_deleted).length || 0;
 
     // Custom labels - show unread count
@@ -169,38 +173,6 @@ function App() {
         // System labels
 
         switch (label.labels[0]) {
-          case "work":
-            labelEmails = emails.filter(
-              (email) =>
-                email.customLabels?.includes("work") ||
-                email.from_address.includes("company.com") ||
-                email.from_address.includes("techcorp.com") ||
-                email.from_address.includes("consulting.com") ||
-                email.from_address.includes("design.studio")
-            );
-            break;
-          case "personal":
-            labelEmails = emails.filter(
-              (email) =>
-                email.customLabels?.includes("personal") ||
-                email.subject.toLowerCase().includes("welcome") ||
-                email.from_address.includes("startup.io")
-            );
-            break;
-          case "important":
-            labelEmails = emails.filter(
-              (email) =>
-                email.customLabels?.includes("important") ||
-                email.subject.toLowerCase().includes("urgent") ||
-                email.subject.toLowerCase().includes("important") ||
-                email.is_starred
-            );
-            break;
-          case "travel":
-            labelEmails = emails.filter((email) =>
-              email.customLabels?.includes("travel")
-            );
-            break;
         }
         counts[`label-${label.id}`] = labelEmails.filter(
           (email) => !email.is_read
@@ -388,9 +360,10 @@ function App() {
       case "starred":
         filtered = conversations?.filter((email) => email.is_starred);
         break;
-      case "snoozed":
-        // For demo, show empty snoozed
-        filtered = [];
+      case "sent":
+        filtered = conversations?.filter(
+          (email) => email.folder === "[Gmail]/Sent Mail"
+        );
         break;
       case "bin":
         // Show deleted emails
@@ -401,39 +374,7 @@ function App() {
             conversationEmails: [email],
           })) || [];
         break;
-      case "label-work":
-        filtered = conversations.filter(
-          (email) =>
-            email.customLabels?.includes("work") ||
-            email.subject.toLowerCase().includes("project") ||
-            email.subject.toLowerCase().includes("meeting") ||
-            email.subject.toLowerCase().includes("campaign") ||
-            email.from_address.includes("company.com") ||
-            email.from_address.includes("techcorp.com")
-        );
-        break;
-      case "label-personal":
-        filtered = conversations.filter(
-          (email) =>
-            email.customLabels?.includes("personal") ||
-            email.subject.toLowerCase().includes("welcome") ||
-            email.from_address.includes("startup.io")
-        );
-        break;
-      case "label-important":
-        filtered = conversations.filter(
-          (email) =>
-            email.customLabels?.includes("important") ||
-            email.subject.toLowerCase().includes("urgent") ||
-            email.subject.toLowerCase().includes("important") ||
-            email.is_starred
-        );
-        break;
-      case "label-travel":
-        filtered = conversations?.filter((email) =>
-          email.customLabels?.includes("travel")
-        );
-        break;
+
       default:
         // Handle custom labels
         if (activeItem.startsWith("custom-label-")) {
@@ -540,14 +481,9 @@ function App() {
     });
   };
 
-  const handleMenuToggle = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
-
   const handleSearch = (query: string) => {
-    // setSearchFilter(query)
+    setSearchQuery(query);
     dispatch(setFilterSettings({ search: query }));
-    // setSearchQuery(query);
   };
 
   const handleSectionChange = (section: string) => {
@@ -931,39 +867,26 @@ function App() {
           🔔 You have {differentNotificationCount} new messages
         </div>
       )} */}
-      <Header
+      {/* <Header
         onMenuToggle={handleMenuToggle}
-        onSearch={handleSearch}
-        onFiltersChange={handleFiltersChange}
-        filters={filters}
-        checkedEmails={checkedEmails}
-        onBulkMarkAsRead={handleBulkMarkAsRead}
-        onBulkDelete={handleBulkDelete}
-        onSelectAll={handleSelectAll}
-        onUnselectAll={handleUnselectAll}
-        onUndo={handleUndo}
-        hasSelection={checkedEmails.size > 0}
+      /> */}
+
+      {/* Top Navigation */}
+      <Sidebar
+        activeItem={activeItem}
+        onItemSelect={handleSectionChange}
+        isOpen={sidebarOpen}
         onComposeClick={handleComposeOpen}
+        customLabels={customLabels}
+        onManageLabels={() => setLabelManagerOpen(true)}
+        emailCounts={emailCounts}
+        onSearch={handleSearch}
+        searchQuery={searchQuery}
       />
 
       <div className="flex-1 flex overflow-hidden">
-        {/* <Sidebar
-          activeItem={activeItem}
-          onItemSelect={handleSectionChange}
-          isOpen={sidebarOpen}
-          onComposeClick={handleComposeOpen}
-          customLabels={customLabels}
-          onManageLabels={() => setLabelManagerOpen(true)}
-          emailCounts={emailCounts}
-          // onClose={handleCloseSidebar}
-          onWidthChange={setSidebarWidth}
-        /> */}
-
         {getMailListResponse?.isSuccess && (
-          <div
-            className="flex-1 flex min-w-0 transition-all duration-200"
-            // style={{ marginLeft: sidebarWidth }}
-          >
+          <div className="flex-1 flex min-w-0">
             {isFullPageView ? (
               <ConversationThread
                 email={selectedEmail}

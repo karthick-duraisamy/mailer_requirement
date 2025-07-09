@@ -13,12 +13,12 @@ const service = InboxService.enhanceEndpoints({
         params: param,
       }),
     }),
-    getConvoResponse: builder.query({
-      query: () => "staticResponse/convoResponse.json",
-    }),
     getConversationDetails: builder.query({
       query: (param: any) =>
         `/mail-server/${param.id}/?project=${localStorage.getItem("project")}`,
+    }),
+    getConvoResponse: builder.query({
+      query: () => "staticResponse/convoResponse.json",
     }),
     getAIReplyResponse: builder.mutation({
       query: (body: any) => ({

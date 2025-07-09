@@ -1,23 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from "react";
 import {
   Inbox,
   Star,
-  Clock,
+  Send,
   Trash2,
-  Settings,
-  Plus,
   Tag,
-  Mail,
-  Users,
-  Calendar,
-  Bell,
-  Megaphone,
-  HelpCircle,
-  Folder,
   ChevronDown,
-  ChevronRight
-} from 'lucide-react';
-import { Label, CustomLabel } from '../types/email';
+  ChevronRight,
+} from "lucide-react";
+import { CustomLabel } from "../types/email";
 
 interface SidebarProps {
   activeItem: string;
@@ -27,8 +18,8 @@ interface SidebarProps {
   customLabels: CustomLabel[];
   onManageLabels: () => void;
   emailCounts: Record<string, number>;
-  onClose?: () => void; // Optional close handler for mobile
-  onWidthChange?: (width: number) => void;
+  onSearch: (query: string) => void;
+  searchQuery: string;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -39,251 +30,462 @@ const Sidebar: React.FC<SidebarProps> = ({
   customLabels,
   onManageLabels,
   emailCounts,
-  onClose,
-  onWidthChange,
+  onSearch,
+  searchQuery,
 }) => {
-  const [labelsExpanded, setLabelsExpanded] = useState(true);
-
-  // Close sidebar when clicking on navigation items on mobile
-  const handleItemSelect = (item: string) => {
-    onItemSelect(item);
-    // Auto-close on mobile after selection
-    if (window.innerWidth < 768 && onClose) {
-      onClose();
-    }
-  };
-
-  // Handle escape key to close sidebar
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen && onClose) {
-        onClose();
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-      return () => document.removeEventListener('keydown', handleEscape);
-    }
-  }, [isOpen, onClose]);
+  const [labelsExpanded, setLabelsExpanded] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const navigationItems = [
-    { id: 'inbox', label: 'All Conversations', icon: Inbox, count: emailCounts.inbox },
-    { id: 'starred', label: 'Starred', icon: Star, count: emailCounts.starred },
-    { id: 'snoozed', label: 'Snoozed', icon: Clock, count: emailCounts.snoozed },
-    { id: 'bin', label: 'Bin', icon: Trash2, count: emailCounts.bin },
+    {
+      id: "inbox",
+      label: "All Conversations",
+      icon: Inbox,
+      count: emailCounts.inbox,
+    },
+    { id: "starred", label: "Starred", icon: Star, count: emailCounts.starred },
+    {
+      id: "sent",
+      label: "Sent",
+      icon: Send,
+      count: emailCounts.sent,
+    },
+    { id: "bin", label: "Bin", icon: Trash2, count: emailCounts.bin },
   ];
 
-  // Separate system and custom labels
-  const systemLabels = customLabels.filter(label => label.isSystem);
-  const userLabels = customLabels.filter(label => !label.isSystem);
+  const [isIntentOpen, setIsIntentOpen] = useState(false);
+  const [isCorporateOpen, setIsCorporateOpen] = useState(false);
+
+  const intentLabels = customLabels.filter(
+    (label) => label.category === "intent"
+  );
+  const corporateLabels = customLabels.filter(
+    (label) => label.category === "corporate"
+  );
 
   const getLabelCount = (labelId: string) => {
-    return emailCounts[`label-${labelId}`] || emailCounts[`custom-label-${labelId}`] || 0;
+    return (
+      emailCounts[`label-${labelId}`] ||
+      emailCounts[`custom-label-${labelId}`] ||
+      0
+    );
   };
 
   const handleLabelClick = (labelId: string, isSystem: boolean) => {
     if (isSystem) {
-      handleItemSelect(`label-${labelId}`);
+      onItemSelect(`label-${labelId}`);
     } else {
-      handleItemSelect(`custom-label-${labelId}`);
+      onItemSelect(`custom-label-${labelId}`);
     }
   };
 
-  // Ref for sidebar DOM node
-  const sidebarRef = useRef<HTMLDivElement>(null);
-  const [sidebarWidth, setSidebarWidth] = useState(64); // 16 * 4 = 64px (w-16)
-
-  useEffect(() => {
-    if (!sidebarRef.current) return;
-    const observer = new window.ResizeObserver(entries => {
-      for (let entry of entries) {
-        setSidebarWidth(entry.contentRect.width);
-        if (onWidthChange) onWidthChange(entry.contentRect.width);
+  // Close search panel when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (isSearchOpen && !target.closest(".search-panel-container")) {
+        setIsSearchOpen(false);
       }
-    });
-    observer.observe(sidebarRef.current);
-    return () => observer.disconnect();
-  }, [onWidthChange]);
+    };
+
+    if (isSearchOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isSearchOpen]);
 
   return (
-    <nav
-      ref={sidebarRef}
-      role="navigation"
-      className={`
-        group
-        fixed top-0 left-0 h-full z-40
-        bg-white border-r border-gray-200
-        transition-all duration-200
-        w-16 hover:w-64
-        overflow-x-hidden
-        shadow-lg
-      `}
-      style={{ minWidth: 0 }}
-    >
-      {/* Sidebar content here */}
-      <div className="flex flex-col h-full pt-16">
-        {/* Compose button, navigation, etc. */}
-        {/* Example: */}
-        <button
-          className="flex items-center space-x-2 px-4 py-2 my-4 rounded-lg hover:bg-gray-100 transition-colors"
-          onClick={onComposeClick}
-          style={{ width : "90%", margin: "15px auto", background: '#2563eb', color: "#fff"}}
-        >
-          <Plus className="w-5 h-5" />
-          <span className="ml-3 whitespace-nowrap hidden group-hover:inline opacity-100 transition-opacity duration-200">
-            Compose
-          </span>
-        </button>
-        {/* ...other nav items... */}
-        {navigationItems.map((item) => (
-          <button
-            key={item.id}
-            className={`
-              sidebar-btn flex items-center w-full py-2 my-1 rounded-lg
-              hover:bg-gray-100 transition-all duration-200
-              ${activeItem === item.id ? "bg-blue-50" : ""}
-              justify-center group-hover:justify-start
-              px-0 group-hover:px-4
-            `}
-            style={{ margin: "5px auto", width: "90%"}}
-            onClick={() => handleItemSelect(item.id)}
-          >
-            <item.icon
-              className={`w-5 h-5 transition-colors duration-200
-                ${activeItem === item.id
-                  ? "text-blue-600"
-                  : "text-gray-700 group-hover:text-blue-600"}
-              `}
-            />
-            <span className="ml-3 whitespace-nowrap hidden group-hover:inline opacity-100 transition-opacity duration-200">
-              {item.label}
-            </span>
-          </button>
-        ))}
-        {/* Labels Section */}
-        {false && (
-          <div className="pt-4">
-            <div className="flex items-center justify-between px-3 py-2">
+    <>
+      {/* Mobile overlay for labels dropdown */}
+      {labelsExpanded && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+          onClick={() => setLabelsExpanded(false)}
+        />
+      )}
+
+      {/* Overlay for search panel */}
+      {isSearchOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40"
+          onClick={() => setIsSearchOpen(false)}
+        />
+      )}
+
+      {/* Top Navigation Bar */}
+      <nav className="bg-white border-b border-gray-200 px-4 py-3">
+        <div className="flex items-center justify-between">
+          {/* Left side - Search box and Main navigation items */}
+          <div className="flex items-center space-x-1">
+            {/* Search Icon with Expandable Panel */}
+            <div className="relative search-panel-container">
               <button
-                onClick={() => setLabelsExpanded(!labelsExpanded)}
-                className="flex items-center space-x-3 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors flex-1 p-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-                aria-expanded={labelsExpanded}
-                aria-controls="labels-list"
+                type="button"
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                onClick={() => setIsSearchOpen(!isSearchOpen)}
+                aria-label="Search"
               >
-                <Tag className="w-5 h-5" />
-                <span>Labels</span>
-                {labelsExpanded ? (
-                  <ChevronDown className="w-4 h-4" />
+                <svg
+                  className="w-5 h-5 text-gray-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </button>
+
+              {/* Search Panel */}
+              {isSearchOpen && (
+                <div className="absolute top-full left-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50 p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-semibold text-gray-900">
+                      Search Mail
+                    </h3>
+                    <button
+                      onClick={() => setIsSearchOpen(false)}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <div className="relative">
+                    <button
+                      type="button"
+                      className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors z-10"
+                      onClick={() => {
+                        onSearch(searchQuery);
+                        setIsSearchOpen(false);
+                      }}
+                      tabIndex={0}
+                      aria-label="Search"
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                        />
+                      </svg>
+                    </button>
+
+                    <input
+                      type="text"
+                      placeholder="Search mail..."
+                      value={searchQuery}
+                      onChange={(e) => onSearch(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          onSearch(searchQuery);
+                          setIsSearchOpen(false);
+                        }
+                        if (e.key === "Escape") {
+                          setIsSearchOpen(false);
+                        }
+                      }}
+                      className="w-full pl-10 pr-10 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white focus:border-blue-500 transition-all placeholder-gray-500 text-sm"
+                      autoFocus
+                    />
+
+                    {searchQuery && (
+                      <button
+                        type="button"
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                        onClick={() => onSearch("")}
+                        tabIndex={0}
+                        aria-label="Clear search"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Search Suggestions or Recent Searches */}
+                  {searchQuery && (
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      <p className="text-xs text-gray-500 mb-2">
+                        Press Enter to search for "{searchQuery}"
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {navigationItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeItem === item.id;
+
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => onItemSelect(item.id)}
+                  className={`
+                    flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                    ${
+                      isActive
+                        ? "bg-blue-100 text-blue-700"
+                        : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                    }
+                  `}
+                >
+                  <Icon className="w-4 h-4" />
+                  <span className="hidden sm:inline">{item.label}</span>
+                  {item.count > 0 && (
+                    <span
+                      className={`
+                      px-2 py-1 text-xs rounded-full
+                      ${
+                        isActive
+                          ? "bg-blue-200 text-blue-800"
+                          : "bg-gray-200 text-gray-600"
+                      }
+                    `}
+                    >
+                      {item.count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+
+            {/* Intent Labels Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => {
+                  setIsIntentOpen(!isIntentOpen);
+                  setIsCorporateOpen(false); // close other
+                }}
+                className={`
+      flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+      ${
+        isIntentOpen
+          ? "bg-gray-100 text-gray-900"
+          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+      }
+    `}
+              >
+                <Tag className="w-4 h-4" />
+                <span className="hidden sm:inline">Intent labels</span>
+                {isIntentOpen ? (
+                  <ChevronDown className="w-3 h-3" />
                 ) : (
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronRight className="w-3 h-3" />
                 )}
               </button>
+
+              {isIntentOpen && (
+                <div className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 max-h-64 overflow-y-auto">
+                  {intentLabels.map((label) => (
+                    <button
+                      key={label.id}
+                      onClick={() => {
+                        handleLabelClick(label.id, false);
+                        setIsIntentOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between px-3 py-2 text-sm transition-colors
+            ${
+              activeItem === `custom-label-${label.id}`
+                ? "bg-blue-100 text-blue-700"
+                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+            }`}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div
+                          className="w-3 h-3 rounded-full"
+                          style={{ backgroundColor: label.color }}
+                        />
+                        <span>{label.name}</span>
+                      </div>
+                      {getLabelCount(label.id) > 0 && (
+                        <span
+                          className={`px-2 py-1 text-xs rounded-full
+              ${
+                activeItem === `custom-label-${label.id}`
+                  ? "bg-blue-200 text-blue-800"
+                  : "bg-gray-200 text-gray-600"
+              }`}
+                        >
+                          {getLabelCount(label.id)}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Corporate Labels Dropdown */}
+            <div className="relative">
               <button
-                onClick={onManageLabels}
-                className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-                title="Manage labels"
-                aria-label="Manage labels"
+                onClick={() => {
+                  setIsCorporateOpen(!isCorporateOpen);
+                  setIsIntentOpen(false); // close other
+                }}
+                className={`
+      flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+      ${
+        isCorporateOpen
+          ? "bg-gray-100 text-gray-900"
+          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+      }
+    `}
               >
-                <Settings className="w-4 h-4" />
+                <Tag className="w-4 h-4" />
+                <span className="hidden sm:inline">Corporate labels</span>
+                {isCorporateOpen ? (
+                  <ChevronDown className="w-3 h-3" />
+                ) : (
+                  <ChevronRight className="w-3 h-3" />
+                )}
+              </button>
+
+              {isCorporateOpen && (
+                <div className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 max-h-64 overflow-y-auto">
+                  {corporateLabels.map((label) => (
+                    <button
+                      key={label.id}
+                      onClick={() => {
+                        handleLabelClick(label.id, false);
+                        setIsCorporateOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between px-3 py-2 text-sm transition-colors
+            ${
+              activeItem === `custom-label-${label.id}`
+                ? "bg-blue-100 text-blue-700"
+                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+            }`}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div
+                          className="w-3 h-3 rounded-full"
+                          style={{ backgroundColor: label.color }}
+                        />
+                        <span>{label.name}</span>
+                      </div>
+                      {getLabelCount(label.id) > 0 && (
+                        <span
+                          className={`px-2 py-1 text-xs rounded-full
+              ${
+                activeItem === `custom-label-${label.id}`
+                  ? "bg-blue-200 text-blue-800"
+                  : "bg-gray-200 text-gray-600"
+              }`}
+                        >
+                          {getLabelCount(label.id)}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+          {/* Right side - Actions */}
+          <div className="flex items-center space-x-2">
+            {/* Filters Button */}
+            <div className="relative">
+              <button className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900">
+                <span className="hidden sm:inline">Filters</span>
               </button>
             </div>
 
-            {labelsExpanded && (
-              <div id="labels-list" className="ml-4 mt-2 space-y-1">
-                {/* System Labels */}
-                {systemLabels.map((label) => (
-                  <button
-                    key={label.id}
-                    onClick={() => handleLabelClick(label.id, true)}
-                    className={`
-                      w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm 
-                      transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50
-                      ${activeItem === `label-${label.id}`
-                        ? 'bg-blue-100 text-blue-700'
-                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                      }
-                    `}
-                    aria-current={activeItem === `label-${label.id}` ? 'page' : undefined}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div
-                        className="w-3 h-3 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: label.color }}
-                        aria-hidden="true"
-                      />
-                      <span className="truncate">{label.name}</span>
-                    </div>
-                    {getLabelCount(label.id) > 0 && (
-                      <span className={`
-                        px-2 py-1 text-xs rounded-full flex-shrink-0 min-w-[1.5rem] text-center
-                        ${activeItem === `label-${label.id}` ? 'bg-blue-200 text-blue-800' : 'bg-gray-200 text-gray-600'}
-                      `}>
-                        {getLabelCount(label.id) > 99 ? '99+' : getLabelCount(label.id)}
-                      </span>
-                    )}
-                  </button>
-                ))}
-
-                {/* Separator if both system and user labels exist */}
-                {systemLabels.length > 0 && userLabels.length > 0 && (
-                  <div className="border-t border-gray-200 my-2" />
-                )}
-
-                {/* User Labels */}
-                {userLabels.map((label) => (
-                  <button
-                    key={label.id}
-                    onClick={() => handleLabelClick(label.id, false)}
-                    className={`
-                      w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm 
-                      transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50
-                      ${activeItem === `custom-label-${label.id}`
-                        ? 'bg-blue-100 text-blue-700'
-                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                      }
-                    `}
-                    aria-current={activeItem === `custom-label-${label.id}` ? 'page' : undefined}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div
-                        className="w-3 h-3 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: label.color }}
-                        aria-hidden="true"
-                      />
-                      <span className="truncate">{label.name}</span>
-                    </div>
-                    {getLabelCount(label.id) > 0 && (
-                      <span className={`
-                        px-2 py-1 text-xs rounded-full flex-shrink-0 min-w-[1.5rem] text-center
-                        ${activeItem === `custom-label-${label.id}` ? 'bg-blue-200 text-blue-800' : 'bg-gray-200 text-gray-600'}
-                      `}>
-                        {getLabelCount(label.id) > 99 ? '99+' : getLabelCount(label.id)}
-                      </span>
-                    )}
-                  </button>
-                ))}
-
-                {/* Add Label Button */}
-                <button
-                  onClick={() => {
-                    onManageLabels();
-                    // Auto-close on mobile
-                    if (window.innerWidth < 768 && onClose) {
-                      onClose();
-                    }
-                  }}
-                  className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+            {/* Settings Button */}
+            <div className="relative">
+              <button
+                className="p-2.5 hover:bg-gray-100 rounded-lg transition-colors"
+                aria-label="Settings"
+              >
+                <svg
+                  className="w-5 h-5 text-gray-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  <Plus className="w-3 h-3" />
-                  <span>Add label</span>
-                </button>
-              </div>
-            )}
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            {/* Compose Button */}
+            <button
+              className="flex items-center space-x-2 px-4 py-2.5 rounded-lg transition-all duration-200 hover:bg-blue-700 bg-blue-600 text-white shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              onClick={onComposeClick}
+              aria-label="Compose new email"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+              <span className="font-medium hidden sm:inline whitespace-nowrap">
+                Compose
+              </span>
+            </button>
+
+            {/* Intent Labels Dropdown */}
           </div>
-        )}
-      </div>
-    </nav>
+        </div>
+      </nav>
+    </>
   );
 };
 

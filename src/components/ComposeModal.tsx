@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   X,
   Send,
@@ -101,6 +101,9 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
+  const toInputRef = useRef<HTMLInputElement>(null);
+  const ccInputRef = useRef<HTMLInputElement>(null);
+  const bccInputRef = useRef<HTMLInputElement>(null);
 
   // Auto-save draft functionality
   useEffect(() => {
@@ -164,34 +167,44 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleEmailInput = (
-    value: string,
-    currentEmails: string[],
-    setEmails: (emails: string[]) => void,
-    setInput: (value: string) => void
-  ) => {
-    // Only process email separation when user explicitly adds separators at the end
-    if (value.endsWith(",") || value.endsWith(";")) {
-      const emailToAdd = value.slice(0, -1).trim();
-      if (emailToAdd && validateEmail(emailToAdd)) {
-        const uniqueEmails = [...new Set([...currentEmails, emailToAdd])];
-        setEmails(uniqueEmails);
-        setInput("");
-      } else {
-        setInput(value);
-      }
-    } else {
+  const handleEmailInput = useCallback(
+    (
+      value: string,
+      currentEmails: string[],
+      setEmails: (emails: string[]) => void,
+      setInput: (value: string) => void
+    ) => {
+      // Always update the input value immediately to maintain focus
       setInput(value);
-    }
-  };
 
-  const removeEmail = (
-    emailToRemove: string,
-    emails: string[],
-    setEmails: (emails: string[]) => void
-  ) => {
-    setEmails(emails.filter((email) => email !== emailToRemove));
-  };
+      // Only process email separation when user explicitly adds separators at the end
+      if (value.endsWith(",") || value.endsWith(";") || value.endsWith(" ")) {
+        const emailToAdd = value.slice(0, -1).trim();
+        if (emailToAdd && validateEmail(emailToAdd)) {
+          // Use functional update to avoid stale closures
+          setEmails((prevEmails) => {
+            const uniqueEmails = [...new Set([...prevEmails, emailToAdd])];
+            return uniqueEmails;
+          });
+          setInput("");
+        }
+      }
+    },
+    []
+  );
+
+  const removeEmail = useCallback(
+    (
+      emailToRemove: string,
+      emails: string[],
+      setEmails: (emails: string[]) => void
+    ) => {
+      setEmails((prevEmails) =>
+        prevEmails.filter((email) => email !== emailToRemove)
+      );
+    },
+    []
+  );
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
@@ -690,18 +703,29 @@ Best regards`,
                     </span>
                   ))}
                   <input
+                    ref={toInputRef}
                     type="text"
                     value={toInput}
                     onChange={(e) =>
                       handleEmailInput(e.target.value, to, setTo, setToInput)
                     }
                     onKeyDown={(e) => {
-                      if (e.key === "Enter") {
+                      if (e.key === "Enter" || e.key === "Tab") {
                         e.preventDefault();
                         if (toInput.trim() && validateEmail(toInput.trim())) {
-                          setTo([...to, toInput.trim()]);
+                          setTo((prev) => [...prev, toInput.trim()]);
                           setToInput("");
                         }
+                      } else if (
+                        e.key === "Backspace" &&
+                        toInput === "" &&
+                        to.length > 0
+                      ) {
+                        e.preventDefault();
+                        const newTo = [...to];
+                        const lastEmail = newTo.pop();
+                        setTo(newTo);
+                        setToInput(lastEmail || "");
                       }
                     }}
                     placeholder={
@@ -762,18 +786,29 @@ Best regards`,
                     </span>
                   ))}
                   <input
+                    ref={ccInputRef}
                     type="text"
                     value={ccInput}
                     onChange={(e) =>
                       handleEmailInput(e.target.value, cc, setCc, setCcInput)
                     }
                     onKeyDown={(e) => {
-                      if (e.key === "Enter") {
+                      if (e.key === "Enter" || e.key === "Tab") {
                         e.preventDefault();
                         if (ccInput.trim() && validateEmail(ccInput.trim())) {
-                          setCc([...cc, ccInput.trim()]);
+                          setCc((prev) => [...prev, ccInput.trim()]);
                           setCcInput("");
                         }
+                      } else if (
+                        e.key === "Backspace" &&
+                        ccInput === "" &&
+                        cc.length > 0
+                      ) {
+                        e.preventDefault();
+                        const newCc = [...cc];
+                        const lastEmail = newCc.pop();
+                        setCc(newCc);
+                        setCcInput(lastEmail || "");
                       }
                     }}
                     placeholder="Enter CC email addresses..."
@@ -810,18 +845,29 @@ Best regards`,
                     </span>
                   ))}
                   <input
+                    ref={bccInputRef}
                     type="text"
                     value={bccInput}
                     onChange={(e) =>
                       handleEmailInput(e.target.value, bcc, setBcc, setBccInput)
                     }
                     onKeyDown={(e) => {
-                      if (e.key === "Enter") {
+                      if (e.key === "Enter" || e.key === "Tab") {
                         e.preventDefault();
                         if (bccInput.trim() && validateEmail(bccInput.trim())) {
-                          setBcc([...bcc, bccInput.trim()]);
+                          setBcc((prev) => [...prev, bccInput.trim()]);
                           setBccInput("");
                         }
+                      } else if (
+                        e.key === "Backspace" &&
+                        bccInput === "" &&
+                        bcc.length > 0
+                      ) {
+                        e.preventDefault();
+                        const newBcc = [...bcc];
+                        const lastEmail = newBcc.pop();
+                        setBcc(newBcc);
+                        setBccInput(lastEmail || "");
                       }
                     }}
                     placeholder="Enter BCC email addresses..."
@@ -1034,7 +1080,7 @@ Best regards`,
       <div
         ref={modalRef}
         className="fixed right-2 w-[500px] h-full bg-white border-l border-gray-200 shadow-xl flex flex-col transform transition-transform duration-300 ease-in-out"
-        style={{ transform: "translateX(0)", zIndex: 60, height: '81%' }}
+        style={{ transform: "translateX(0)", zIndex: 60, height: "81%" }}
       >
         <ComposeContent />
       </div>
