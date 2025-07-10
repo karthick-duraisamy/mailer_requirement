@@ -191,6 +191,9 @@ function App() {
   const [lastAction, setLastAction] = useState<any>(null);
   const { width: windowWidth } = useScreenResolution();
 
+  // Add compose modal state
+  const [composeModalOpen, setComposeModalOpen] = useState(false);
+
   // Calculate email counts for sidebar
   const calculateEmailCounts = () => {
     const counts: Record<string, number> = {};
@@ -551,11 +554,11 @@ function App() {
   };
 
   const handleComposeOpen = () => {
-    setComposePanelOpen(true);
+    setComposeModalOpen(true);
   };
 
   const handleComposeClose = () => {
-    setComposePanelOpen(false);
+    setComposeModalOpen(false);
   };
 
   const handleSendEmail = async (emailData: ComposeEmailData) => {
@@ -565,8 +568,8 @@ function App() {
     // Show success message
     // alert("Email sent successfully!");
 
-    // Close compose panel
-    setComposePanelOpen(false);
+    // Close compose modal
+    setComposeModalOpen(false);
   };
 
   const handleSaveDraft = async (emailData: ComposeEmailData) => {
@@ -582,8 +585,8 @@ function App() {
       // alert("Draft saved successfully!");
     }
 
-    // Close compose panel
-    setComposePanelOpen(false);
+    // Close compose modal
+    setComposeModalOpen(false);
   };
 
   // Label Management Functions
@@ -1022,8 +1025,16 @@ function App() {
         onDeleteLabel={handleDeleteLabel}
       />
 
-      {/* Compose Panel - Fixed overlay on the right side */}
-      {composePanelOpen && (
+      {/* Compose Modal */}
+      <ComposeModal
+        isOpen={composeModalOpen}
+        onClose={handleComposeClose}
+        onSend={handleSendEmail}
+        onSaveDraft={handleSaveDraft}
+      />
+
+      {/* Compose Panel - Fixed overlay on the right side (if needed) */}
+      {/* {composePanelOpen && (
         <ComposeModal
           isOpen={composePanelOpen}
           onClose={handleComposeClose}
@@ -1031,7 +1042,7 @@ function App() {
           onSaveDraft={handleSaveDraft}
           isPanel={true}
         />
-      )}
+      )} */}
     </div>
   );
 }
