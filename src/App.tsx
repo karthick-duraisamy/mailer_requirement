@@ -13,6 +13,7 @@ import { setFilterSettings } from "./store/filterSlice";
 import Sidebar from "./components/Sidebar";
 import { notification } from "antd";
 import { useScreenResolution } from "./hooks/commonFunction";
+import { setSelectedMailsCount } from "./store/alignmentSlice";
 
 function App() {
   const [activeItem, setActiveItem] = useState("inbox");
@@ -45,9 +46,10 @@ function App() {
   });
   const dispatch = useDispatch();
   const [initialLoading, setInitialLoading] = useState(true);
-  const [dummyCount,setDummyContent] = useState(0);
+  const [dummyCount, setDummyContent] = useState(0);
   const dummyCountRef = useRef(dummyCount);
   const mailStatus = useSelector((state: any) => state.alignment?.status);
+  const filterSettings = useSelector((state: any) => state.filters);
 
   // const [sidebarWidth, setSidebarWidth] = useState(64); // default to collapsed width
 
@@ -96,33 +98,38 @@ function App() {
   useEffect(() => {
     dummyCountRef.current = dummyCount;
   }, [dummyCount]);
-  
-  const isInputFilled = useSelector((state:any)=>state?.alignment?.isInputFilled)
+
+  const isInputFilled = useSelector((state: any) => state?.alignment?.isInputFilled);
+  const isFilteredFilled = useSelector((state: any) => state?.alignment?.isFilterFilled);
 
   useEffect(() => {
-    getMailList({}).then(() => setInitialLoading(false));
-  
+    getMailList({ page_size: 20 }).then(() => setInitialLoading(false));
+  }, [])
+
+
+  useEffect(() => {
+    console.log(filterSettings);
     const intervalId = setInterval(() => {
       setDummyContent(prev => {
         const newVal = prev + 1;
         dummyCountRef.current = newVal;
-  
+
         console.log("countena", newVal);
-  
-        if (newVal % 2 === 0 && (isInputFilled === undefined || isInputFilled === '')) {
-          getMailList({page_size: 50});
+
+        if (newVal % 2 === 0 && ((isInputFilled === undefined || isInputFilled === '') && (isFilteredFilled === undefined || isFilteredFilled === false))) {
+          getMailList({ page_size: 50 });
         }
         //  else {
-          // getMailList({ page: 2 });
+        // getMailList({ page: 2 });
         // }
-            console.log(mailStatus, "check");
+        console.log(mailStatus, "check");
 
         return newVal;
       });
     }, 10000);
 
     return () => clearInterval(intervalId);
-  }, [getMailList, isInputFilled]);
+  }, [getMailList, isInputFilled, isFilteredFilled]);
 
   useEffect(() => {
     console.log(notificationState);
@@ -899,6 +906,11 @@ function App() {
       return "I've received your message and will address the points raised. I'll follow up with you soon.";
     }
   };
+
+  // Selected/Checked Emails counts
+  useEffect(() => {
+    dispatch(setSelectedMailsCount(checkedEmails?.size || 0));
+  }, [checkedEmails]);
 
   return (
     <div className=" flex flex-col bg-gray-50" style={{ height: `calc(100vh - ${windowWidth < 1470 ? "80px" : "155px"})` }}>

@@ -96,7 +96,7 @@ const EmailList: React.FC<EmailListProps> = ({
   const [getMailList, getMailListResponse] = useLazyGetMailListResponseQuery();
   const [filterData, setFilterData] = useState<any>({
     page: 1,
-    page_size: 100,
+    page_size: 20,
     search: undefined,
     folder: "inbox",
   });
@@ -108,63 +108,70 @@ const EmailList: React.FC<EmailListProps> = ({
   const [activeSectionTab, setActiveSectionTab] = useState("inbox");
   const [inputValue, setInputValue] = useState("");
   const [searchQuery, setSearchQuery] = useState<any>("");
+  const [selectedMails, setSelectedMails] = useState(0);
+  
   useEffect(() => {
     // Initial call
     if (filters?.search === "") {
       getMailList(filterData);
-      setIsFiltered(false);
+      // setIsFiltered(false);
     }
-  }, [filterData, filters]);
+  }, [filterData]);
 
   useEffect(() => {
     // Initial call
     if (
       filters !== undefined &&
-      Object.keys(filters).length >= 1 &&
-      filters?.search !== ""
+      Object.keys(filters).length >= 1 
     ) {
-      if (setEmails && isFiltered === false) setEmails([]);
-      getMailList(filters);
+      console.log("inside filtered");
       setIsFiltered(true);
+      if (setEmails && isInputFilled?.length !== 0) setEmails([]);
+      getMailList(filters);
     }
   }, [filters]);
 
   useEffect(() => {
     if (getMailListResponse.isSuccess && setEmails) {
-      const staticList = (getMailListResponse as any)?.data?.response?.data
-        ?.results;
-      // console.log(staticList, "Arunkumarr");
+      const staticList = (getMailListResponse as any)?.data?.response?.data?.results;
 
       if (staticList && Array.isArray(staticList)) {
         setInboxCount(
           (getMailListResponse as any)?.data?.response?.data?.count || 0
         );
 
-        setEmails((prevEmails: any[]) => {
-          // Create a map of previous emails for quick lookup
-          const prevEmailMap = new Map(
-            prevEmails.map((email) => [email.mail_id, email])
-          );
+        if (isInputFilled?.length !== 0) {
+          // Clear previous and set new emails directly
+          const newList = staticList.map((email: any) => ({
+            ...email,
+            intentLabel: email.labels || "new",
+          }));
+          setEmails(newList);
+        } else {
+          // Preserve previous emails if already present
+          setEmails((prevEmails: any[]) => {
+            const prevEmailMap = new Map(
+              prevEmails.map((email) => [email.mail_id, email])
+            );
 
-          // Go through the staticList and keep those already in prevEmails, or add new ones
-          const updatedEmails = staticList.map((email: any) => {
-            if (prevEmailMap.has(email.mail_id)) {
-              // Return the existing email from previous state (preserves any local modifications)
-              return prevEmailMap.get(email.mail_id);
-            } else {
-              // New email, enrich it with default intentLabel
-              return {
-                ...email,
-                intentLabel: email.labels || "new",
-              };
-            }
+            const updatedEmails = staticList.map((email: any) => {
+              if (prevEmailMap.has(email.mail_id)) {
+                return prevEmailMap.get(email.mail_id);
+              } else {
+                return {
+                  ...email,
+                  intentLabel: email.labels || "new",
+                };
+              }
+            });
+
+            return updatedEmails;
           });
-
-          return updatedEmails;
-        });
+        }
       }
     }
   }, [getMailListResponse]);
+
 
   const handleEmailDoubleClick = (email: Email, event: React.MouseEvent) => {
     event.stopPropagation();
@@ -409,23 +416,47 @@ const EmailList: React.FC<EmailListProps> = ({
   // }
 
 
-  const isInputFilled = useSelector((state:any)=>state?.alignment?.isInputFilled)
+  const isInputFilled = useSelector((state: any) => state?.alignment?.isInputFilled);
+  const selectedMailsCount = useSelector((state: any) => state?.alignment?.selectedMailsCount);
 
-  const handleChange = (e:any) => {
+  useEffect(() => {
+    setSelectedMails(selectedMailsCount);
+  }, [selectedMailsCount])
+
+  const handleChange = (e: any) => {
     const value = e.target.value;
     setInputValue(value);
 
     // Dispatch true if input is not empty, false if empty
     dispatch(setInputFilled(value));
-    console.log(isInputFilled,"rag2");
     // console.log(value,"rag1");
-    
+
   };
 
   const handleSearchChange = (query: any) => {
     setSearchQuery(query);
     dispatch(setFilterSettings({ search: query }));
   };
+
+  const dropdownThreeRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownThreeRef.current && !dropdownThreeRef.current.contains(event.target as Node)) {
+        setShowMoreActions(false);
+      }
+    };
+
+    if (showMoreActions) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showMoreActions]);
 
   return (
     <div
@@ -444,8 +475,9 @@ const EmailList: React.FC<EmailListProps> = ({
 
         // Scroll to bottom: load next page
         if (target.scrollHeight - target.scrollTop === target.clientHeight) {
-          if (filterData.page < totalPages) {
+          if (isFiltered ? filters?.page < totalPages : filterData.page < totalPages) {
             if (isFiltered) {
+              console.log("inside filtered section");
               dispatch(setFilterSettings({ ...filters, page: filters?.page + 1 }));
               setIsFiltered(true);
             } else {
@@ -461,9 +493,9 @@ const EmailList: React.FC<EmailListProps> = ({
         // Scroll to top: load previous page (if not on first page)
         if (target.scrollTop === 0) {
           if (filterData.page > 1) {
-            if (isFiltered) {
-              // dispatch(setFilterSettings({ ...filters, page: filters?.page - 1 }));
-              // setIsFiltered(true);
+            if (isFiltered ? filters?.page < totalPages : filterData.page < totalPages) {
+              dispatch(setFilterSettings({ ...filters, page: filters?.page - 1 }));
+              setIsFiltered(true);
             } else {
               setFilterData((prev: any) => ({
                 ...prev,
@@ -557,7 +589,7 @@ const EmailList: React.FC<EmailListProps> = ({
                       type="text"
                       placeholder="Search..."
                       value={searchQuery}
-                      onChange={(e) => {setSearchQuery(e.target.value); handleChange(e);}}
+                      onChange={(e) => { setSearchQuery(e.target.value); handleChange(e); }}
                       onKeyDown={(e) => {
                         if (e.key === "Enter") {
                           handleSearchChange(searchQuery);
@@ -566,7 +598,7 @@ const EmailList: React.FC<EmailListProps> = ({
                       className="w-full border rounded-md py-1.5 pl-3 pr-8 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500"
                     />
                     <button
-                      onClick={() => {handleSearchChange(searchQuery)}}
+                      onClick={() => { handleSearchChange(searchQuery) }}
                       className="absolute inset-y-0 right-2 flex items-center text-gray-500 hover:text-blue-600"
                     >
                       🔍
@@ -582,8 +614,8 @@ const EmailList: React.FC<EmailListProps> = ({
                 <>
                   <h4 className="text-sm font-semibold text-gray-900">
                     {activeSectionTab === "sent" ? "Sent" : "Selected Emails"}
-                    {` (${emails.filter((email) => !email.is_read).length}/${readStatus === "all" ? inboxCount : emails.length
-                      })`}
+                    {activeSectionTab === "sent" ? ` (${emails.filter((email) => !email.is_read).length}/${readStatus === "all" ? inboxCount : emails.length
+                      })` : ` (${selectedMails})` }
                   </h4>
                   <p className="text-sm mt-1 text-gray-800 truncate">
                     support@atyourprice.net
@@ -621,7 +653,8 @@ const EmailList: React.FC<EmailListProps> = ({
                 </button>
 
                 {showMoreActions && (
-                  <div className="absolute top-full right-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                  <div ref={dropdownThreeRef}
+                    className="absolute top-full right-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
                     <div className="p-1">
                       {/* Bulk Actions */}
                       <>
@@ -728,8 +761,8 @@ const EmailList: React.FC<EmailListProps> = ({
                 >
                   <Star
                     className={`w-4 h-4 ${email.is_starred
-                        ? "text-yellow-500 fill-yellow-500"
-                        : "text-gray-400 hover:text-yellow-500"
+                      ? "text-yellow-500 fill-yellow-500"
+                      : "text-gray-400 hover:text-yellow-500"
                       }`}
                   />
                 </button>
@@ -784,76 +817,75 @@ const EmailList: React.FC<EmailListProps> = ({
                     >
                       {email.snippet}
                     </p>
+                    {/* Right side labels - responsive design */}
+                    <div className="flex-shrink-0 flex flex-col items-start space-y-1 mt-2">
+                      {email?.intent && (
+                        <div
+                          className={`
+                          inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+                          ${getIntentLabel(email.intent).color}
+                          sm:px-2 sm:py-1 xs:px-1 xs:py-0.5
+                        `}
+                        >
+                          {React.createElement(
+                            getIntentLabel(email.intent).icon,
+                            {
+                              className: `w-3 h-3 mr-1 sm:w-3 sm:h-3 xs:w-2 xs:h-2 ${getIntentLabel(email.intent).iconColor
+                                }`,
+                            }
+                          )}
+                          <span className="hidden sm:inline">
+                            {getIntentLabel(email.intent).text}
+                          </span>
+                          <span className="sm:hidden text-[10px]">
+                            {getIntentLabel(email.intent).text.substring(0, 3)}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Corporate/Custom Labels */}
+                      {emailLabels.length > 0 && (
+                        <div className="flex flex-col items-end space-y-1 max-w-[120px] sm:max-w-[160px]">
+                          {emailLabels.slice(0, 2).map((label) => (
+                            <div
+                              key={label.id}
+                              className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium"
+                              style={{
+                                backgroundColor: `${label.color}15`,
+                                color: label.color,
+                                border: `1px solid ${label.color}30`,
+                              }}
+                            >
+                              <div
+                                className="w-2 h-2 rounded-full mr-1"
+                                style={{ backgroundColor: label.color }}
+                              />
+                              <span className="hidden sm:inline truncate">
+                                {label.name}
+                              </span>
+                              <span className="sm:hidden text-[10px]">
+                                {label.name.substring(0, 3)}
+                              </span>
+                            </div>
+                          ))}
+                          {emailLabels.length > 2 && (
+                            <div className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600">
+                              <span className="hidden sm:inline">
+                                +{emailLabels.length - 2} more
+                              </span>
+                              <span className="sm:hidden text-[10px]">
+                                +{emailLabels.length - 2}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
 
                     {/* Custom Labels */}
                     {/* {emailLabels.length > 0 && (
                       <LabelList emailLabels={email?.labels as string[]} />
                     )} */}
-                  </div>
-
-                  {/* Right side labels - responsive design */}
-                  <div className="flex-shrink-0 flex flex-col items-end space-y-1 ml-2">
-                    {email?.intent && (
-                      <div
-                        className={`
-                        inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
-                        ${getIntentLabel(email.intent).color}
-                        sm:px-2 sm:py-1 xs:px-1 xs:py-0.5
-                      `}
-                      >
-                        {React.createElement(
-                          getIntentLabel(email.intent).icon,
-                          {
-                            className: `w-3 h-3 mr-1 sm:w-3 sm:h-3 xs:w-2 xs:h-2 ${getIntentLabel(email.intent).iconColor
-                              }`,
-                          }
-                        )}
-                        <span className="hidden sm:inline">
-                          {getIntentLabel(email.intent).text}
-                        </span>
-                        <span className="sm:hidden text-[10px]">
-                          {getIntentLabel(email.intent).text.substring(0, 3)}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Corporate/Custom Labels */}
-                    {emailLabels.length > 0 && (
-                      <div className="flex flex-col items-end space-y-1 max-w-[120px] sm:max-w-[160px]">
-                        {emailLabels.slice(0, 2).map((label) => (
-                          <div
-                            key={label.id}
-                            className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium"
-                            style={{
-                              backgroundColor: `${label.color}15`,
-                              color: label.color,
-                              border: `1px solid ${label.color}30`,
-                            }}
-                          >
-                            <div
-                              className="w-2 h-2 rounded-full mr-1"
-                              style={{ backgroundColor: label.color }}
-                            />
-                            <span className="hidden sm:inline truncate">
-                              {label.name}
-                            </span>
-                            <span className="sm:hidden text-[10px]">
-                              {label.name.substring(0, 3)}
-                            </span>
-                          </div>
-                        ))}
-                        {emailLabels.length > 2 && (
-                          <div className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600">
-                            <span className="hidden sm:inline">
-                              +{emailLabels.length - 2} more
-                            </span>
-                            <span className="sm:hidden text-[10px]">
-                              +{emailLabels.length - 2}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>

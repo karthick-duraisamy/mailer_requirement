@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Inbox,
   Star,
@@ -7,11 +7,16 @@ import {
   Tag,
   ChevronDown,
   ChevronRight,
+  Settings,
+  UserCircle,
 } from "lucide-react";
 import { CustomLabel } from "../types/email";
 import EmailFilters, { FilterOptions } from "./EmailFilters";
 import { useSelector, useDispatch } from "react-redux";
 import { setFilterSettings } from "../store/filterSlice";
+import SignatureSetup from "./SignatureSetup";
+import { setFilterFilled } from "../store/alignmentSlice";
+import { useLazyGetMailListResponseQuery } from "../service/inboxService";
 
 interface SidebarProps {
   activeItem: string;
@@ -39,6 +44,11 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [labelsExpanded, setLabelsExpanded] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const dispatch = useDispatch();
+  const [showSignatureSetup, setShowSignatureSetup] = useState(false);
+  const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
+  const settingsRef = useRef<HTMLDivElement>(null);
+  const [getMailList, getMailListResponse] = useLazyGetMailListResponseQuery();
+  const [selectedTab, setSelectedTab] = useState<string>('');
 
   const navigationItems = [
     {
@@ -59,7 +69,8 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const [isIntentOpen, setIsIntentOpen] = useState(false);
   const [isCorporateOpen, setIsCorporateOpen] = useState(false);
-  
+  const [isAllConversation, setIsAllConversation] = useState(false);
+
 
   const intentLabels = customLabels.filter(
     (label) => label.category === "intent"
@@ -92,7 +103,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       onItemSelect(`custom-label-${labelId}`);
     }
   };
-  
+
 
   const handleFiltersChange = (newFilters: FilterOptions) => {
     setFilters(newFilters);
@@ -106,7 +117,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     // dispatch(setInputStatus(true));
   };
 
-   const handleClearFilters = () => {
+  const handleClearFilters = () => {
     setFilters({
       readStatus: "all",
       starred: false,
@@ -115,6 +126,13 @@ const Sidebar: React.FC<SidebarProps> = ({
       dateRange: { from: "", to: "" },
       intent: "all",
     });
+    dispatch(
+      setFilterSettings({
+        is_starred: undefined,
+        is_read: undefined,
+        has_attachment: undefined,
+      })
+    );
   };
 
   // Close search panel when clicking outside
@@ -134,6 +152,71 @@ const Sidebar: React.FC<SidebarProps> = ({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isSearchOpen]);
+
+  // Inside your component
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const dropdownCorpRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsIntentOpen(false);
+      }
+      if (dropdownCorpRef.current && !dropdownCorpRef.current.contains(event.target as Node))
+        setIsCorporateOpen(false);
+    };
+
+    if (isIntentOpen || isCorporateOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isIntentOpen, isCorporateOpen]);
+
+  const handleOpenSignatureSetup = () => {
+    setShowSignatureSetup(true);
+    setShowSettingsDropdown(false);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        settingsRef.current &&
+        !settingsRef.current.contains(event.target as Node)
+      ) {
+        setShowSettingsDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    getMailList({ page_size: 20 });
+  }, [isAllConversation])
+
+  useEffect(() => {
+    if (selectedTab === 'sent' || selectedTab === 'bin') {
+      dispatch(setFilterSettings({ folder: selectedTab.toUpperCase() }));
+      dispatch(setFilterSettings({ is_starred: undefined }));
+      dispatch(setFilterFilled(true));
+    }
+    if (selectedTab === 'starred') {
+      dispatch(setFilterSettings({ is_starred: true }));
+      dispatch(setFilterSettings({ folder: undefined }));
+      dispatch(setFilterFilled(true));
+    }
+    if (selectedTab === 'inbox') {
+      dispatch(setFilterFilled(false));
+      dispatch(setFilterSettings({ folder: undefined }));
+      setIsAllConversation(true);
+    }
+  }, [selectedTab])
 
   return (
     <>
@@ -166,7 +249,10 @@ const Sidebar: React.FC<SidebarProps> = ({
               return (
                 <button
                   key={item.id}
-                  onClick={() => onItemSelect(item.id)}
+                  onClick={() => {
+                    onItemSelect(item.id);
+                    setSelectedTab(item.id)
+                  }}
                   className={`
                     flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors
                     ${isActive
@@ -219,7 +305,8 @@ const Sidebar: React.FC<SidebarProps> = ({
               </button>
 
               {isIntentOpen && (
-                <div className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 max-h-64 overflow-y-auto">
+                <div ref={dropdownRef}
+                  className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 max-h-64 overflow-y-auto">
                   {intentLabels.map((label) => (
                     <button
                       key={label.id}
@@ -233,12 +320,13 @@ const Sidebar: React.FC<SidebarProps> = ({
                           : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                         }`}
                     >
-                      <div className="flex items-center space-x-3">
+                      <div className="w-full flex items-center space-x-3">
                         <div
                           className="w-3 h-3 rounded-full"
                           style={{ backgroundColor: label.color }}
                         />
                         <span>{label.name}</span>
+                        <span className="cls-indent-count" style={{ marginLeft: "auto" }}>{label.count}</span>
                       </div>
                       {getLabelCount(label.id) > 0 && (
                         <span
@@ -282,7 +370,8 @@ const Sidebar: React.FC<SidebarProps> = ({
               </button>
 
               {isCorporateOpen && (
-                <div className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 max-h-64 overflow-y-auto">
+                <div ref={dropdownCorpRef}
+                  className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 max-h-64 overflow-y-auto">
                   {corporateLabels.map((label) => (
                     <button
                       key={label.id}
@@ -296,12 +385,13 @@ const Sidebar: React.FC<SidebarProps> = ({
                           : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                         }`}
                     >
-                      <div className="flex items-center space-x-3">
+                      <div className="w-full flex items-center space-x-3">
                         <div
                           className="w-3 h-3 rounded-full"
                           style={{ backgroundColor: label.color }}
                         />
                         <span>{label.name}</span>
+                        <span className="cls-indent-count" style={{ marginLeft: "auto" }}>{label.count}</span>
                       </div>
                       {getLabelCount(label.id) > 0 && (
                         <span
@@ -328,38 +418,60 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <span className="hidden sm:inline">Filters</span>
               </button>
             </div> */}
-             <EmailFilters
-            filters={filters}
-            onFiltersChange={handleFiltersChange}
-            onClearFilters={handleClearFilters}
-          />
+            <EmailFilters
+              filters={filters}
+              onFiltersChange={handleFiltersChange}
+              onClearFilters={handleClearFilters}
+            />
 
             {/* Settings Button */}
-            <div className="relative">
+            <div className="relative" ref={settingsRef}>
               <button
-                className="p-2.5 hover:bg-gray-100 rounded-lg transition-colors"
-                aria-label="Settings"
+                onClick={() => setShowSettingsDropdown(!showSettingsDropdown)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
-                <svg
-                  className="w-5 h-5 text-gray-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
+                <Settings className="w-5 h-5 text-gray-600" />
               </button>
+
+              {showSettingsDropdown && (
+                <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                  {/* <div className="px-4 py-2 border-b border-gray-100">
+                <h3 className="font-semibold text-gray-900">Settings</h3>
+              </div>
+
+              <button 
+                onClick={handleOpenNotificationPreferences}
+                className="w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors flex items-center space-x-3"
+              >
+                <Bell className="w-4 h-4 text-gray-500" />
+                <span className="text-gray-700">Notification Preferences</span>
+              </button> */}
+
+                  <button
+                    onClick={handleOpenSignatureSetup}
+                    className="w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors flex items-center space-x-3"
+                  >
+                    <UserCircle className="w-4 h-4 text-gray-500" />
+                    <span className="text-gray-700">Signature Setup</span>
+                  </button>
+
+                  {/* <button 
+                onClick={handleOpenEmailDisplayOptions}
+                className="w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors flex items-center space-x-3"
+              >
+                <Settings className="w-4 h-4 text-gray-500" />
+                <span className="text-gray-700">Email Display Options</span>
+              </button>
+
+              <button 
+                onClick={handleOpenGeneralSettings}
+                className="w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors flex items-center space-x-3"
+              >
+                <Settings className="w-4 h-4 text-gray-500" />
+                <span className="text-gray-700">General Settings</span>
+              </button> */}
+                </div>
+              )}
             </div>
 
             {/* Compose Button */}
@@ -390,6 +502,11 @@ const Sidebar: React.FC<SidebarProps> = ({
           </div>
         </div>
       </nav>
+
+      <SignatureSetup
+        isOpen={showSignatureSetup}
+        onClose={() => setShowSignatureSetup(false)}
+      />
     </>
   );
 };

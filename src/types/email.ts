@@ -41,4 +41,5 @@ export interface CustomLabel {
   createdAt: string;
   isSystem: boolean;
   category?: 'intent' | 'corporate';
+  count?: number;
 }

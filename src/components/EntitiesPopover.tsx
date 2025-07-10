@@ -131,6 +131,7 @@ const EntitiesPopover: React.FC<EntitiesPopoverProps> = ({
                 </span>
               </div>
             ))}
+          {entitiesInfo?.length === undefined && <p>No entities is mapped for this conversion</p>}
         </div>
       </div>
     </>

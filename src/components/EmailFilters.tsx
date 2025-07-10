@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
   Filter, Calendar, Star, Paperclip, Mail, MailOpen, ChevronDown, X,
 } from 'lucide-react';
+import { setFilterFilled } from '../store/alignmentSlice';
+import { useDispatch } from 'react-redux';
 
 export interface FilterOptions {
   readStatus: 'all' | 'read' | 'unread';
@@ -28,7 +30,8 @@ const EmailFilters: React.FC<EmailFiltersProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null); // ✅ 1. Create a ref
-
+  const [isFilterActive, setIsFilterActive] = useState<any>();
+  const dispatch = useDispatch();
   // Add outside click detection
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -69,6 +72,16 @@ const EmailFilters: React.FC<EmailFiltersProps> = ({
     filters.dateRange.to ||
     filters.intent !== 'all'
   );
+
+  // Watch filter changes and update state
+  useEffect(() => {
+    setIsFilterActive(hasActiveFilters());
+  }, [filters]);
+
+  useEffect(() => {
+   dispatch(setFilterFilled(isFilterActive));
+  }, [isFilterActive]);
+
 
   return (
     <div className="relative" ref={dropdownRef}> {/* ✅ 3. Attach the ref */}

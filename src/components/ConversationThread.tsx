@@ -805,6 +805,70 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                         )}
                       </div>
                     )}
+                    {/* labels */}
+                    <div className="flex-shrink-0 flex flex-col items-start space-y-1">
+                        {email?.intent && (
+                          <div
+                            className={`
+                            inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+                            ${getIntentLabel(email.intent).color}
+                            sm:px-2 sm:py-1 xs:px-1 xs:py-0.5
+                          `}
+                          >
+                            {React.createElement(
+                              getIntentLabel(email.intent).icon,
+                              {
+                                className: `w-3 h-3 mr-1 sm:w-3 sm:h-3 xs:w-2 xs:h-2 ${getIntentLabel(email.intent).iconColor
+                                  }`,
+                              }
+                            )}
+                            <span className="hidden sm:inline">
+                              {getIntentLabel(email.intent).text}
+                            </span>
+                            <span className="sm:hidden text-[10px]">
+                              {getIntentLabel(email.intent).text.substring(0, 3)}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Corporate/Custom Labels */}
+                        {emailLabels.length > 0 && (
+                          <div className="flex flex-col items-end space-y-1 max-w-[120px] sm:max-w-[160px]">
+                            {emailLabels.slice(0, 2).map((label) => (
+                              <div
+                                key={label.id}
+                                className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium"
+                                style={{
+                                  backgroundColor: `${label.color}15`,
+                                  color: label.color,
+                                  border: `1px solid ${label.color}30`,
+                                }}
+                              >
+                                <div
+                                  className="w-2 h-2 rounded-full mr-1"
+                                  style={{ backgroundColor: label.color }}
+                                />
+                                <span className="hidden sm:inline truncate">
+                                  {label.name}
+                                </span>
+                                <span className="sm:hidden text-[10px]">
+                                  {label.name.substring(0, 3)}
+                                </span>
+                              </div>
+                            ))}
+                            {emailLabels.length > 2 && (
+                              <div className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600">
+                                <span className="hidden sm:inline">
+                                  +{emailLabels.length - 2} more
+                                </span>
+                                <span className="sm:hidden text-[10px]">
+                                  +{emailLabels.length - 2}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                    </div>
                   </div>
                 </div>
               </div>

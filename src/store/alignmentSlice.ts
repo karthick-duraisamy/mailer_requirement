@@ -4,12 +4,16 @@ interface AlignmentState {
   mode: string;
   status: boolean;
   isInputFilled: string;
+  selectedMailsCount: number;
+  isFilterFilled: any;
 }
 
 const initialState: AlignmentState = {
   mode: '320',
   status: false,
   isInputFilled: '',
+  selectedMailsCount: 0,
+  isFilterFilled:false,
 };
 
 const alignmentSlice = createSlice({
@@ -22,8 +26,14 @@ const alignmentSlice = createSlice({
     setInputFilled: (state, action: PayloadAction<string>) => {
       state.isInputFilled = action.payload;
     },
+    setSelectedMailsCount: (state, action: PayloadAction<number>) => {
+      state.selectedMailsCount = action.payload;
+    },
+    setFilterFilled: (state, action: PayloadAction<any>) => {
+      state.isFilterFilled = action.payload;
+    }
   },
 });
 
-export const { setWidthAlign, setInputFilled } = alignmentSlice.actions;
+export const { setWidthAlign, setInputFilled, setSelectedMailsCount , setFilterFilled} = alignmentSlice.actions;
 export default alignmentSlice.reducer;

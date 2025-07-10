@@ -11,6 +11,7 @@ export interface FilterOptions {
   is_read?: any; // Optional field for backward compatibility
   page?: number; // Optional field for pagination
   page_size?: number; // Optional field for pagination
+  folder?: string | null;
 }
 
 const initialState: FilterOptions = {
