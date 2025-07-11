@@ -1233,7 +1233,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                         setReplyContent(true);
                         setReplyingType('reply');
                       }}
-                      className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                      className="flex items-center space-x-2 px-4 py-2 bg-orange-500 hover:bg-blue-700 text-white rounded-lg transition-colors"
                     >
                       <Reply className="w-4 h-4" />
                       <span>Reply</span>
@@ -1244,7 +1244,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                         handleReplyAll();
                         setReplyingType('reply-all');
                       }}
-                      className="flex items-center space-x-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
+                      className="flex items-center space-x-2 px-4 py-2 border text-orange-500 border-orange-500 hover:border-blue-500 hover:text-blue-500 hover:bg-gray-50 rounded-lg transition-colors"
                     >
                       <ReplyAll className="w-4 h-4" />
                       <span>Reply All</span>
@@ -1255,7 +1255,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                         handleForward();
                         setReplyingType('forward');
                       }}
-                      className="flex items-center space-x-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
+                      className="flex items-center space-x-2 px-4 py-2 border text-orange-500 border-orange-500 hover:border-blue-500 hover:text-blue-500 rounded-lg transition-colors"
                     >
                       <Forward className="w-4 h-4" />
                       <span>Forward</span>
