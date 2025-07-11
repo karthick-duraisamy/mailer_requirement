@@ -7,7 +7,7 @@ import LabelManager from "./components/LabelManager";
 import { Email, CustomLabel } from "./types/email";
 import { mockCustomLabels } from "./data/mockLabels";
 import { FilterOptions } from "./components/EmailFilters";
-import { useLazyGetMailListResponseQuery, useSetMailStatusMutation } from "./service/inboxService";
+import { useLazyGetLabelListQuery, useLazyGetMailListResponseQuery, useSetMailStatusMutation } from "./service/inboxService";
 import { useDispatch, useSelector } from "react-redux";
 import { setFilterSettings } from "./store/filterSlice";
 import Sidebar from "./components/Sidebar";
@@ -51,6 +51,7 @@ function App() {
   const mailStatus = useSelector((state: any) => state.alignment?.status);
   const filterSettings = useSelector((state: any) => state.filters);
   const [setMailStatus, setMailStatusResponse] = useSetMailStatusMutation();
+  const [getLabelList, getLabelListResponse] = useLazyGetLabelListQuery();
 
   // const [sidebarWidth, setSidebarWidth] = useState(64); // default to collapsed width
 
@@ -242,6 +243,13 @@ function App() {
   const emailCounts = useMemo(() => {
     return calculateEmailCounts();
   }, [emails, customLabels, deletedEmails]);
+
+  // to get the labes counts of mails in different folders
+  useEffect(() => {
+    if(setMailStatusResponse?.isSuccess){
+      getLabelList({});
+    }
+  }, [setMailStatusResponse])
 
   // Apply filters and sorting
   const applyFilters = (emailList: any[]) => {
@@ -758,7 +766,7 @@ function App() {
       )
     );
     setMailStatus({
-      mail_ids: emailToDelete,
+      mail_ids: [emailId],
       is_deleted: true
     })
 
