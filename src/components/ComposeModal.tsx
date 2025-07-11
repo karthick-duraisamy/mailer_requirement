@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, Paperclip, Send, Save, Trash2, Sparkles, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
+import EmailInputChips from './EmailInputChips';
 
 export interface ComposeEmailData {
   to: string[];
@@ -318,7 +319,7 @@ Best regards,
   if (!isOpen) return null;
 
   const modalContent = (
-    <div className="bg-white rounded-lg shadow-xl flex flex-col h-full max-h-[90vh]">
+    <div className="bg-white rounded-lg shadow-xl flex flex-col h-full max-h-[80vh]">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200">
         <h2 className="text-lg font-semibold text-gray-900">
@@ -335,7 +336,7 @@ Best regards,
       {/* Form Content */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {/* To Field */}
-        <div>
+        {/* <div>
           <div className="flex items-center space-x-2 mb-2">
             <label className="text-sm font-medium text-gray-700 w-12">To:</label>
             <input
@@ -364,10 +365,41 @@ Best regards,
               )}
             </div>
           </div>
+        </div> */}
+
+        <div>
+          <div className="flex items-start space-x-2" style={{marginBottom:"30px"}}>
+            <label className="text-sm font-medium text-gray-700 w-12 pt-2">To:</label>
+            <div className="flex-1">
+              <EmailInputChips
+                value={emailData.to}
+                onChange={(newTo) => setEmailData(prev => ({ ...prev, to: newTo }))}
+                placeholder="Enter recipient emails"
+              />
+            </div>
+            <div className="flex items-center space-x-2 pt-2">
+              {!showCc && (
+                <button
+                  onClick={() => setShowCc(true)}
+                  className="text-sm text-blue-600 hover:text-blue-700"
+                >
+                  Cc
+                </button>
+              )}
+              {!showBcc && (
+                <button
+                  onClick={() => setShowBcc(true)}
+                  className="text-sm text-blue-600 hover:text-blue-700"
+                >
+                  Bcc
+                </button>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Cc Field */}
-        {showCc && (
+        {/* {showCc && (
           <div className="flex items-center space-x-2">
             <label className="text-sm font-medium text-gray-700 w-12">Cc:</label>
             <input
@@ -388,10 +420,31 @@ Best regards,
               <X className="w-4 h-4 text-gray-500" />
             </button>
           </div>
+        )} */}
+        {showCc && (
+          <div className="flex items-start space-x-2" style={{marginBottom:"30px"}}>
+            <label className="text-sm font-medium text-gray-700 w-12 pt-2">Cc:</label>
+            <div className="flex-1">
+              <EmailInputChips
+                value={emailData.cc}
+                onChange={(newCc) => setEmailData(prev => ({ ...prev, cc: newCc }))}
+                placeholder="Enter Cc emails"
+              />
+            </div>
+            <button
+              onClick={() => {
+                setShowCc(false);
+                setEmailData(prev => ({ ...prev, cc: [] }));
+              }}
+              className="p-1 mt-2 hover:bg-gray-100 rounded"
+            >
+              <X className="w-4 h-4 text-gray-500" />
+            </button>
+          </div>
         )}
 
         {/* Bcc Field */}
-        {showBcc && (
+        {/* {showBcc && (
           <div className="flex items-center space-x-2">
             <label className="text-sm font-medium text-gray-700 w-12">Bcc:</label>
             <input
@@ -412,18 +465,44 @@ Best regards,
               <X className="w-4 h-4 text-gray-500" />
             </button>
           </div>
+        )} */}
+
+        {showBcc && (
+          <div className="flex items-start space-x-2" style={{marginBottom:"30px"}}>
+            <label className="text-sm font-medium text-gray-700 w-12 pt-2">Bcc:</label>
+            <div className="flex-1">
+              <EmailInputChips
+                value={emailData.bcc}
+                onChange={(newBcc) => setEmailData(prev => ({ ...prev, bcc: newBcc }))}
+                placeholder="Enter Bcc emails"
+              />
+            </div>
+            <button
+              onClick={() => {
+                setShowBcc(false);
+                setEmailData(prev => ({ ...prev, bcc: [] }));
+              }}
+              className="p-1 mt-2 hover:bg-gray-100 rounded"
+            >
+              <X className="w-4 h-4 text-gray-500" />
+            </button>
+          </div>
         )}
 
         {/* Subject Field */}
         <div className="flex items-center space-x-2">
           <label className="text-sm font-medium text-gray-700 w-12">Subject:</label>
-          <input
-            type="text"
-            value={emailData.subject}
-            onChange={(e) => handleSubjectChange(e.target.value)}
-            placeholder="Enter email subject"
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
+          <div className="flex-1">
+            <div className='flex flex-wrap gap-2 p-2 border border-gray-300 rounded-lg'>
+              <input
+                type="text"
+                value={emailData.subject}
+                onChange={(e) => handleSubjectChange(e.target.value)}
+                placeholder="Enter email subject"
+                className="flex-1 px-1 py-1 rounded-lg focus:outline-none"
+              />
+            </div>
+          </div>
           {emailData.subject.trim() && (
             <button
               onClick={generateAIMessage}
@@ -473,7 +552,7 @@ Best regards,
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between p-4 border-t border-gray-200 bg-gray-50">
+      <div className="flex items-center justify-end p-4 border-t border-gray-200 bg-gray-50">
         <div className="flex items-center space-x-2">
           <input
             ref={fileInputRef}

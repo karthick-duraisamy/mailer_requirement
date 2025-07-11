@@ -192,7 +192,7 @@ const EmailFilters: React.FC<EmailFiltersProps> = ({
             </div>
 
             {/* Sort Options */}
-            <div>
+            {/* <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Sort by
               </label>
@@ -209,10 +209,10 @@ const EmailFilters: React.FC<EmailFiltersProps> = ({
                 <option value="sender-za">Sender (Z-A)</option>
                 <option value="starred-first">Starred first</option>
               </select>
-            </div>
+            </div> */}
 
             {/* Date Range */}
-            <div>
+            {/* <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <Calendar className="w-4 h-4 inline mr-1" />
                 Date Range
@@ -237,10 +237,10 @@ const EmailFilters: React.FC<EmailFiltersProps> = ({
                   />
                 </div>
               </div>
-            </div>
+            </div> */}
 
             {/* Intent-based Filter */}
-            <div>
+            {/* <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Email Type
               </label>
@@ -256,7 +256,7 @@ const EmailFilters: React.FC<EmailFiltersProps> = ({
                 <option value="campaigns">Marketing campaigns</option>
                 <option value="support">Support requests</option>
               </select>
-            </div>
+            </div> */}
           </div>
         </div>
       )}

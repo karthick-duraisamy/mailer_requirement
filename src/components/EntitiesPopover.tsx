@@ -105,7 +105,7 @@ const EntitiesPopover: React.FC<EntitiesPopoverProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900">
-            Observation Overview
+            Entities
           </h3>
           <button
             onClick={onClose}
@@ -131,7 +131,7 @@ const EntitiesPopover: React.FC<EntitiesPopoverProps> = ({
                 </span>
               </div>
             ))}
-          {entitiesInfo?.length === undefined && <p>No entities is mapped for this conversion</p>}
+          {(Object.keys(entitiesInfo ?? {}).length === undefined || Object.keys(entitiesInfo ?? {}).length === 0 ) && <p>No entities is mapped for this conversion </p>}
         </div>
       </div>
     </>

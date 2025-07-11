@@ -22,7 +22,7 @@ const service = InboxService.enhanceEndpoints({
     }),
     getAIReplyResponse: builder.mutation({
       query: (body: any) => ({
-        url: `/mail-inbox/mail/ai-replay/`,
+        url: `/mail-inbox/mail/ai-reply/`,
         method: 'POST',
         body
       }),

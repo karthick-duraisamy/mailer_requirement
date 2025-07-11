@@ -23,11 +23,16 @@
   font-style: normal;
 }
 
+*{
+  font-family: "Open Sans", sans-serif, Arial !important;
+}
+
 body {
-  font-family: "Open Sans", sans-serif, Arial;
+  font-family: "Open Sans", sans-serif, Arial ;
   font-weight: 400;
   background-color: #f2f5f8;
 }
+
 /* Thin scrollbar styles */
 .thin-scrollbar {
   scrollbar-width: thin;
