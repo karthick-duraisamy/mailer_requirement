@@ -48,6 +48,44 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
   const modalRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [width, setWidth] = useState(600); // Initial width
+  const [isResizing, setIsResizing] = useState(false);
+  const startX = useRef(0);
+  const startWidth = useRef(0);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsResizing(true);
+    startX.current = e.clientX;
+    startWidth.current = width;
+    e.preventDefault();
+  };
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isResizing) return;
+    const dx = startX.current - e.clientX;
+    const newWidth = Math.min(Math.max(startWidth.current + dx, 300), 1000); // Min/max width
+    setWidth(newWidth);
+  };
+
+  const handleMouseUp = () => {
+    setIsResizing(false);
+  };
+
+  useEffect(() => {
+    if (isResizing) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    } else {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizing]);
+
   // Initialize with reply data if provided
   useEffect(() => {
     if (replyTo && isOpen) {
@@ -460,7 +498,7 @@ Best regards,
             className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <Trash2 className="w-4 h-4" />
-            <span>Discard</span>
+            <span className='text-sm'>Discard</span>
           </button>
 
           <button
@@ -473,7 +511,7 @@ Best regards,
             ) : (
               <Save className="w-4 h-4" />
             )}
-            <span>{isSavingDraft ? 'Saving...' : 'Save Draft'}</span>
+            <span className='text-sm'>{isSavingDraft ? 'Saving...' : 'Save Draft'}</span>
           </button>
 
           <button
@@ -493,25 +531,38 @@ Best regards,
     </div>
   );
 
-  if (isPanel) {
-    return (
-      <div className="fixed bottom-0 right-4 w-96 h-[600px] z-50">
-        {modalContent}
-      </div>
-    );
-  }
+  // if (isPanel) {
+  //   return (
+  //     <div className="fixed bottom-0 right-4 w-96 h-[600px] z-50">
+  //       {modalContent}
+  //     </div>
+  //   );
+  // }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div
-        ref={modalRef}
-        className="w-full max-w-4xl h-full max-h-[90vh]"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {modalContent}
+    // <div className="absolute top-[70px] right-[15px] w-max">
+    //   <div
+    //     ref={modalRef}
+    //     className="w-full max-w-4xl h-full max-h-[90vh]"
+    //     onClick={(e) => e.stopPropagation()}
+    //   >
+    //     {modalContent}
+    //   </div>
+    // </div>
+    <div className="absolute top-[70px] right-[15px]" style={{ width ,minWidth:"520px"}}>
+      <div className="relative h-full max-h-[80vh]" ref={modalRef} onClick={(e) => e.stopPropagation()}>
+        {/* Left Resizer */}
+        <div
+          className="absolute top-0 left-0 h-full w-2 cursor-ew-resize z-10"
+          onMouseDown={handleMouseDown}
+        />
+        {/* Content */}
+        <div className="w-full h-full bg-white shadow-lg border border-gray-200">
+          {modalContent}
+        </div>
       </div>
     </div>
   );
 };
 
-export default ComposeModal;
+export default ComposeModal;  

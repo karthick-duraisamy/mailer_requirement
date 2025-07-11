@@ -39,6 +39,7 @@ import { SendIcon, InboxIcon } from "./Icons";
 import { notification } from "antd";
 import { TypedUseSelectorHook, useSelector } from "react-redux";
 import { RootState } from "../store/store";
+// import HtmlViewer from "./HtmlViewer";
 
 interface AiReplyState {
   isGenerating: boolean;
@@ -529,7 +530,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
   // const handleRestoreEmail = () => {
   //   if (email && onRestoreEmail) {
-  //     onRestoreEmail(email.message_id);
+  //     onRestoreEmail(email.mail_id);
   //     onClose();
   //   }
   // };
@@ -905,7 +906,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                 </button>
                 {activeSection === "bin" && onRestoreEmail ? (
                   <button
-                    onClick={() => onRestoreEmail(email.message_id)}
+                    onClick={() => onRestoreEmail(email.mail_id)}
                     className="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
                     title="Restore conversation"
                   >
@@ -914,7 +915,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                 ) : (
                   onDeleteEmail && (
                     <button
-                      onClick={() => onDeleteEmail(email.message_id)}
+                      onClick={() => onDeleteEmail(email.mail_id)}
                       className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                       title="Delete conversation"
                     >
@@ -935,19 +936,19 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
                       <button
                         onClick={() => {
-                          if (onStarToggle) onStarToggle(email.message_id);
+                          if (onStarToggle) onStarToggle(email.mail_id);
                           setShowMoreMenu(false);
                         }}
                         className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
                       >
                         <Star
-                          className={`w-4 h-4 ${email.isStarred
+                          className={`w-4 h-4 ${email.is_starred
                             ? "fill-yellow-400 text-yellow-400"
                             : ""
                             }`}
                         />
                         <span>
-                          {email.isStarred ? "Remove star" : "Add star"}
+                          {email.is_starred ? "Remove star" : "Add star"}
                         </span>
                       </button>
 
@@ -1188,10 +1189,12 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                             <div
                               className="text-gray-800 leading-relaxed whitespace-pre-wrap"
                               style={{wordBreak: "break-word"}}
-                              dangerouslySetInnerHTML={{
-                                __html: message?.body_html || message?.body_plain || message?.snippet,
-                              }}
+                               dangerouslySetInnerHTML={{
+                                 __html: message?.body_html || message?.body_plain || message?.snippet,
+                               }}
                             />
+                              {/* <HtmlViewer rawHtml={message?.body_html || message?.body_plain || message?.snippet}/> */}
+                              {/* </div> */}
                             {/* {message.body_plain}
                         </div> */}
                           </div>

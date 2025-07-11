@@ -7,7 +7,7 @@ import LabelManager from "./components/LabelManager";
 import { Email, CustomLabel } from "./types/email";
 import { mockCustomLabels } from "./data/mockLabels";
 import { FilterOptions } from "./components/EmailFilters";
-import { useLazyGetMailListResponseQuery } from "./service/inboxService";
+import { useLazyGetMailListResponseQuery, useSetMailStatusMutation } from "./service/inboxService";
 import { useDispatch, useSelector } from "react-redux";
 import { setFilterSettings } from "./store/filterSlice";
 import Sidebar from "./components/Sidebar";
@@ -50,6 +50,7 @@ function App() {
   const dummyCountRef = useRef(dummyCount);
   const mailStatus = useSelector((state: any) => state.alignment?.status);
   const filterSettings = useSelector((state: any) => state.filters);
+  const [setMailStatus, setMailStatusResponse] = useSetMailStatusMutation();
 
   // const [sidebarWidth, setSidebarWidth] = useState(64); // default to collapsed width
 
@@ -171,10 +172,10 @@ function App() {
 
         const deletedIds = staticList
           .filter((email: any) => email.is_deleted)
-          .map((email: any) => email.message_id);
+          .map((email: any) => email.mail_id);
 
         const deletedEmails = staticList
-          .filter((email: any) => deletedIds.includes(email.message_id))
+          .filter((email: any) => deletedIds.includes(email.mail_id))
           .map((email: any) => ({
             ...email,
             intentLabel: email.labels || "new",
@@ -190,9 +191,6 @@ function App() {
   const [composePanelOpen, setComposePanelOpen] = useState(false);
   const [lastAction, setLastAction] = useState<any>(null);
   const { width: windowWidth } = useScreenResolution();
-
-  // Add compose modal state
-  const [composeModalOpen, setComposeModalOpen] = useState(false);
 
   // Calculate email counts for sidebar
   const calculateEmailCounts = () => {
@@ -476,7 +474,7 @@ function App() {
     // Mark email as read when selected
     setEmails((prevEmails) =>
       prevEmails?.map((e) =>
-        e.message_id === email.message_id ? { ...e, is_read: true } : e
+        e.mail_id === email.mail_id ? { ...e, is_read: true } : e
       )
     );
   };
@@ -487,11 +485,11 @@ function App() {
 
   const handleStarToggle = (emailId: string) => {
     // Store previous state for undo
-    const email = emails?.find((email) => email.message_id === emailId);
+    const email = emails?.find((email) => email.mail_id === emailId);
     if (!email) return;
 
     const previousState = [
-      { id: email.message_id, is_starred: email.is_starred },
+      { id: email.mail_id, is_starred: email.is_starred },
     ];
 
     setLastAction({
@@ -502,11 +500,17 @@ function App() {
 
     setEmails((prevEmails) =>
       prevEmails?.map((email) =>
-        email.message_id === emailId
+        email.mail_id === emailId
           ? { ...email, is_starred: !email.is_starred }
           : email
       )
     );
+
+    // To update the status
+    setMailStatus({
+      mail_ids: [emailId],
+      is_starred: !email.is_starred
+    })
 
     // If we're currently in the starred section and the email is being unstarred,
     // clear the selection to avoid showing an email that's no longer in this section
@@ -554,11 +558,11 @@ function App() {
   };
 
   const handleComposeOpen = () => {
-    setComposeModalOpen(true);
+    setComposePanelOpen(true);
   };
 
   const handleComposeClose = () => {
-    setComposeModalOpen(false);
+    setComposePanelOpen(false);
   };
 
   const handleSendEmail = async (emailData: ComposeEmailData) => {
@@ -568,8 +572,8 @@ function App() {
     // Show success message
     // alert("Email sent successfully!");
 
-    // Close compose modal
-    setComposeModalOpen(false);
+    // Close compose panel
+    setComposePanelOpen(false);
   };
 
   const handleSaveDraft = async (emailData: ComposeEmailData) => {
@@ -585,8 +589,8 @@ function App() {
       // alert("Draft saved successfully!");
     }
 
-    // Close compose modal
-    setComposeModalOpen(false);
+    // Close compose panel
+    setComposePanelOpen(false);
   };
 
   // Label Management Functions
@@ -641,7 +645,7 @@ function App() {
   const handleEmailLabelsChange = (emailIds: string[], labelIds: string[]) => {
     setEmails((prevEmails) =>
       prevEmails.map((email) =>
-        emailIds.includes(email.message_id)
+        emailIds.includes(email.mail_id)
           ? { ...email, customLabels: labelIds }
           : email
       )
@@ -656,8 +660,8 @@ function App() {
   const handleBulkMarkAsRead = (emailIds: string[], isRead: boolean) => {
     // Store previous state for undo
     const previousState = emails
-      ?.filter((email) => emailIds.includes(email.message_id))
-      ?.map((email) => ({ id: email.message_id, is_read: email.is_read }));
+      ?.filter((email) => emailIds.includes(email.mail_id))
+      ?.map((email) => ({ id: email.mail_id, is_read: email.is_read }));
 
     setLastAction({
       type: "markAsRead",
@@ -667,11 +671,16 @@ function App() {
 
     setEmails((prevEmails) =>
       prevEmails?.map((email) =>
-        emailIds.includes(email.message_id)
+        emailIds.includes(email.mail_id)
           ? { ...email, is_read: isRead }
           : email
       )
     );
+
+    setMailStatus({
+      mail_ids: emailIds,
+      is_read: isRead
+    })
 
     // Clear checked emails after action
     setCheckedEmails(new Set());
@@ -684,7 +693,7 @@ function App() {
   const handleBulkDelete = (emailIds: string[]) => {
     // Store previous state for undo
     const previousState = emails?.filter((email) =>
-      emailIds.includes(email.message_id)
+      emailIds.includes(email.mail_id)
     );
 
     setLastAction({
@@ -694,7 +703,7 @@ function App() {
     });
 
     const emailsToDelete = emails
-      .filter((email) => emailIds.includes(email.message_id))
+      .filter((email) => emailIds.includes(email.mail_id))
       .map((email) => ({ ...email, is_deleted: true }));
 
     // Add them to deletedEmails
@@ -703,15 +712,20 @@ function App() {
     // Also update the emails state to mark them as deleted
     setEmails((prevEmails) =>
       prevEmails.map((email) =>
-        emailIds.includes(email.message_id)
+        emailIds.includes(email.mail_id)
           ? { ...email, is_deleted: true }
           : email
       )
     );
 
+    setMailStatus({
+      mail_ids: emailIds,
+      is_deleted: true
+    })
+
     // Clear checked emails and selected email if deleted
     setCheckedEmails(new Set());
-    if (selectedEmail && emailIds.includes(selectedEmail.message_id)) {
+    if (selectedEmail && emailIds.includes(selectedEmail.mail_id)) {
       setSelectedEmail(null);
     }
 
@@ -719,7 +733,7 @@ function App() {
   };
 
   const handleSelectAll = () => {
-    const allEmailIds = filteredEmails.map((email) => email.message_id);
+    const allEmailIds = filteredEmails.map((email) => email.mail_id);
     setCheckedEmails(new Set(allEmailIds));
   };
 
@@ -729,7 +743,7 @@ function App() {
 
   const handleDeleteEmail = (emailId: string) => {
     // Find the email to delete
-    const emailToDelete = emails?.find((email) => email.message_id === emailId);
+    const emailToDelete = emails?.find((email) => email.mail_id === emailId);
     if (!emailToDelete) return;
 
     // Move email to deleted emails
@@ -738,14 +752,18 @@ function App() {
     // Remove from active emails
     setEmails((prevEmails) =>
       prevEmails?.map((email) =>
-        email.message_id === emailId
+        email.mail_id === emailId
           ? { ...email, is_deleted: !email.is_deleted }
           : email
       )
     );
+    setMailStatus({
+      mail_ids: emailToDelete,
+      is_deleted: true
+    })
 
     // Clear selection if this email was selected
-    if (selectedEmail && selectedEmail.message_id === emailId) {
+    if (selectedEmail && selectedEmail.mail_id === emailId) {
       setSelectedEmail(null);
     }
 
@@ -755,7 +773,7 @@ function App() {
   const handleRestoreEmail = (emailId: string) => {
     // Find the email to restore
     const emailToRestore = deletedEmails.find(
-      (email) => email.message_id === emailId
+      (email) => email.mail_id === emailId
     );
     if (!emailToRestore) return;
 
@@ -764,11 +782,16 @@ function App() {
 
     // Remove from deleted emails
     setDeletedEmails((prev) =>
-      prev.filter((email) => email.message_id !== emailId)
+      prev.filter((email) => email.mail_id !== emailId)
     );
 
+    setMailStatus({
+      mail_ids: emailToRestore,
+      is_deleted: false
+    })
+
     // Clear selection if this email was selected
-    if (selectedEmail && selectedEmail.message_id === emailId) {
+    if (selectedEmail && selectedEmail.mail_id === emailId) {
       setSelectedEmail(null);
     }
 
@@ -778,7 +801,7 @@ function App() {
   const handleBulkRestore = (emailIds: string[]) => {
     // Find emails to restore
     const emailsToRestore = deletedEmails.filter((email) =>
-      emailIds.includes(email.message_id)
+      emailIds.includes(email.mail_id)
     );
 
     // Move emails back to active emails
@@ -786,12 +809,17 @@ function App() {
 
     // Remove from deleted emails
     setDeletedEmails((prev) =>
-      prev.filter((email) => !emailIds.includes(email.message_id))
+      prev.filter((email) => !emailIds.includes(email.mail_id))
     );
+
+    setMailStatus({
+      mail_ids: emailsToRestore,
+      is_deleted: false
+    })
 
     // Clear checked emails and selected email if restored
     setCheckedEmails(new Set());
-    if (selectedEmail && emailIds.includes(selectedEmail.message_id)) {
+    if (selectedEmail && emailIds.includes(selectedEmail.mail_id)) {
       setSelectedEmail(null);
     }
 
@@ -805,7 +833,7 @@ function App() {
         setEmails((prevEmails) =>
           prevEmails?.map((email) => {
             const prevState = lastAction.previousState.find(
-              (state: any) => state.id === email.message_id
+              (state: any) => state.id === email.mail_id
             );
             return prevState ? { ...email, is_read: prevState.is_read } : email;
           })
@@ -823,7 +851,7 @@ function App() {
         setEmails((prevEmails) =>
           prevEmails?.map((email) => {
             const prevState = lastAction.previousState.find(
-              (state: any) => state.id === email.message_id
+              (state: any) => state.id === email.mail_id
             );
             return prevState
               ? { ...email, is_starred: prevState.is_starred }
@@ -937,6 +965,7 @@ function App() {
         emailCounts={emailCounts}
         onSearch={handleSearch}
         searchQuery={searchQuery}
+        setEmails ={setEmails}
       />
 
       <div className="flex-1 flex overflow-hidden">
@@ -1025,16 +1054,8 @@ function App() {
         onDeleteLabel={handleDeleteLabel}
       />
 
-      {/* Compose Modal */}
-      <ComposeModal
-        isOpen={composeModalOpen}
-        onClose={handleComposeClose}
-        onSend={handleSendEmail}
-        onSaveDraft={handleSaveDraft}
-      />
-
-      {/* Compose Panel - Fixed overlay on the right side (if needed) */}
-      {/* {composePanelOpen && (
+      {/* Compose Panel - Fixed overlay on the right side */}
+      {composePanelOpen && (
         <ComposeModal
           isOpen={composePanelOpen}
           onClose={handleComposeClose}
@@ -1042,7 +1063,7 @@ function App() {
           onSaveDraft={handleSaveDraft}
           isPanel={true}
         />
-      )} */}
+      )}
     </div>
   );
 }

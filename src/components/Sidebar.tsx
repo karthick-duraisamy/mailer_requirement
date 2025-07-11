@@ -16,7 +16,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { setFilterSettings } from "../store/filterSlice";
 import SignatureSetup from "./SignatureSetup";
 import { setFilterFilled } from "../store/alignmentSlice";
-import { useLazyGetMailListResponseQuery } from "../service/inboxService";
+import { useLazyGetLabelListQuery, useLazyGetMailListResponseQuery } from "../service/inboxService";
 
 interface SidebarProps {
   activeItem: string;
@@ -28,6 +28,7 @@ interface SidebarProps {
   emailCounts: Record<string, number>;
   onSearch: (query: string) => void;
   searchQuery: string;
+  setEmails: Function;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -40,6 +41,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   emailCounts,
   onSearch,
   searchQuery,
+  setEmails
 }) => {
   const [labelsExpanded, setLabelsExpanded] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -49,6 +51,14 @@ const Sidebar: React.FC<SidebarProps> = ({
   const settingsRef = useRef<HTMLDivElement>(null);
   const [getMailList, getMailListResponse] = useLazyGetMailListResponseQuery();
   const [selectedTab, setSelectedTab] = useState<string>('');
+  const [getLabelList, getLabelListResponse] = useLazyGetLabelListQuery();
+  const [countsSection, setCountsSection] = useState<any>();
+  const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
+  const [selectedIntentLabels, setSelectedIntentLabels] = useState<string[]>([]);
+  const [selectedCorporateLabels, setSelectedCorporateLabels] = useState<string[]>([]);
+  const [intentLableOptions, setIntentLableOptions] = useState<any>();
+  const [corporateLableOptions, setCorporateLableOptions] = useState<any>();
+
 
   const navigationItems = [
     {
@@ -75,6 +85,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const intentLabels = customLabels.filter(
     (label) => label.category === "intent"
   );
+
   const corporateLabels = customLabels.filter(
     (label) => label.category === "corporate"
   );
@@ -96,14 +107,42 @@ const Sidebar: React.FC<SidebarProps> = ({
     intent: "all",
   });
 
-  const handleLabelClick = (labelId: string, isSystem: boolean) => {
-    if (isSystem) {
-      onItemSelect(`label-${labelId}`);
+  // const handleLabelClick = (labelId: string, isSystem: boolean) => {
+  //   if (isSystem) {
+  //     onItemSelect(`label-${labelId}`);
+  //   } else {
+  //     onItemSelect(`custom-label-${labelId}`);
+  //   }
+  // };
+
+  const handleLabelClick = (labelId: string, category: 'intent' | 'corporate') => {
+    console.log("Clicked Label:", labelId);
+    if (category === 'intent') {
+      setSelectedIntentLabels((prev) =>
+        prev.includes(labelId) ? prev.filter((key) => key !== labelId) : [...prev, labelId]
+      );
+      getMailList({labels:labelId, setting:29});
     } else {
-      onItemSelect(`custom-label-${labelId}`);
+      setSelectedCorporateLabels((prev) =>
+        prev.includes(labelId) ? prev.filter((key) => key !== labelId) : [...prev, labelId]
+      );
+      getMailList({corporate_labels:labelId, setting:29});
     }
+
+    // if (isSystem) {
+    //   onItemSelect(`label-${labelId}`);
+    // } else {
+    //   onItemSelect(`custom-label-${labelId}`);
+    // }
   };
 
+  useEffect(() => {
+    console.log("Intent Selected:", selectedIntentLabels);
+  }, [selectedIntentLabels]);
+
+  useEffect(() => {
+    console.log("Corporate Selected:", selectedCorporateLabels);
+  }, [selectedCorporateLabels]);
 
   const handleFiltersChange = (newFilters: FilterOptions) => {
     setFilters(newFilters);
@@ -183,6 +222,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   };
 
   useEffect(() => {
+    getLabelList({});
     const handleClickOutside = (event: MouseEvent) => {
       if (
         settingsRef.current &&
@@ -197,26 +237,61 @@ const Sidebar: React.FC<SidebarProps> = ({
   }, []);
 
   useEffect(() => {
+    getLabelList({});
+  }, [selectedTab])
+
+  useEffect(() => {
+    if (getLabelListResponse?.isSuccess) {
+      const intentLables = (getLabelListResponse as any)?.data?.response?.data.labels;
+      const corporateLabels = (getLabelListResponse as any)?.data?.response?.data.corporate_labels;
+      setIntentLableOptions(Object.entries(intentLables).map(([key]) => ({
+        value: key,
+        count: intentLables[key]?.total
+      })));
+      setCorporateLableOptions(Object.entries(corporateLabels).map(([key]) => ({
+        value: key,
+        count: corporateLabels[key]?.total
+      })));
+      setCountsSection((getLabelListResponse as any)?.data?.response?.data);
+    }
+  }, [getLabelListResponse]);
+
+  useEffect(() => {
     getMailList({ page_size: 20 });
   }, [isAllConversation])
 
   useEffect(() => {
-    if (selectedTab === 'sent' || selectedTab === 'bin') {
+    if (selectedTab === 'sent') {
       dispatch(setFilterSettings({ folder: selectedTab.toUpperCase() }));
-      dispatch(setFilterSettings({ is_starred: undefined }));
+      dispatch(setFilterSettings({ is_starred: undefined, is_deleted: undefined }));
       dispatch(setFilterFilled(true));
     }
-    if (selectedTab === 'starred') {
-      dispatch(setFilterSettings({ is_starred: true }));
-      dispatch(setFilterSettings({ folder: undefined }));
+    if (selectedTab === 'starred' || selectedTab === 'bin') {
+      dispatch(setFilterSettings({
+        [selectedTab === 'starred' ? 'is_starred' : 'is_deleted']: true
+      }));
+      dispatch(setFilterSettings({ folder: undefined, [selectedTab === 'starred' ? 'is_deleted' : 'is_starred']: undefined }));
       dispatch(setFilterFilled(true));
     }
     if (selectedTab === 'inbox') {
+      getMailList({ page_size: 20 });
       dispatch(setFilterFilled(false));
       dispatch(setFilterSettings({ folder: undefined }));
       setIsAllConversation(true);
     }
-  }, [selectedTab])
+  }, [selectedTab]);
+
+  useEffect(() => {
+    if (getMailListResponse?.isSuccess) {
+      // const staticList = (getMailListResponse as any)?.data?.response?.data;
+      // setEmails(
+      //     staticList.map((email: any) => ({
+      //       ...email,
+      //       intentLabel: email.labels || "new",
+      //     }))
+      //   );
+    }
+  }, [getMailListResponse])
 
   return (
     <>
@@ -263,19 +338,30 @@ const Sidebar: React.FC<SidebarProps> = ({
                 >
                   <Icon className="w-4 h-4" />
                   <span className="hidden sm:inline">{item.label}</span>
-                  {item.count > 0 && (
-                    <span
-                      className={`
-                      px-2 py-1 text-xs rounded-full
-                      ${isActive
-                          ? "bg-blue-200 text-blue-800"
-                          : "bg-gray-200 text-gray-600"
-                        }
-                    `}
-                    >
-                      {item.count}
-                    </span>
-                  )}
+                  {countsSection && (() => {
+                    const count =
+                      item?.id === 'inbox'
+                        ? countsSection?.total_unread
+                        : item?.id === 'starred'
+                          ? countsSection?.total_starred
+                          : item?.id === 'sent'
+                            ? countsSection?.total_sent
+                            : countsSection?.total_deleted;
+
+                    return count ? (
+                      <span
+                        className={`
+        px-2 py-1 text-xs rounded-full
+        ${isActive
+                            ? "bg-blue-200 text-blue-800"
+                            : "bg-gray-200 text-gray-600"
+                          }
+      `}
+                      >
+                        {count}
+                      </span>
+                    ) : null;
+                  })()}
                 </button>
               );
             })}
@@ -307,7 +393,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               {isIntentOpen && (
                 <div ref={dropdownRef}
                   className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 max-h-64 overflow-y-auto">
-                  {intentLabels.map((label) => (
+                  {/* {intentLabels.map((label) => (
                     <button
                       key={label.id}
                       onClick={() => {
@@ -340,7 +426,49 @@ const Sidebar: React.FC<SidebarProps> = ({
                         </span>
                       )}
                     </button>
-                  ))}
+                  ))} */}
+                  {intentLableOptions.map((label: any) => {
+                    // const isSelected = selectedLabels.includes(label.id);
+                    const isSelected = selectedIntentLabels.includes(label.value);
+                    // const isSystem = label.isSystem ?? false;
+
+                    return (
+                      <button
+                        key={label.value}
+                        type="button"
+                        onClick={() => {
+                          handleLabelClick(label.value, "intent");
+                          // setIsIntentOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-3 py-2 text-sm transition-colors
+                          ${isSelected ? "bg-blue-100 text-blue-700" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
+                      >
+                        <div className="w-full flex items-center space-x-3">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={(e) => {
+                              e.stopPropagation();
+                              handleLabelClick(label.value, "intent");
+                            }}
+                            className="form-checkbox h-4 w-4 text-blue-600"
+                          />
+
+                          {/* <div className="w-3 h-3 rounded-full" style={{ backgroundColor: label.color }} /> */}
+                          <span>{label.value}</span>
+
+                          <span className="cls-indent-count" style={{ marginLeft: "auto" }}>{label.count}</span>
+                        </div>
+
+                        {getLabelCount(label.value) > 0 && (
+                          <span className={`px-2 py-1 text-xs rounded-full
+                            ${isSelected ? "bg-blue-200 text-blue-800" : "bg-gray-200 text-gray-600"}`}>
+                            {getLabelCount(label.value)}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -372,7 +500,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               {isCorporateOpen && (
                 <div ref={dropdownCorpRef}
                   className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 max-h-64 overflow-y-auto">
-                  {corporateLabels.map((label) => (
+                  {/* {corporateLabels.map((label) => (
                     <button
                       key={label.id}
                       onClick={() => {
@@ -405,7 +533,49 @@ const Sidebar: React.FC<SidebarProps> = ({
                         </span>
                       )}
                     </button>
-                  ))}
+                  ))} */}
+                  {corporateLableOptions.map((label: any) => {
+                    // const isSelected = selectedLabels.includes(label.id); // or use selectedCorporateLabels if separate
+                    const isSelected = selectedCorporateLabels.includes(label.value);
+                    // const isSystem = label.isSystem ?? false;
+
+                    return (
+                      <button
+                        key={label.value}
+                        type="button"
+                        onClick={() => {
+                          handleLabelClick(label.value, "corporate");
+                          // setIsCorporateOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-3 py-2 text-sm transition-colors
+                          ${isSelected ? "bg-blue-100 text-blue-700" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
+                      >
+                        <div className="w-full flex items-center space-x-3">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={(e) => {
+                              e.stopPropagation();
+                              handleLabelClick(label.value, "corporate");
+                            }}
+                            className="form-checkbox h-4 w-4 text-blue-600"
+                          />
+
+                          {/* <div className="w-3 h-3 rounded-full" style={{ backgroundColor: label.color }} /> */}
+                          <span>{label.value}</span>
+
+                          <span className="cls-indent-count" style={{ marginLeft: "auto" }}>{label.count}</span>
+                        </div>
+
+                        {getLabelCount(label.value) > 0 && (
+                          <span className={`px-2 py-1 text-xs rounded-full
+                            ${isSelected ? "bg-blue-200 text-blue-800" : "bg-gray-200 text-gray-600"}`}>
+                            {getLabelCount(label.value)}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>

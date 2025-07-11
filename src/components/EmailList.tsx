@@ -718,13 +718,13 @@ const EmailList: React.FC<EmailListProps> = ({
         className="divide-y divide-gray-100 overflow-y-auto thin-scrollbar"
       >
         {emails.map((email) => {
-          const isSelected = selectedEmailId === email.message_id;
-          const isChecked = checkedEmails.has(email.message_id);
+          const isSelected = selectedEmailId === email.mail_id;
+          const isChecked = checkedEmails.has(email.mail_id);
           const emailLabels = getEmailCustomLabels(email);
 
           return (
             <div
-              key={email.message_id}
+              key={email.mail_id}
               className={`
                 p-4 cursor-pointer transition-colors hover:bg-gray-50
                 ${isSelected ? "bg-blue-50 border-r-2 border-blue-500" : ""}
@@ -741,7 +741,7 @@ const EmailList: React.FC<EmailListProps> = ({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    onCheckToggle(email.message_id);
+                    onCheckToggle(email.mail_id);
                   }}
                   className="mt-1 text-gray-400 hover:text-gray-600 transition-colors"
                 >
@@ -755,7 +755,7 @@ const EmailList: React.FC<EmailListProps> = ({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    onStarToggle(email.message_id);
+                    onStarToggle(email.mail_id);
                   }}
                   className="mt-1 transition-colors"
                 >

@@ -8,21 +8,21 @@ const service = InboxService.enhanceEndpoints({
     getMailListResponse: builder.query({
       // query: () => `/mail-server/?project=${localStorage.getItem("project")}&page=1&page_size=100`, // dynamic project ID
       query: (param: any) => ({
-        url: `/mail-server/?project=${localStorage.getItem("project")}`,
+        url: `/mail-inbox/mail/get-inboxes/?project=${localStorage.getItem("project")}`,
         method: "GET",
         params: param,
       }),
     }),
     getConversationDetails: builder.query({
       query: (param: any) =>
-        `/mail-server/${param.id}/?project=${localStorage.getItem("project")}`,
+        `/mail-inbox/mail/${param.id}/?project=${localStorage.getItem("project")}`,
     }),
     getConvoResponse: builder.query({
       query: () => "staticResponse/convoResponse.json",
     }),
     getAIReplyResponse: builder.mutation({
       query: (body: any) => ({
-        url: `/mail-server/ai-replay/`,
+        url: `/mail-inbox/mail/ai-replay/`,
         method: 'POST',
         body
       }),
@@ -36,7 +36,7 @@ const service = InboxService.enhanceEndpoints({
     }),
     sentMail: builder.mutation({
       query: (body: any) => ({
-        url: `/mail-sent/`,
+        url: `/mail-inbox/mail/send/`,
         method: 'POST',
         body
       }),
@@ -44,6 +44,20 @@ const service = InboxService.enhanceEndpoints({
     }),
     getTemplate: builder.query({
       query: () => `/template/107/?folder=17`
+    }),
+    setMailStatus: builder.mutation({
+      query: (body: any) => ({
+        url: `/mail-inbox/mail/status/?project=${localStorage.getItem("project")}&setting=29`,
+        method: 'POST',
+        body
+      }),
+      invalidatesTags: ['mailer']
+    }),
+    getLabelList: builder.query({
+      query: (body: any) => ({
+        url: `/mail-inbox/mail/get-lable-count/?project=${localStorage.getItem("project")}&setting=29`,
+      }),
+      invalidatesTags: ['mailer']
     }),
   })
   
@@ -57,4 +71,6 @@ export const {
   useLazyGetSettingsQuery,
   useSentMailMutation,
   useLazyGetTemplateQuery,
+  useSetMailStatusMutation,
+  useLazyGetLabelListQuery
 } = service;

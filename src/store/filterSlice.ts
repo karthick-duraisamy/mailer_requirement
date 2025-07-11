@@ -12,6 +12,7 @@ export interface FilterOptions {
   page?: number; // Optional field for pagination
   page_size?: number; // Optional field for pagination
   folder?: string | null;
+  is_deleted?: boolean | null;
 }
 
 const initialState: FilterOptions = {
