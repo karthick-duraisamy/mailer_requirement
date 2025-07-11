@@ -39,7 +39,7 @@ import { SendIcon, InboxIcon } from "./Icons";
 import { notification } from "antd";
 import { TypedUseSelectorHook, useSelector } from "react-redux";
 import { RootState } from "../store/store";
-// import HtmlViewer from "./HtmlViewer";
+import HtmlViewer from "./HtmlViewer";
 
 interface AiReplyState {
   isGenerating: boolean;
@@ -1189,15 +1189,15 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                             <div
                               className="text-gray-800 leading-relaxed whitespace-pre-wrap"
                               style={{wordBreak: "break-word"}}
-                               dangerouslySetInnerHTML={{
-                                 __html: message?.body_html || message?.body_plain || message?.snippet,
-                               }}
+                              //  dangerouslySetInnerHTML={{
+                              //    __html: message?.body_html || message?.body_plain || message?.snippet,
+                              //  }}
                             />
-                              {/* <HtmlViewer rawHtml={message?.body_html || message?.body_plain || message?.snippet}/> */}
-                              {/* </div> */}
+                              <HtmlViewer rawHtml={message?.body_html || message?.body_plain || message?.snippet}/>
+                              </div>
                             {/* {message.body_plain}
                         </div> */}
-                          </div>
+                          {/* </div> */}
                         </>
                       )}
 
