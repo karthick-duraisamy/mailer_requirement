@@ -384,7 +384,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
           entities: msgData[msgData.length - 1]?.entities || {},
           reply: replyText + "\n" + finalHtml
         },
-        setting_id: 30
+        setting_id: 29
       };
       sentMail(emailData);
       setShowReply(false);

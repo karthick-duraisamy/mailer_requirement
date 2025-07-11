@@ -36,7 +36,7 @@ const service = InboxService.enhanceEndpoints({
     }),
     sentMail: builder.mutation({
       query: (body: any) => ({
-        url: `/mail-inbox/mail/send/`,
+        url: `/mail-inbox/mail/compose/`,
         method: 'POST',
         body
       }),

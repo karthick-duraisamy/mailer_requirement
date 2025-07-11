@@ -276,7 +276,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     if (selectedTab === 'inbox') {
       getMailList({ page_size: 20 });
       dispatch(setFilterFilled(false));
-      dispatch(setFilterSettings({ folder: undefined }));
+      dispatch(setFilterSettings({ folder: undefined , is_starred: undefined, is_deleted: undefined}));
       setIsAllConversation(true);
     }
   }, [selectedTab]);
@@ -382,7 +382,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 }}
                 className={`
                       flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors
-                      ${isIntentOpen
+                      ${(isIntentOpen || selectedIntentLabels?.length > 0)
                                     ? "bg-gray-100 text-gray-900"
                                     : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                                   }
@@ -489,7 +489,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 }}
                 className={`
       flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors
-      ${isCorporateOpen
+      ${(isCorporateOpen || selectedCorporateLabels?.length > 0)
                     ? "bg-gray-100 text-gray-900"
                     : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                   }
