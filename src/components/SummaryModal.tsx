@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { X, FileText, Sparkles, Loader2, Copy, Download } from "lucide-react";
+import { X, FileText, Copy, Download } from "lucide-react";
 
 interface SummaryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  conversationData: any[];
+  conversationData: any;
   subject: string;
 }
 
@@ -189,156 +189,45 @@ Generated on: ${new Date().toLocaleString()}
           </button>
         </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">
-          {isGenerating ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="text-center">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  Generating Summary
-                </h3>
-                <p className="text-gray-600">
-                  Analyzing conversation content and extracting key insights...
-                </p>
-              </div>
-            </div>
-          ) : error ? (
-            <div className="text-center py-12">
-              <div className="text-red-600 mb-4">
-                <X className="w-12 h-12 mx-auto" />
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                Error Generating Summary
-              </h3>
-              <p className="text-gray-600 mb-4">{error}</p>
-              <button
-                onClick={generateSummary}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Try Again
-              </button>
-            </div>
-          ) : summary ? (
-            <div className="space-y-6">
-              {/* Overview */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                  <Sparkles className="w-5 h-5 text-purple-600 mr-2" />
-                  Overview
-                </h3>
-                <p className="text-gray-700 leading-relaxed bg-gray-50 p-4 rounded-lg">
-                  {summary.overview}
-                </p>
-              </div>
-
-              {/* Key Points */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                  Key Points
-                </h3>
-                <ul className="space-y-2">
-                  {summary.keyPoints.map((point, index) => (
-                    <li key={index} className="flex items-start space-x-2">
-                      <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0" />
-                      <span className="text-gray-700">{point}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Participants & Timeline */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                    Participants
-                  </h3>
-                  <div className="space-y-2">
-                    {summary.participants.map((participant, index) => (
-                      <div key={index} className="flex items-center space-x-2">
-                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                          <span className="text-white font-semibold text-sm">
-                            {participant.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                        <span className="text-gray-700">{participant}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                    Timeline
-                  </h3>
-                  <p className="text-gray-700 bg-gray-50 p-3 rounded-lg">
-                    {summary.timeline}
-                  </p>
-
-                  <div className="mt-4">
-                    <h4 className="font-medium text-gray-900 mb-2">
-                      Sentiment
-                    </h4>
-                    <span
-                      className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getSentimentColor(
-                        summary.sentiment
-                      )}`}
-                    >
-                      {summary.sentiment.charAt(0).toUpperCase() +
-                        summary.sentiment.slice(1)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Items */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                  Action Items
-                </h3>
-                <ul className="space-y-2">
-                  {summary.actionItems.map((item, index) => (
-                    <li key={index} className="flex items-start space-x-2">
-                      <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0" />
-                      <span className="text-gray-700">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          ) : null}
-        </div>
-
-        {/* Footer */}
-        {summary && !isGenerating && (
-          <div className="flex items-center justify-between p-6 border-t border-gray-200 bg-gray-50">
-            <p className="text-sm text-gray-600">
-              Summary generated on {new Date().toLocaleString()}
-            </p>
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={handleCopy}
-                className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-white rounded-lg transition-colors border border-gray-300"
-              >
-                <Copy className="w-4 h-4" />
-                <span>Copy</span>
-              </button>
-              <button
-                onClick={handleDownload}
-                className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-white rounded-lg transition-colors border border-gray-300"
-              >
-                <Download className="w-4 h-4" />
-                <span>Download</span>
-              </button>
-              <button
-                onClick={onClose}
-                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-              >
-                Close
-              </button>
+        {/* Conversation Data */}
+        {conversationData && (
+          <div>
+            <div className="text-gray-700 leading-relaxed bg-gray-50 p-4 rounded-lg whitespace-pre-line">
+              {conversationData}
             </div>
           </div>
         )}
+
+        {/* Footer */}
+        {/* {summary && !isGenerating && ( */}
+        <div className="flex items-center justify-between p-6 border-t border-gray-200 bg-gray-50">
+          <p className="text-sm text-gray-600">
+            Summary generated on {new Date().toLocaleString()}
+          </p>
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={handleCopy}
+              className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-white rounded-lg transition-colors border border-gray-300"
+            >
+              <Copy className="w-4 h-4" />
+              <span>Copy</span>
+            </button>
+            <button
+              onClick={handleDownload}
+              className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-white rounded-lg transition-colors border border-gray-300"
+            >
+              <Download className="w-4 h-4" />
+              <span>Download</span>
+            </button>
+            <button
+              onClick={onClose}
+              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+        {/* )} */}
       </div>
     </div>
   );

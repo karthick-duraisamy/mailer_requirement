@@ -97,7 +97,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   const [showEntitiesPopover, setShowEntitiesPopover] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [entitiesInfo, setEntitiesInfo] = useState<any[]>([]);
-  const [showSummaryModal, setShowSummaryModal] = useState(false);
+  const [summaryModalInfo, setSummaryModalInfo] = useState(undefined);
+  const [AIType, setAIType] = useState<"reply" | "summarize" | undefined>(undefined);
 
   // Refs for auto-scrolling
   const aiReplyRef = useRef<HTMLDivElement>(null);
@@ -417,10 +418,11 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     return totalRecipients > 1 || (lastMessage.cc && lastMessage.cc.length > 0);
   };
 
-  const handleAiReplyGenerate = async () => {
+  const handleAiReplyGenerate = async (key?: string) => {
+    setAIType(key as "reply" | "summarize");
     let AIReply = {
       document_id: msgData[msgData.length - 1]?.mail_id,
-      prompt: "",
+      agent_type: key === "reply" ? "ai_reply" : 'summerize'
     };
 
     try {
@@ -429,9 +431,10 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       setEntitiesInfo((result as any)?.response.data.entities || []);
       setIntent((result as any)?.response.data.intent || "");
       console.log("AI Reply generated:", reply);
-      setReplyText(reply);
+      if(key === "reply") setReplyText(reply);
+      else setSummaryModalInfo(reply);
 
-      if (reply) {
+      if (key === "reply" && reply) {
         setAIGeneratedReply(reply);
       }
     } catch (error) {
@@ -896,7 +899,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                   </span>
                 </button>
                 <button
-                  onClick={() => setShowSummaryModal(true)}
+                  onClick={() => handleAiReplyGenerate('summarize')}
                   className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                   <Sparkles className="w-4 h-4 mr-1" />
@@ -1262,11 +1265,11 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                   {/* Right button */}
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={handleAiReplyGenerate}
-                      disabled={getAIReplyResponseStatus?.isLoading}
+                      onClick={() => handleAiReplyGenerate('reply')}
+                      disabled={getAIReplyResponseStatus?.isLoading && AIType === 'reply'}
                       className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-400 text-white rounded-lg transition-colors"
                     >
-                      {getAIReplyResponseStatus?.isLoading ? (
+                      {getAIReplyResponseStatus?.isLoading && AIType === 'reply' ? (
                         <LoadingIndicator />
                       ) : (
                         <>
@@ -1342,7 +1345,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                       </button>
                       {getAIReplyResponseStatus?.isLoading ? (
                         <button
-                          onClick={handleAiReplyGenerate}
+                          onClick={() => handleAiReplyGenerate}
                           disabled={true}
                           className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-400 text-white rounded-lg transition-colors"
                         >
@@ -1350,7 +1353,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                         </button>
                       ) : (
                         <button
-                          onClick={handleAiReplyGenerate}
+                          onClick={() => handleAiReplyGenerate}
                           disabled={aiReplyState.isGenerating}
                           className="text-purple-600 hover:text-purple-700 p-1 disabled:text-gray-400"
                           title="Regenerate"
@@ -1584,9 +1587,9 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
           {/* Summary Modal */}
           <SummaryModal
-            isOpen={showSummaryModal}
-            onClose={() => setShowSummaryModal(false)}
-            conversationData={msgData}
+            isOpen={summaryModalInfo !== undefined && summaryModalInfo !== null && (summaryModalInfo as any)?.length > 0} 
+            onClose={() => setSummaryModalInfo(undefined)}
+            conversationData={summaryModalInfo as any}
             subject={email.subject}
           />
         </div>
