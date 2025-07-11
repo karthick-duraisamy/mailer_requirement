@@ -16,7 +16,10 @@ import { useSelector, useDispatch } from "react-redux";
 import { setFilterSettings } from "../store/filterSlice";
 import SignatureSetup from "./SignatureSetup";
 import { setFilterFilled } from "../store/alignmentSlice";
-import { useLazyGetLabelListQuery, useLazyGetMailListResponseQuery } from "../service/inboxService";
+import {
+  useLazyGetLabelListQuery,
+  useLazyGetMailListResponseQuery,
+} from "../service/inboxService";
 
 interface SidebarProps {
   activeItem: string;
@@ -41,7 +44,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   emailCounts,
   onSearch,
   searchQuery,
-  setEmails
+  setEmails,
 }) => {
   const [labelsExpanded, setLabelsExpanded] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -50,15 +53,18 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
   const settingsRef = useRef<HTMLDivElement>(null);
   const [getMailList, getMailListResponse] = useLazyGetMailListResponseQuery();
-  const [selectedTab, setSelectedTab] = useState<string>('');
+  const [selectedTab, setSelectedTab] = useState<string>("");
   const [getLabelList, getLabelListResponse] = useLazyGetLabelListQuery();
   const [countsSection, setCountsSection] = useState<any>();
   const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
-  const [selectedIntentLabels, setSelectedIntentLabels] = useState<string[]>([]);
-  const [selectedCorporateLabels, setSelectedCorporateLabels] = useState<string[]>([]);
+  const [selectedIntentLabels, setSelectedIntentLabels] = useState<string[]>(
+    []
+  );
+  const [selectedCorporateLabels, setSelectedCorporateLabels] = useState<
+    string[]
+  >([]);
   const [intentLableOptions, setIntentLableOptions] = useState<any>();
   const [corporateLableOptions, setCorporateLableOptions] = useState<any>();
-
 
   const navigationItems = [
     {
@@ -80,7 +86,6 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [isIntentOpen, setIsIntentOpen] = useState(false);
   const [isCorporateOpen, setIsCorporateOpen] = useState(false);
   const [isAllConversation, setIsAllConversation] = useState(false);
-
 
   const intentLabels = customLabels.filter(
     (label) => label.category === "intent"
@@ -115,18 +120,25 @@ const Sidebar: React.FC<SidebarProps> = ({
   //   }
   // };
 
-  const handleLabelClick = (labelId: string, category: 'intent' | 'corporate') => {
+  const handleLabelClick = (
+    labelId: string,
+    category: "intent" | "corporate"
+  ) => {
     console.log("Clicked Label:", labelId);
-    if (category === 'intent') {
+    if (category === "intent") {
       setSelectedIntentLabels((prev) =>
-        prev.includes(labelId) ? prev.filter((key) => key !== labelId) : [...prev, labelId]
+        prev.includes(labelId)
+          ? prev.filter((key) => key !== labelId)
+          : [...prev, labelId]
       );
-      getMailList({labels:labelId, setting:29});
+      getMailList({ labels: labelId, setting: 29 });
     } else {
       setSelectedCorporateLabels((prev) =>
-        prev.includes(labelId) ? prev.filter((key) => key !== labelId) : [...prev, labelId]
+        prev.includes(labelId)
+          ? prev.filter((key) => key !== labelId)
+          : [...prev, labelId]
       );
-      getMailList({corporate_labels:labelId, setting:29});
+      getMailList({ corporate_labels: labelId, setting: 29 });
     }
 
     // if (isSystem) {
@@ -149,7 +161,12 @@ const Sidebar: React.FC<SidebarProps> = ({
     dispatch(
       setFilterSettings({
         is_starred: newFilters?.starred,
-        is_read: newFilters.readStatus === 'all' ? undefined : newFilters.readStatus === 'read' ? true : false,
+        is_read:
+          newFilters.readStatus === "all"
+            ? undefined
+            : newFilters.readStatus === "read"
+            ? true
+            : false,
         has_attachment: newFilters?.hasAttachment,
       })
     );
@@ -198,21 +215,27 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsIntentOpen(false);
       }
-      if (dropdownCorpRef.current && !dropdownCorpRef.current.contains(event.target as Node))
+      if (
+        dropdownCorpRef.current &&
+        !dropdownCorpRef.current.contains(event.target as Node)
+      )
         setIsCorporateOpen(false);
     };
 
     if (isIntentOpen || isCorporateOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     } else {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isIntentOpen, isCorporateOpen]);
 
@@ -238,67 +261,89 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   useEffect(() => {
     getLabelList({});
-  }, [selectedTab])
+  }, [selectedTab]);
 
   useEffect(() => {
     if (getLabelListResponse?.isSuccess) {
-      const intentLables = (getLabelListResponse as any)?.data?.response?.data.labels;
-      const corporateLabels = (getLabelListResponse as any)?.data?.response?.data.corporate_labels;
-      setIntentLableOptions(Object.entries(intentLables).map(([key]) => ({
-        value: key,
-        count: intentLables[key]?.total
-      })));
-      setCorporateLableOptions(Object.entries(corporateLabels).map(([key]) => ({
-        value: key,
-        count: corporateLabels[key]?.total
-      })));
+      const intentLables = (getLabelListResponse as any)?.data?.response?.data
+        .labels;
+      const corporateLabels = (getLabelListResponse as any)?.data?.response
+        ?.data.corporate_labels;
+      setIntentLableOptions(
+        Object.entries(intentLables).map(([key]) => ({
+          value: key,
+          count: intentLables[key]?.total,
+        }))
+      );
+      setCorporateLableOptions(
+        Object.entries(corporateLabels).map(([key]) => ({
+          value: key,
+          count: corporateLabels[key]?.total,
+        }))
+      );
       setCountsSection((getLabelListResponse as any)?.data?.response?.data);
     }
   }, [getLabelListResponse]);
 
   useEffect(() => {
     getMailList({ page_size: 20 });
-  }, [isAllConversation])
+  }, [isAllConversation]);
 
   useEffect(() => {
-    if (selectedTab === 'sent') {
+    if (selectedTab === "sent") {
       dispatch(setFilterSettings({ folder: selectedTab.toUpperCase() }));
-      dispatch(setFilterSettings({ is_starred: undefined, is_deleted: undefined }));
+      dispatch(
+        setFilterSettings({ is_starred: undefined, is_deleted: undefined })
+      );
       dispatch(setFilterFilled(true));
     }
-    if (selectedTab === 'starred' || selectedTab === 'bin') {
-      dispatch(setFilterSettings({
-        [selectedTab === 'starred' ? 'is_starred' : 'is_deleted']: true
-      }));
-      dispatch(setFilterSettings({ folder: undefined, [selectedTab === 'starred' ? 'is_deleted' : 'is_starred']: undefined }));
+    if (selectedTab === "starred" || selectedTab === "bin") {
+      dispatch(
+        setFilterSettings({
+          [selectedTab === "starred" ? "is_starred" : "is_deleted"]: true,
+        })
+      );
+      dispatch(
+        setFilterSettings({
+          folder: undefined,
+          [selectedTab === "starred" ? "is_deleted" : "is_starred"]: undefined,
+        })
+      );
       dispatch(setFilterFilled(true));
     }
-    if (selectedTab === 'inbox') {
+    if (selectedTab === "inbox") {
       getMailList({ page_size: 20 });
       dispatch(setFilterFilled(false));
-      dispatch(setFilterSettings({ folder: undefined , is_starred: undefined, is_deleted: undefined}));
+      dispatch(
+        setFilterSettings({
+          folder: undefined,
+          is_starred: undefined,
+          is_deleted: undefined,
+        })
+      );
       setIsAllConversation(true);
     }
   }, [selectedTab]);
 
   useEffect(() => {
     if (getMailListResponse?.isSuccess) {
-      const staticList = (getMailListResponse as any)?.data?.response?.data.results;
+      const staticList = (getMailListResponse as any)?.data?.response?.data
+        .results;
       console.log(staticList, "static list");
       setEmails(
-          staticList.map((email: any) => ({
-            ...email,
-            intentLabel: email.labels || "new",
-          }))
-        );
+        staticList.map((email: any) => ({
+          ...email,
+          intentLabel: email.labels || "new",
+        }))
+      );
     }
   }, [getMailListResponse]);
 
   useEffect(() => {
     // if (!isOpen) {
-      console.log(intentLableOptions, "rag");
+    console.log(intentLableOptions, "rag");
     // }
-  }, [intentLableOptions])  
+  }, [intentLableOptions]);
 
   return (
     <>
@@ -323,7 +368,6 @@ const Sidebar: React.FC<SidebarProps> = ({
         <div className="flex items-center justify-between">
           {/* Left side - Search box and Main navigation items */}
           <div className="flex items-center space-x-1">
-
             {navigationItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeItem === item.id;
@@ -333,42 +377,45 @@ const Sidebar: React.FC<SidebarProps> = ({
                   key={item.id}
                   onClick={() => {
                     onItemSelect(item.id);
-                    setSelectedTab(item.id)
+                    setSelectedTab(item.id);
                   }}
                   className={`
                     flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors
-                    ${isActive
-                      ? "bg-blue-100 text-blue-700"
-                      : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                    ${
+                      isActive
+                        ? "bg-blue-100 text-blue-700"
+                        : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                     }
                   `}
                 >
                   <Icon className="w-4 h-4" />
                   <span className="hidden sm:inline">{item.label}</span>
-                  {countsSection && (() => {
-                    const count =
-                      item?.id === 'inbox'
-                        ? countsSection?.total_unread
-                        : item?.id === 'starred'
-                          ? countsSection?.total_starred
-                          : item?.id === 'sent'
-                            ? countsSection?.total_sent
-                            : countsSection?.total_deleted;
+                  {countsSection &&
+                    (() => {
+                      const count = item.count;
+                      // item?.id === 'inbox'
+                      //   ? countsSection?.total_unread
+                      //   : item?.id === 'starred'
+                      //     ? countsSection?.total_starred
+                      //     : item?.id === 'sent'
+                      //       ? countsSection?.total_sent
+                      //       : countsSection?.total_deleted;
 
-                    return count ? (
-                      <span
-                        className={`
+                      return count ? (
+                        <span
+                          className={`
                             px-2 py-1 text-xs rounded-full
-                            ${isActive
-                                                ? "bg-blue-200 text-blue-800"
-                                                : "bg-gray-200 text-gray-600"
-                                              }
+                            ${
+                              isActive
+                                ? "bg-blue-200 text-blue-800"
+                                : "bg-gray-200 text-gray-600"
+                            }
                           `}
-                      >
-                        {count}
-                      </span>
-                    ) : null;
-                  })()}
+                        >
+                          {count}
+                        </span>
+                      ) : null;
+                    })()}
                 </button>
               );
             })}
@@ -382,10 +429,11 @@ const Sidebar: React.FC<SidebarProps> = ({
                 }}
                 className={`
                       flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors
-                      ${(isIntentOpen || selectedIntentLabels?.length > 0)
-                                    ? "bg-gray-100 text-gray-900"
-                                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-                                  }
+                      ${
+                        isIntentOpen || selectedIntentLabels?.length > 0
+                          ? "bg-gray-100 text-gray-900"
+                          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                      }
                     `}
               >
                 <Tag className="w-4 h-4" />
@@ -398,8 +446,10 @@ const Sidebar: React.FC<SidebarProps> = ({
               </button>
 
               {isIntentOpen && (
-                <div ref={dropdownRef}
-                  className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 max-h-64 overflow-y-auto">
+                <div
+                  ref={dropdownRef}
+                  className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 max-h-64 overflow-y-auto"
+                >
                   {/* {intentLabels.map((label) => (
                     <button
                       key={label.id}
@@ -436,7 +486,9 @@ const Sidebar: React.FC<SidebarProps> = ({
                   ))} */}
                   {intentLableOptions.map((label: any) => {
                     // const isSelected = selectedLabels.includes(label.id);
-                    const isSelected = selectedIntentLabels.includes(label.value);
+                    const isSelected = selectedIntentLabels.includes(
+                      label.value
+                    );
                     // const isSystem = label.isSystem ?? false;
 
                     return (
@@ -448,7 +500,11 @@ const Sidebar: React.FC<SidebarProps> = ({
                           // setIsIntentOpen(false);
                         }}
                         className={`w-full flex items-center justify-between px-3 py-2 text-sm transition-colors
-                          ${isSelected ? "bg-blue-100 text-blue-700" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
+                          ${
+                            isSelected
+                              ? "bg-blue-100 text-blue-700"
+                              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                          }`}
                       >
                         <div className="w-full flex items-center space-x-3">
                           <input
@@ -464,12 +520,23 @@ const Sidebar: React.FC<SidebarProps> = ({
                           {/* <div className="w-3 h-3 rounded-full" style={{ backgroundColor: label.color }} /> */}
                           <span>{label.value}</span>
 
-                          <span className="cls-indent-count" style={{ marginLeft: "auto" }}>{label.count}</span>
+                          <span
+                            className="cls-indent-count"
+                            style={{ marginLeft: "auto" }}
+                          >
+                            {label.count}
+                          </span>
                         </div>
 
                         {getLabelCount(label.value) > 0 && (
-                          <span className={`px-2 py-1 text-xs rounded-full
-                            ${isSelected ? "bg-blue-200 text-blue-800" : "bg-gray-200 text-gray-600"}`}>
+                          <span
+                            className={`px-2 py-1 text-xs rounded-full
+                            ${
+                              isSelected
+                                ? "bg-blue-200 text-blue-800"
+                                : "bg-gray-200 text-gray-600"
+                            }`}
+                          >
                             {getLabelCount(label.value)}
                           </span>
                         )}
@@ -489,10 +556,11 @@ const Sidebar: React.FC<SidebarProps> = ({
                 }}
                 className={`
       flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors
-      ${(isCorporateOpen || selectedCorporateLabels?.length > 0)
-                    ? "bg-gray-100 text-gray-900"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-                  }
+      ${
+        isCorporateOpen || selectedCorporateLabels?.length > 0
+          ? "bg-gray-100 text-gray-900"
+          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+      }
     `}
               >
                 <Tag className="w-4 h-4" />
@@ -505,8 +573,10 @@ const Sidebar: React.FC<SidebarProps> = ({
               </button>
 
               {isCorporateOpen && (
-                <div ref={dropdownCorpRef}
-                  className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 max-h-64 overflow-y-auto">
+                <div
+                  ref={dropdownCorpRef}
+                  className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 max-h-64 overflow-y-auto"
+                >
                   {/* {corporateLabels.map((label) => (
                     <button
                       key={label.id}
@@ -543,7 +613,9 @@ const Sidebar: React.FC<SidebarProps> = ({
                   ))} */}
                   {corporateLableOptions.map((label: any) => {
                     // const isSelected = selectedLabels.includes(label.id); // or use selectedCorporateLabels if separate
-                    const isSelected = selectedCorporateLabels.includes(label.value);
+                    const isSelected = selectedCorporateLabels.includes(
+                      label.value
+                    );
                     // const isSystem = label.isSystem ?? false;
 
                     return (
@@ -555,7 +627,11 @@ const Sidebar: React.FC<SidebarProps> = ({
                           // setIsCorporateOpen(false);
                         }}
                         className={`w-full flex items-center justify-between px-3 py-2 text-sm transition-colors
-                          ${isSelected ? "bg-blue-100 text-blue-700" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
+                          ${
+                            isSelected
+                              ? "bg-blue-100 text-blue-700"
+                              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                          }`}
                       >
                         <div className="w-full flex items-center space-x-3">
                           <input
@@ -571,12 +647,23 @@ const Sidebar: React.FC<SidebarProps> = ({
                           {/* <div className="w-3 h-3 rounded-full" style={{ backgroundColor: label.color }} /> */}
                           <span>{label.value}</span>
 
-                          <span className="cls-indent-count" style={{ marginLeft: "auto" }}>{label.count}</span>
+                          <span
+                            className="cls-indent-count"
+                            style={{ marginLeft: "auto" }}
+                          >
+                            {label.count}
+                          </span>
                         </div>
 
                         {getLabelCount(label.value) > 0 && (
-                          <span className={`px-2 py-1 text-xs rounded-full
-                            ${isSelected ? "bg-blue-200 text-blue-800" : "bg-gray-200 text-gray-600"}`}>
+                          <span
+                            className={`px-2 py-1 text-xs rounded-full
+                            ${
+                              isSelected
+                                ? "bg-blue-200 text-blue-800"
+                                : "bg-gray-200 text-gray-600"
+                            }`}
+                          >
                             {getLabelCount(label.value)}
                           </span>
                         )}
