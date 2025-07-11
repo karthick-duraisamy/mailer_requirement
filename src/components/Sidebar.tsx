@@ -283,15 +283,22 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   useEffect(() => {
     if (getMailListResponse?.isSuccess) {
-      // const staticList = (getMailListResponse as any)?.data?.response?.data;
-      // setEmails(
-      //     staticList.map((email: any) => ({
-      //       ...email,
-      //       intentLabel: email.labels || "new",
-      //     }))
-      //   );
+      const staticList = (getMailListResponse as any)?.data?.response?.data.results;
+      console.log(staticList, "static list");
+      setEmails(
+          staticList.map((email: any) => ({
+            ...email,
+            intentLabel: email.labels || "new",
+          }))
+        );
     }
-  }, [getMailListResponse])
+  }, [getMailListResponse]);
+
+  useEffect(() => {
+    // if (!isOpen) {
+      console.log(intentLableOptions, "rag");
+    // }
+  }, [intentLableOptions])  
 
   return (
     <>
@@ -351,12 +358,12 @@ const Sidebar: React.FC<SidebarProps> = ({
                     return count ? (
                       <span
                         className={`
-        px-2 py-1 text-xs rounded-full
-        ${isActive
-                            ? "bg-blue-200 text-blue-800"
-                            : "bg-gray-200 text-gray-600"
-                          }
-      `}
+                            px-2 py-1 text-xs rounded-full
+                            ${isActive
+                                                ? "bg-blue-200 text-blue-800"
+                                                : "bg-gray-200 text-gray-600"
+                                              }
+                          `}
                       >
                         {count}
                       </span>
@@ -374,12 +381,12 @@ const Sidebar: React.FC<SidebarProps> = ({
                   setIsCorporateOpen(false); // close other
                 }}
                 className={`
-      flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors
-      ${isIntentOpen
-                    ? "bg-gray-100 text-gray-900"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-                  }
-    `}
+                      flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                      ${isIntentOpen
+                                    ? "bg-gray-100 text-gray-900"
+                                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                                  }
+                    `}
               >
                 <Tag className="w-4 h-4" />
                 <span className="hidden sm:inline">Intent labels</span>
