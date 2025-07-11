@@ -893,9 +893,10 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                     setEntitiesButtonPosition(entitiesButtonRef);
                   }}
                   className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+                  style={{color: `#4c75e1`}}
                 >
                   <FileText className="w-4 h-4 mr-1" />
-                  <span className="text-sm text-gray-600 hover:text-gray-800">
+                  <span className="text-sm text-gray-600 hover:text-gray-800" style={{color: `#4c75e1`}}>
                     Entities
                   </span>
                 </button>
@@ -1329,9 +1330,10 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                           setEntitiesButtonPosition(entitiesButtonRefAi);
                         }}
                         className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+                        style={{color: `#4c75e1`}}
                       >
                         <FileText className="w-4 h-4 mr-1" />
-                        <span className="text-sm text-gray-600 hover:text-gray-800">
+                        <span className="text-sm text-gray-600 hover:text-gray-800" style={{color: `#4c75e1`}}>
                           Entities
                         </span>
                       </button>
