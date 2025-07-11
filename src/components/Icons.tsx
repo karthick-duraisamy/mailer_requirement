@@ -55,6 +55,7 @@ const NoMailFoundIcon = () => {
       height="40"
       viewBox="0 0 24 24"
       fill="none"
+      className="text-blue-500"
       stroke="currentColor"
       stroke-width="2"
       stroke-linecap="round"
