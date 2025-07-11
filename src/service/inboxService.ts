@@ -15,7 +15,7 @@ const service = InboxService.enhanceEndpoints({
     }),
     getConversationDetails: builder.query({
       query: (param: any) =>
-        `/mail-inbox/mail/${param.id}/?project=${localStorage.getItem("project")}`,
+        `/mail-inbox/mail/get-inboxes/${param.id}/?project=${localStorage.getItem("project")}&setting=29`,
     }),
     getConvoResponse: builder.query({
       query: () => "staticResponse/convoResponse.json",
