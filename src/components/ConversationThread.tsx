@@ -40,6 +40,7 @@ import { notification } from "antd";
 import { TypedUseSelectorHook, useSelector } from "react-redux";
 import { RootState } from "../store/store";
 import HtmlViewer from "./HtmlViewer";
+import SparkleButton from "./SparkleButton/SparkleButton";
 
 interface AiReplyState {
   isGenerating: boolean;
@@ -898,7 +899,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                     Entities
                   </span>
                 </button>
-                <button
+                <SparkleButton onClick={() => handleAiReplyGenerate('summarize')} text={getAIReplyResponseStatus?.isLoading && AIType === 'summarize' ? '' :"Summarize"} fontSize="14" borderRad="30"/>
+                {/* <button
                   onClick={() => handleAiReplyGenerate('summarize')}
                   className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
                 >
@@ -906,7 +908,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                   <span className="text-sm text-gray-600 hover:text-gray-800">
                     Summarize
                   </span>
-                </button>
+                </button> */}
                 {activeSection === "bin" && onRestoreEmail ? (
                   <button
                     onClick={() => onRestoreEmail(email.mail_id)}
@@ -1264,7 +1266,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
                   {/* Right button */}
                   <div className="flex items-center gap-2">
-                    <button
+                    {/* <button
                       onClick={() => handleAiReplyGenerate('reply')}
                       disabled={getAIReplyResponseStatus?.isLoading && AIType === 'reply'}
                       className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-400 text-white rounded-lg transition-colors"
@@ -1277,7 +1279,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                           <span>Reply with AI</span>
                         </>
                       )}
-                    </button>
+                    </button> */}
+                    <SparkleButton onClick={() => handleAiReplyGenerate('reply')} text={ getAIReplyResponseStatus?.isLoading && AIType === 'reply' ? "" : "Reply with AI"} fontSize="14" borderRad="30"/>
                   </div>
                 </div>
               </div>

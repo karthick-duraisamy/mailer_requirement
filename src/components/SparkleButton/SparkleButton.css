@@ -1,0 +1,46 @@
+.sparkle-button {
+  position: relative;
+  background: linear-gradient(90deg, #FC466B 0%, #3F5EFB 100%);
+  color: white; /* Tailwind yellow-400 */
+  border: none;
+  padding: 10px;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+  gap: 8px;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+}
+
+.sparkle-button:hover {
+  box-shadow: 0 0 5px #3F5EFB;
+}
+
+.button-text {
+  z-index: 1;
+  position: relative;
+}
+
+.sparkle-icon {
+  width: 18px;
+  height: 18px;
+  animation: twinkle 2s infinite ease-in-out;
+  transition: transform 0.3s ease;
+}
+
+.sparkle-button:hover .sparkle-icon {
+  transform: scale(1.2) rotate(15deg);
+}
+
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.3);
+  }
+}

@@ -56,15 +56,15 @@ function App() {
   // const [sidebarWidth, setSidebarWidth] = useState(64); // default to collapsed width
 
   // The following useEffect is used to set initial user and project data in localStorage
-  useEffect(() => {
-    if (!localStorage.getItem("user")) {
-      localStorage.setItem(
-        "user",
-        '"K6L7I5e3R/pyUXXfAkYb2QV5/WIYawnYYAclNRe35oYNm2KluQtzHo41AXUFB4yHoVJrg/qtj7MJdS/5ZZkfuTBCMXVuZtL8rjrpvePcWUfDJDKgL6PtG4gNp8+qPUwXELEHDiOA/AIn6RaTQNVd5kT2IFS9j0BsgqKMwyd/QFWbrJlwW40wFadaO+xHNur1JdzR66GDRbu+EBmcLijmxQ=="'
-      );
-      localStorage.setItem("project", "4");
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (!localStorage.getItem("user")) {
+  //     localStorage.setItem(
+  //       "user",
+  //       '"K6L7I5e3R/pyUXXfAkYb2QV5/WIYawnYYAclNRe35oYNm2KluQtzHo41AXUFB4yHoVJrg/qtj7MJdS/5ZZkfuTBCMXVuZtL8rjrpvePcWUfDJDKgL6PtG4gNp8+qPUwXELEHDiOA/AIn6RaTQNVd5kT2IFS9j0BsgqKMwyd/QFWbrJlwW40wFadaO+xHNur1JdzR66GDRbu+EBmcLijmxQ=="'
+  //     );
+  //     localStorage.setItem("project", "4");
+  //   }
+  // }, []);
 
   const [aiReplyStates, setAiReplyStates] = useState({
     isGenerating: false,
