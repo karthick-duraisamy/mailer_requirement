@@ -33,7 +33,7 @@ import {
 } from "../store/filterSlice";
 import { getIntentLabel, getSenderName } from "../hooks/commonFunction";
 import { setInputFilled, setWidthAlign } from "../store/alignmentSlice";
-
+import { NoMailFoundIcon } from "./Icons";
 
 interface EmailListProps {
   emails: any[];
@@ -109,7 +109,7 @@ const EmailList: React.FC<EmailListProps> = ({
   const [inputValue, setInputValue] = useState("");
   const [searchQuery, setSearchQuery] = useState<any>("");
   const [selectedMails, setSelectedMails] = useState(0);
-  
+
   useEffect(() => {
     // Initial call
     if (filters?.search === "") {
@@ -120,10 +120,7 @@ const EmailList: React.FC<EmailListProps> = ({
 
   useEffect(() => {
     // Initial call
-    if (
-      filters !== undefined &&
-      Object.keys(filters).length >= 1 
-    ) {
+    if (filters !== undefined && Object.keys(filters).length >= 1) {
       console.log("inside filtered");
       setIsFiltered(true);
       if (setEmails && isInputFilled?.length !== 0) setEmails([]);
@@ -133,7 +130,8 @@ const EmailList: React.FC<EmailListProps> = ({
 
   useEffect(() => {
     if (getMailListResponse.isSuccess && setEmails) {
-      const staticList = (getMailListResponse as any)?.data?.response?.data?.results;
+      const staticList = (getMailListResponse as any)?.data?.response?.data
+        ?.results;
 
       if (staticList && Array.isArray(staticList)) {
         setInboxCount(
@@ -171,7 +169,6 @@ const EmailList: React.FC<EmailListProps> = ({
       }
     }
   }, [getMailListResponse]);
-
 
   const handleEmailDoubleClick = (email: Email, event: React.MouseEvent) => {
     event.stopPropagation();
@@ -279,11 +276,11 @@ const EmailList: React.FC<EmailListProps> = ({
           {section === "starred"
             ? "Star important conversations to find them quickly here."
             : section === "snoozed"
-              ? "Snoozed conversations will appear here when it's time to deal with them."
-              : section.startsWith("custom-label-") ||
-                section.startsWith("label-")
-                ? `Conversations with the "${title}" label will appear here.`
-                : `No conversations available yet.`}
+            ? "Snoozed conversations will appear here when it's time to deal with them."
+            : section.startsWith("custom-label-") ||
+              section.startsWith("label-")
+            ? `Conversations with the "${title}" label will appear here.`
+            : `No conversations available yet.`}
         </p>
       </div>
     );
@@ -319,7 +316,7 @@ const EmailList: React.FC<EmailListProps> = ({
       requestAnimationFrame(() => {
         dispatch(setWidthAlign(clampedWidth.toString()));
         setWidth(clampedWidth);
-        localStorage.setItem('listwidth', width.toString() + 'px');
+        localStorage.setItem("listwidth", width.toString() + "px");
       });
     },
     [isResizing]
@@ -333,7 +330,7 @@ const EmailList: React.FC<EmailListProps> = ({
   }, []);
 
   React.useEffect(() => {
-    localStorage.setItem('listwidth', width.toString() + 'px');
+    localStorage.setItem("listwidth", width.toString() + "px");
     if (isResizing) {
       document.addEventListener("mousemove", handleResize, { passive: false });
       document.addEventListener("mouseup", handleResizeStop);
@@ -415,13 +412,16 @@ const EmailList: React.FC<EmailListProps> = ({
   //   );
   // }
 
-
-  const isInputFilled = useSelector((state: any) => state?.alignment?.isInputFilled);
-  const selectedMailsCount = useSelector((state: any) => state?.alignment?.selectedMailsCount);
+  const isInputFilled = useSelector(
+    (state: any) => state?.alignment?.isInputFilled
+  );
+  const selectedMailsCount = useSelector(
+    (state: any) => state?.alignment?.selectedMailsCount
+  );
 
   useEffect(() => {
     setSelectedMails(selectedMailsCount);
-  }, [selectedMailsCount])
+  }, [selectedMailsCount]);
 
   const handleChange = (e: any) => {
     const value = e.target.value;
@@ -430,7 +430,6 @@ const EmailList: React.FC<EmailListProps> = ({
     // Dispatch true if input is not empty, false if empty
     dispatch(setInputFilled(value));
     // console.log(value,"rag1");
-
   };
 
   const handleSearchChange = (query: any) => {
@@ -442,19 +441,22 @@ const EmailList: React.FC<EmailListProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownThreeRef.current && !dropdownThreeRef.current.contains(event.target as Node)) {
+      if (
+        dropdownThreeRef.current &&
+        !dropdownThreeRef.current.contains(event.target as Node)
+      ) {
         setShowMoreActions(false);
       }
     };
 
     if (showMoreActions) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     } else {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showMoreActions]);
 
@@ -475,10 +477,16 @@ const EmailList: React.FC<EmailListProps> = ({
 
         // Scroll to bottom: load next page
         if (target.scrollHeight - target.scrollTop === target.clientHeight) {
-          if (isFiltered ? filters?.page < totalPages : filterData.page < totalPages) {
+          if (
+            isFiltered
+              ? filters?.page < totalPages
+              : filterData.page < totalPages
+          ) {
             if (isFiltered) {
               console.log("inside filtered section");
-              dispatch(setFilterSettings({ ...filters, page: filters?.page + 1 }));
+              dispatch(
+                setFilterSettings({ ...filters, page: filters?.page + 1 })
+              );
               setIsFiltered(true);
             } else {
               setFilterData((prev: any) => ({
@@ -493,8 +501,14 @@ const EmailList: React.FC<EmailListProps> = ({
         // Scroll to top: load previous page (if not on first page)
         if (target.scrollTop === 0) {
           if (filterData.page > 1) {
-            if (isFiltered ? filters?.page < totalPages : filterData.page < totalPages) {
-              dispatch(setFilterSettings({ ...filters, page: filters?.page - 1 }));
+            if (
+              isFiltered
+                ? filters?.page < totalPages
+                : filterData.page < totalPages
+            ) {
+              dispatch(
+                setFilterSettings({ ...filters, page: filters?.page - 1 })
+              );
               setIsFiltered(true);
             } else {
               setFilterData((prev: any) => ({
@@ -589,7 +603,10 @@ const EmailList: React.FC<EmailListProps> = ({
                       type="text"
                       placeholder="Search..."
                       value={searchQuery}
-                      onChange={(e) => { setSearchQuery(e.target.value); handleChange(e); }}
+                      onChange={(e) => {
+                        setSearchQuery(e.target.value);
+                        handleChange(e);
+                      }}
                       onKeyDown={(e) => {
                         if (e.key === "Enter") {
                           handleSearchChange(searchQuery);
@@ -598,7 +615,9 @@ const EmailList: React.FC<EmailListProps> = ({
                       className="w-full border rounded-md py-1.5 pl-3 pr-8 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500"
                     />
                     <button
-                      onClick={() => { handleSearchChange(searchQuery) }}
+                      onClick={() => {
+                        handleSearchChange(searchQuery);
+                      }}
                       className="absolute inset-y-0 right-2 flex items-center text-gray-500 hover:text-blue-600"
                     >
                       🔍
@@ -614,8 +633,11 @@ const EmailList: React.FC<EmailListProps> = ({
                 <>
                   <h4 className="text-sm font-semibold text-gray-900">
                     {activeSectionTab === "sent" ? "Sent" : "Selected Emails"}
-                    {activeSectionTab === "sent" ? ` (${emails.filter((email) => !email.is_read).length}/${readStatus === "all" ? inboxCount : emails.length
-                      })` : ` (${selectedMails})` }
+                    {activeSectionTab === "sent"
+                      ? ` (${emails.filter((email) => !email.is_read).length}/${
+                          readStatus === "all" ? inboxCount : emails.length
+                        })`
+                      : ` (${selectedMails})`}
                   </h4>
                   <p className="text-sm mt-1 text-gray-800 truncate">
                     support@atyourprice.net
@@ -653,8 +675,10 @@ const EmailList: React.FC<EmailListProps> = ({
                 </button>
 
                 {showMoreActions && (
-                  <div ref={dropdownThreeRef}
-                    className="absolute top-full right-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                  <div
+                    ref={dropdownThreeRef}
+                    className="absolute top-full right-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50"
+                  >
                     <div className="p-1">
                       {/* Bulk Actions */}
                       <>
@@ -714,9 +738,28 @@ const EmailList: React.FC<EmailListProps> = ({
         </div>
       </div>
 
-      <div
-        className="divide-y divide-gray-100 overflow-y-auto thin-scrollbar"
-      >
+      {emails.length > 0 ? (
+        <></>
+      ) : (
+        <div className="flex flex-col items-center justify-center text-center h-full py-10 space-y-4">
+          {/* Icon container with light blue background and shadow */}
+          <div className="bg-blue-100 p-6 rounded-full shadow-md">
+            <NoMailFoundIcon />
+          </div>
+
+          {/* Bold heading */}
+          <h2 className="text-xl font-semibold text-gray-900">
+            No emails found
+          </h2>
+
+          {/* Subtext */}
+          <p className="text-gray-500 max-w-sm">
+            No conversations available yet.
+          </p>
+        </div>
+      )}
+
+      <div className="divide-y divide-gray-100 overflow-y-auto thin-scrollbar">
         {emails.map((email) => {
           const isSelected = selectedEmailId === email.mail_id;
           const isChecked = checkedEmails.has(email.mail_id);
@@ -760,10 +803,11 @@ const EmailList: React.FC<EmailListProps> = ({
                   className="mt-1 transition-colors"
                 >
                   <Star
-                    className={`w-4 h-4 ${email.is_starred
-                      ? "text-yellow-500 fill-yellow-500"
-                      : "text-gray-400 hover:text-yellow-500"
-                      }`}
+                    className={`w-4 h-4 ${
+                      email.is_starred
+                        ? "text-yellow-500 fill-yellow-500"
+                        : "text-gray-400 hover:text-yellow-500"
+                    }`}
                   />
                 </button>
 
@@ -775,10 +819,11 @@ const EmailList: React.FC<EmailListProps> = ({
                         <p
                           className={`
                           text-sm mt-1
-                          ${!email.is_read
+                          ${
+                            !email.is_read
                               ? "font-bold text-black"
                               : "font-semibold text-gray-400"
-                            }
+                          }
                           line-clamp-2
                         `}
                         >
@@ -794,10 +839,11 @@ const EmailList: React.FC<EmailListProps> = ({
                         <p
                           className={`
                           text-sm mt-1
-                          ${!email.is_read
+                          ${
+                            !email.is_read
                               ? "font-bold text-black"
                               : "font-semibold text-gray-400"
-                            }
+                          }
                           line-clamp-2
                         `}
                         >
@@ -809,10 +855,11 @@ const EmailList: React.FC<EmailListProps> = ({
                     <p
                       className={`
                       text-sm mt-1 truncate
-                      ${!email.is_read
+                      ${
+                        !email.is_read
                           ? "text-gray-700 font-medium"
                           : "text-gray-400"
-                        }
+                      }
                     `}
                     >
                       {email.snippet}
@@ -830,8 +877,9 @@ const EmailList: React.FC<EmailListProps> = ({
                           {React.createElement(
                             getIntentLabel(email.intent).icon,
                             {
-                              className: `w-3 h-3 mr-1 sm:w-3 sm:h-3 xs:w-2 xs:h-2 ${getIntentLabel(email.intent).iconColor
-                                }`,
+                              className: `w-3 h-3 mr-1 sm:w-3 sm:h-3 xs:w-2 xs:h-2 ${
+                                getIntentLabel(email.intent).iconColor
+                              }`,
                             }
                           )}
                           <span className="hidden sm:inline">
