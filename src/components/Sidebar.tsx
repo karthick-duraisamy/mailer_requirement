@@ -653,7 +653,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
             {/* Compose Button */}
             <button
-              className="flex items-center space-x-2 px-4 py-2.5 rounded-lg transition-all duration-200 hover:bg-blue-700 bg-blue-600 text-white shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="flex items-center space-x-2 px-4 py-2.5 rounded-lg transition-all duration-200 bg-orange-500 hover:bg-blue-700 text-white shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               onClick={onComposeClick}
               aria-label="Compose new email"
             >
