@@ -9,7 +9,7 @@ const HtmlViewer: React.FC<HtmlViewerProps> = ({ rawHtml }) => {
 
   const getSanitizedContent = (htmlString: string): string => {
     // Optionally sanitize or clean line breaks
-    return htmlString.replace(/[\n\r]/g, "");
+    return htmlString.replace(/[\n\r\t\\]/g, "");
   };
 
   useEffect(() => {
