@@ -1000,7 +1000,7 @@ function App() {
                   <div className="flex-shrink-0">
                     <EmailList
                       emails={filteredEmails}
-                      selectedEmailId={selectedEmail?.message_id || null}
+                      selectedEmailId={selectedEmail?.mail_id || null}
                       onEmailSelect={handleEmailSelect}
                       onStarToggle={handleStarToggle}
                       onCheckToggle={handleCheckToggle}
