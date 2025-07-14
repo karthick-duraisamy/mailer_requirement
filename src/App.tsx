@@ -25,9 +25,7 @@ function App() {
   const [customLabels, setCustomLabels] =
     useState<CustomLabel[]>(mockCustomLabels);
   const [showNotification, setShowNotification] = useState(false);
-  const [differentNotificationCount, setDifferentNotificationCount] = useState<
-    number | undefined
-  >(undefined);
+
   const [checkedEmails, setCheckedEmails] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<FilterOptions>({
@@ -73,12 +71,12 @@ function App() {
     tone: "professional",
   });
 
-  const [filterData, setFilterData] = useState<any>({
-    page: 1,
-    page_size: 50,
-    search: undefined,
-    folder: "inbox",
-  });
+  // const [filterData, setFilterData] = useState<any>({
+  //   page: 1,
+  //   page_size: 50,
+  //   search: undefined,
+  //   folder: "inbox",
+  // });
 
   // useEffect(() => {
   //   getMailList({});
@@ -104,88 +102,91 @@ function App() {
   const isInputFilled = useSelector((state: any) => state?.alignment?.isInputFilled);
   const isFilteredFilled = useSelector((state: any) => state?.alignment?.isFilterFilled);
 
-  useEffect(() => {
-    getMailList({ page_size: 20 }).then(() => setInitialLoading(false));
-  }, [])
+  // useEffect(() => {
+  //   getMailList({ page_size: 20 }).then(() => setInitialLoading(false));
+  // }, [])
 
 
-  useEffect(() => {
-    console.log(filterSettings);
-    const intervalId = setInterval(() => {
-      setDummyContent(prev => {
-        const newVal = prev + 1;
-        dummyCountRef.current = newVal;
+  // useEffect(() => {
+  //   console.log(filterSettings);
+  //   const intervalId = setInterval(() => {
+  //     setDummyContent(prev => {
+  //       const newVal = prev + 1;
+  //       dummyCountRef.current = newVal;
 
-        console.log("countena", newVal);
+  //       console.log("countena", newVal);
 
-        if (newVal % 2 === 0 && ((isInputFilled === undefined || isInputFilled === '') && (isFilteredFilled === undefined || isFilteredFilled === false))) {
-          getMailList({ page_size: 50 });
-        }
-        //  else {
-        // getMailList({ page: 2 });
-        // }
-        console.log(mailStatus, "check");
+  //       if (newVal % 2 === 0 && ((isInputFilled === undefined || isInputFilled === '') && (isFilteredFilled === undefined || isFilteredFilled === false))) {
+  //         getMailList({ page_size: 50 });
+  //       }
+  //       //  else {
+  //       // getMailList({ page: 2 });
+  //       // }
+  //       console.log(mailStatus, "check");
 
-        return newVal;
-      });
-    }, 10000);
+  //       return newVal;
+  //     });
+  //   }, 10000);
 
-    return () => clearInterval(intervalId);
-  }, [getMailList, isInputFilled, isFilteredFilled]);
+  //   return () => clearInterval(intervalId);
+  // }, [getMailList, isInputFilled, isFilteredFilled]);
 
   useEffect(() => {
     console.log(notificationState);
   }, [notificationState]);
 
-  useEffect(() => {
-    if (getMailListResponse?.isSuccess) {
-      const staticList = (getMailListResponse as any)?.data?.response?.data
-        ?.results;
-      const latestCount = Number(
-        (getMailListResponse as any)?.data?.response?.data?.count
-      );
+//   useEffect(() => {
+//   if (!getMailListResponse?.isSuccess) return;
 
-      if (notificationState !== undefined) {
-        if (notificationState !== latestCount) {
-          setDifferentNotificationCount(latestCount - notificationState);
-          setShowNotification(true);
-          console.log("difference generated");
-          if (differentNotificationCount) {
-            notification.success({
-              message: `You have ${differentNotificationCount} new messages`,
-            });
-          }
-          const timer = setTimeout(() => {
-            setShowNotification(false);
-          }, 3000); // hide after 3 seconds
+//   const responseData = (getMailListResponse as any)?.data?.response?.data;
+//   const staticList = responseData?.results || [];
+//   const latestCount = Number(responseData?.count || 0);
 
-          return () => clearTimeout(timer); // clean up
-        }
-      }
-      setNotificationState(latestCount);
-      if (staticList && Array.isArray(staticList)) {
-        setEmails(
-          staticList.map((email: any) => ({
-            ...email,
-            intentLabel: email.labels || "new",
-          }))
-        );
+//   let timer: ReturnType<typeof setTimeout>;
 
-        const deletedIds = staticList
-          .filter((email: any) => email.is_deleted)
-          .map((email: any) => email.mail_id);
+//   const handleNewMails = () => {
+//     if (notificationState !== undefined && latestCount !== notificationState) {
+//       const difference = latestCount - notificationState;
 
-        const deletedEmails = staticList
-          .filter((email: any) => deletedIds.includes(email.mail_id))
-          .map((email: any) => ({
-            ...email,
-            intentLabel: email.labels || "new",
-          }));
+//       if (difference > 0) {
+//         // Prevent duplicate notification
+//         if (!showNotification) {
+//           setShowNotification(true);
 
-        setDeletedEmails(deletedEmails);
-      }
-    }
-  }, [getMailListResponse]);
+//           notification.success({
+//             message: `You have ${difference} new message${difference > 1 ? 's' : ''}`,
+//           });
+
+//           timer = setTimeout(() => {
+//             setShowNotification(false);
+//           }, 3000);
+//         }
+//       }
+//     }
+
+//     // Set the new state after handling
+//     setNotificationState(latestCount);
+//   };
+
+//   handleNewMails();
+
+//   if (Array.isArray(staticList)) {
+//     const updatedEmails = staticList.map((email: any) => ({
+//       ...email,
+//       intentLabel: email.labels || "new",
+//     }));
+//     setEmails(updatedEmails);
+
+//     const deletedEmails = updatedEmails.filter((email) => email.is_deleted);
+//     setDeletedEmails(deletedEmails);
+//   }
+
+//   return () => {
+//     // Cleanup notification timeout
+//     if (timer) clearTimeout(timer);
+//   };
+// }, [getMailListResponse]);
+  
 
   const [labelManagerOpen, setLabelManagerOpen] = useState(false);
   const [isFullPageView, setIsFullPageView] = useState(false);
@@ -977,7 +978,7 @@ function App() {
       />
 
       <div className="flex-1 flex overflow-hidden">
-        {getMailListResponse?.isSuccess && (
+        {/* {getMailListResponse?.isSuccess && ( */}
           <div className="flex-1 flex min-w-0">
             {isFullPageView ? (
               <ConversationThread
@@ -1002,9 +1003,9 @@ function App() {
               <div className="flex flex-1 h-full">
                 {/* {getMailListResponse?.isLoading ||
                 getMailListResponse?.isFetching ? ( */}
-                {initialLoading ? (
+                {/* {initialLoading ? (
                   <NavbarSkeleton />
-                ) : (
+                ) : ( */}
                   <div className="flex-shrink-0">
                     <EmailList
                       emails={filteredEmails}
@@ -1027,7 +1028,7 @@ function App() {
                       searchFilter={searchFilter}
                     />
                   </div>
-                )}
+                {/* )} */}
 
                 <ConversationThread
                   email={selectedEmail}
@@ -1050,7 +1051,7 @@ function App() {
               </div>
             )}
           </div>
-        )}
+        {/* )} */}
       </div>
 
       <LabelManager

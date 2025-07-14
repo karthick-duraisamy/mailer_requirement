@@ -69,7 +69,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const navigationItems = [
     {
       id: "inbox",
-      label: "All Conversations",
+      label: "Inbox",
       icon: Inbox,
       count: emailCounts.inbox,
     },
@@ -160,6 +160,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     setFilters(newFilters);
     dispatch(
       setFilterSettings({
+        page:1,
         is_starred: newFilters?.starred,
         is_read:
           newFilters.readStatus === "all"
@@ -286,7 +287,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   }, [getLabelListResponse]);
 
   useEffect(() => {
-    getMailList({ page_size: 20 });
+    getMailList({ page_size: 20, folder: "inbox" });
   }, [isAllConversation]);
 
   useEffect(() => {
@@ -312,7 +313,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       dispatch(setFilterFilled(true));
     }
     if (selectedTab === "inbox") {
-      getMailList({ page_size: 20 });
+      getMailList({ page_size: 20 , folder : 'inbox'});
       dispatch(setFilterFilled(false));
       dispatch(
         setFilterSettings({
@@ -392,14 +393,14 @@ const Sidebar: React.FC<SidebarProps> = ({
                   <span className="hidden sm:inline">{item.label}</span>
                   {countsSection &&
                     (() => {
-                      const count = item.count;
-                      // item?.id === 'inbox'
-                      //   ? countsSection?.total_unread
-                      //   : item?.id === 'starred'
-                      //     ? countsSection?.total_starred
-                      //     : item?.id === 'sent'
-                      //       ? countsSection?.total_sent
-                      //       : countsSection?.total_deleted;
+                      // const count = item.count;
+                      const count  =item?.id === 'inbox'
+                        ? countsSection?.total_unread
+                        : item?.id === 'starred'
+                          ? countsSection?.total_starred
+                          : item?.id === 'sent'
+                            ? countsSection?.total_sent
+                            : countsSection?.total_deleted;
 
                       return count ? (
                         <span
