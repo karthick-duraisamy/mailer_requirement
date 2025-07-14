@@ -6,13 +6,15 @@ export interface FilterOptions {
   has_attachment?: boolean;
   sortBy?: string;
   dateRange?: { from: string; to: string };
-  intent?: string;
+  intent?: string | null;
   search?: string;
   is_read?: any; // Optional field for backward compatibility
   page?: number; // Optional field for pagination
   page_size?: number; // Optional field for pagination
   folder?: string | null;
   is_deleted?: boolean | null;
+  setting?: string | number | null;
+  corporate_label?: string | null;
 }
 
 const initialState: FilterOptions = {
