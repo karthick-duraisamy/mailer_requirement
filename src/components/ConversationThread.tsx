@@ -85,7 +85,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   onStarToggle,
 }) => {
   const { width: windowWidth } = useScreenResolution();
-  const [replyText, setReplyText] = useState("");
+  const [replyText, setReplyText] = useState<{ [key: string]: string }>({});;
   const [replyContent, setReplyContent] = useState(false);
   const [AIGeneratedReply, setAIGeneratedReply] = useState("");
   const [showReply, setShowReply] = useState(false);
@@ -118,25 +118,26 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   const [getSettings, getSettingsResponseStatus] = useLazyGetSettingsQuery();
   const [sentMail, sentMailResponseStatus] = useSentMailMutation();
   const [intent, setIntent] = useState<string>("");
-  const [ getTemplate, getTemplateResponseStatus ] = useLazyGetTemplateQuery();
+  const [getTemplate, getTemplateResponseStatus] = useLazyGetTemplateQuery();
   const [template, setTemplate] = useState<any>();
   const [templateContent, setTemplateContent] = useState<any>();
-  const [listWidth, setListWidth] = useState<string>(()=>localStorage.getItem('listwidth') || '320px');
+  const [listWidth, setListWidth] = useState<string>(() => localStorage.getItem('listwidth') || '320px');
   const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
   const widthAlign = useAppSelector(state => state.alignment?.mode);
-  const [replyingType, setReplyingType] = useState<"reply" | "reply-all" | "forward" | undefined>(undefined); 
+  const [replyingType, setReplyingType] = useState<"reply" | "reply-all" | "forward" | undefined>(undefined);
 
   // When the conversation changes, reset AI reply state
   useEffect(() => {
     setAIGeneratedReply("");
+    setReplyContent(false);
+    setShowReply(false);
   }, [email]);
 
-  useEffect(() => { 
+  useEffect(() => {
     getSettings({});
-     getTemplate({});
-     localStorage.setItem('notify', 'true');
- }, []);
-
+    getTemplate({});
+    localStorage.setItem('notify', 'true');
+  }, []);
   useEffect(() => {
     if (getSettingsResponseStatus?.isSuccess) {
       console.log("Settings fetched successfully", (getSettingsResponseStatus as any)?.data?.response?.data);
@@ -157,29 +158,29 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     }
   }, [aiReplyState.showAiReply]);
 
-   useEffect(() => {
-  const handleResize = () => {
-    setListWidth(localStorage.getItem('listwidth') || '320px');
-  };
+  useEffect(() => {
+    const handleResize = () => {
+      setListWidth(localStorage.getItem('listwidth') || '320px');
+    };
 
-  // Listen for window resize (if you want to update on window resize)
-  window.addEventListener('resize', handleResize);
+    // Listen for window resize (if you want to update on window resize)
+    window.addEventListener('resize', handleResize);
 
-  // Listen for localStorage changes (cross-tab)
-  window.addEventListener('storage', (event) => {
-    if (event.key === 'listwidth') {
-      setListWidth(event.newValue || '320px');
-    }
-  });
+    // Listen for localStorage changes (cross-tab)
+    window.addEventListener('storage', (event) => {
+      if (event.key === 'listwidth') {
+        setListWidth(event.newValue || '320px');
+      }
+    });
 
-  // Set initial value
-  handleResize();
+    // Set initial value
+    handleResize();
 
-  return () => {
-    window.removeEventListener('resize', handleResize);
-    window.removeEventListener('storage', handleResize);
-  };
-}, []);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('storage', handleResize);
+    };
+  }, []);
 
 
   // useEffect(() => {
@@ -191,7 +192,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   useEffect(() => {
     if (
       showReply &&
-      replyText === aiReplyState.generatedReply &&
       replyBoxRef.current
     ) {
       setTimeout(() => {
@@ -202,14 +202,14 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
         });
       }, 100);
     }
-  }, [showReply, replyText, aiReplyState.generatedReply]);
-  
-   // To smooth scrooling after Ai generated reply modal opening time
-   useEffect(()=>{
+  }, [showReply]);
+
+  // To smooth scrooling after Ai generated reply modal opening time
+  useEffect(() => {
     aiReplyRef.current?.scrollIntoView({
       behavior: "smooth",
-    });    
-  },[AIGeneratedReply.length]);
+    });
+  }, [AIGeneratedReply.length]);
 
   // To sent the mail sent successfully
   useEffect(() => {
@@ -232,7 +232,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
             to: msgData[msgData.length - 1].to,
             cc: msgData[msgData.length - 1].cc,
             bcc: msgData[msgData.length - 1].bcc,
-            body_plain: replyText,
+            body_plain: replyText[email?.mail_id],
             body_html: templateContent,
             labels: msgData[msgData.length - 1].labels,
             intent: msgData[msgData.length - 1].ai_response.intent,
@@ -335,17 +335,17 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   };
 
   const handleSendReply = () => {
-    if (replyText.trim()) {
+    if (replyText[email?.mail_id].trim()) {
       // Determine reply type based on whether AI was used
       let replyType: "MANUAL" | "AI" | "AI_EDITED" = "MANUAL";
       if (
-        replyText === aiReplyState.generatedReply &&
+        replyText[email?.mail_id] === aiReplyState.generatedReply &&
         aiReplyState.generatedReply
       ) {
         replyType = "AI";
       } else if (
         aiReplyState.generatedReply &&
-        replyText.includes(aiReplyState.generatedReply)
+        replyText[email?.mail_id].includes(aiReplyState.generatedReply)
       ) {
         replyType = "AI_EDITED";
       }
@@ -361,7 +361,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
       const settingId = matchedSetting?.setting_id;
       // setReplyText("");
-      const filledHtml = template.replace('$[[dynamic_content]]', replyText);
+      const filledHtml = template.replace('$[[dynamic_content]]', replyText[email?.mail_id]);
       const finalHtml = filledHtml.replace('$[[signature]]', sessionStorage.getItem("defaultSignature") || "");
       setTemplateContent(finalHtml);
 
@@ -375,7 +375,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
         to: ['madhivanan.e@infinitisoftware.net'],
         cc: msgData[msgData.length - 1]?.cc,
         bcc: msgData[msgData.length - 1]?.bcc,
-        body_plain: replyText,
+        body_plain: replyText[email?.mail_id],
         body_html: finalHtml,
         reply_type: replyType,
         edited: false,
@@ -383,13 +383,16 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
         ai_response: {
           intent: msgData[msgData.length - 1]?.intent || "reply",
           entities: msgData[msgData.length - 1]?.entities || {},
-          reply: replyText + "\n" + finalHtml
+          reply: replyText[email?.mail_id] + "\n" + finalHtml
         },
         setting_id: 29
       };
       sentMail(emailData);
       setShowReply(false);
-      setReplyText(replyText + "\n" + finalHtml);
+      setReplyText(prev => ({
+        ...prev,
+        [email?.mail_id]: (prev[email?.mail_id] || "") + "\n" + finalHtml
+      }));
       onAiReplyStateChange({
         ...aiReplyState,
         showAiReply: false,
@@ -432,7 +435,10 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       setEntitiesInfo((result as any)?.response.data.entities || []);
       setIntent((result as any)?.response.data.intent || "");
       console.log("AI Reply generated:", reply);
-      if(key === "reply") setReplyText(reply);
+      if (key === "reply") setReplyText(prev => ({
+        ...prev,
+        [email?.mail_id]: reply
+      }));
       else setSummaryModalInfo(reply);
 
       if (key === "reply" && reply) {
@@ -494,7 +500,10 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       const replyAllText = `\n\n--- Reply All ---\nTo: ${Array.from(
         allRecipients
       ).join(", ")}\n\n`;
-      setReplyText(aiReplyState.generatedReply);
+      setReplyText(prev => ({
+        ...prev,
+        [email?.mail_id]: aiReplyState.generatedReply
+      }));
       setShowReply(true);
       onAiReplyStateChange({
         ...aiReplyState,
@@ -514,7 +523,10 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
         }\nTo: ${lastMessage.to.join(", ")}\n${lastMessage.cc ? `Cc: ${lastMessage.cc.join(", ")}\n` : ""
         }\n${lastMessage.body_plain}`;
 
-      setReplyText(aiReplyState.generatedReply);
+      setReplyText(prev => ({
+        ...prev,
+        [email?.mail_id]: aiReplyState.generatedReply
+      }));
       setShowReply(true);
       onAiReplyStateChange({
         ...aiReplyState,
@@ -725,18 +737,21 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
   const messageBody = () => {
     const parser = new DOMParser();
-    const doc = parser.parseFromString(replyText, 'text/html');
+    const doc = parser.parseFromString(replyText[email?.mail_id], 'text/html');
     if (Array.from(doc.body.childNodes).some(node => node.nodeType === 1)) {
-      return <div dangerouslySetInnerHTML={{ __html: replyText }} />
+      return <div dangerouslySetInnerHTML={{ __html: replyText[email?.mail_id] }} />
     }
     else {
       return (
         <textarea
-          value={stripHtml(replyText)}
-          onChange={(e) => setReplyText(e.target.value)}
-          placeholder={`${replyText.includes("--- Reply All ---")
+          value={stripHtml(replyText[email?.mail_id])}
+          onChange={(e) => setReplyText(prev => ({
+            ...prev,
+            [email?.mail_id]: e.target.value
+          }))}
+          placeholder={`${replyText[email?.mail_id].includes("--- Reply All ---")
             ? "Write your reply to all recipients..."
-            : replyText.includes("--- Forwarded Message ---")
+            : replyText[email?.mail_id].includes("--- Forwarded Message ---")
               ? "Add a message to forward..."
               : "Write your reply..."
             }`}
@@ -746,7 +761,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     }
 
   }
-
   return (
     <>
       {sentMailResponseStatus?.isLoading &&
@@ -812,67 +826,67 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                     )}
                     {/* labels */}
                     <div className="flex-shrink-0 flex flex-col items-start space-y-1">
-                        {email?.intent && (
-                          <div
-                            className={`
+                      {email?.intent && (
+                        <div
+                          className={`
                             inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
                             ${getIntentLabel(email.intent).color}
                             sm:px-2 sm:py-1 xs:px-1 xs:py-0.5
                           `}
-                          >
-                            {React.createElement(
-                              getIntentLabel(email.intent).icon,
-                              {
-                                className: `w-3 h-3 mr-1 sm:w-3 sm:h-3 xs:w-2 xs:h-2 ${getIntentLabel(email.intent).iconColor
-                                  }`,
-                              }
-                            )}
-                            <span className="hidden sm:inline">
-                              {getIntentLabel(email.intent).text}
-                            </span>
-                            <span className="sm:hidden text-[10px]">
-                              {getIntentLabel(email.intent).text.substring(0, 3)}
-                            </span>
-                          </div>
-                        )}
+                        >
+                          {React.createElement(
+                            getIntentLabel(email.intent).icon,
+                            {
+                              className: `w-3 h-3 mr-1 sm:w-3 sm:h-3 xs:w-2 xs:h-2 ${getIntentLabel(email.intent).iconColor
+                                }`,
+                            }
+                          )}
+                          <span className="hidden sm:inline">
+                            {getIntentLabel(email.intent).text}
+                          </span>
+                          <span className="sm:hidden text-[10px]">
+                            {getIntentLabel(email.intent).text.substring(0, 3)}
+                          </span>
+                        </div>
+                      )}
 
-                        {/* Corporate/Custom Labels */}
-                        {emailLabels.length > 0 && (
-                          <div className="flex flex-col items-end space-y-1 max-w-[120px] sm:max-w-[160px]">
-                            {emailLabels.slice(0, 2).map((label) => (
+                      {/* Corporate/Custom Labels */}
+                      {emailLabels.length > 0 && (
+                        <div className="flex flex-col items-end space-y-1 max-w-[120px] sm:max-w-[160px]">
+                          {emailLabels.slice(0, 2).map((label) => (
+                            <div
+                              key={label.id}
+                              className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium"
+                              style={{
+                                backgroundColor: `${label.color}15`,
+                                color: label.color,
+                                border: `1px solid ${label.color}30`,
+                              }}
+                            >
                               <div
-                                key={label.id}
-                                className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium"
-                                style={{
-                                  backgroundColor: `${label.color}15`,
-                                  color: label.color,
-                                  border: `1px solid ${label.color}30`,
-                                }}
-                              >
-                                <div
-                                  className="w-2 h-2 rounded-full mr-1"
-                                  style={{ backgroundColor: label.color }}
-                                />
-                                <span className="hidden sm:inline truncate">
-                                  {label.name}
-                                </span>
-                                <span className="sm:hidden text-[10px]">
-                                  {label.name.substring(0, 3)}
-                                </span>
-                              </div>
-                            ))}
-                            {emailLabels.length > 2 && (
-                              <div className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600">
-                                <span className="hidden sm:inline">
-                                  +{emailLabels.length - 2} more
-                                </span>
-                                <span className="sm:hidden text-[10px]">
-                                  +{emailLabels.length - 2}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        )}
+                                className="w-2 h-2 rounded-full mr-1"
+                                style={{ backgroundColor: label.color }}
+                              />
+                              <span className="hidden sm:inline truncate">
+                                {label.name}
+                              </span>
+                              <span className="sm:hidden text-[10px]">
+                                {label.name.substring(0, 3)}
+                              </span>
+                            </div>
+                          ))}
+                          {emailLabels.length > 2 && (
+                            <div className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600">
+                              <span className="hidden sm:inline">
+                                +{emailLabels.length - 2} more
+                              </span>
+                              <span className="sm:hidden text-[10px]">
+                                +{emailLabels.length - 2}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -893,14 +907,16 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                     setEntitiesButtonPosition(entitiesButtonRef);
                   }}
                   className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
-                  style={{color: `#4c75e1`}}
+                  style={{ color: `#4c75e1` }}
                 >
                   <FileText className="w-4 h-4 mr-1" />
-                  <span className="text-sm text-gray-600 hover:text-gray-800" style={{color: `#4c75e1`}}>
+                  <span className="text-sm text-gray-600 hover:text-gray-800" style={{ color: `#4c75e1` }}>
                     Entities
                   </span>
                 </button>
-                <SparkleButton onClick={() => handleAiReplyGenerate('summarize')} text={getAIReplyResponseStatus?.isLoading && AIType === 'summarize' ? '' :"Summarize"} fontSize="14" borderRad="30"/>
+                <div className="cls-ai-btn">
+                  <SparkleButton onClick={() => handleAiReplyGenerate('summarize')} text={getAIReplyResponseStatus?.isLoading && AIType === 'summarize' ? '' : "Summarize"} fontSize="14" borderRad="30" />
+                </div>
                 {/* <button
                   onClick={() => handleAiReplyGenerate('summarize')}
                   className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
@@ -1194,14 +1210,14 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                           >
                             <div
                               className="text-gray-800 leading-relaxed whitespace-pre-wrap"
-                              style={{wordBreak: "break-word"}}
-                              //  dangerouslySetInnerHTML={{
-                              //    __html: message?.body_html || message?.body_plain || message?.snippet,
-                              //  }}
+                              style={{ wordBreak: "break-word" }}
+                            //  dangerouslySetInnerHTML={{
+                            //    __html: message?.body_html || message?.body_plain || message?.snippet,
+                            //  }}
                             />
-                              <HtmlViewer rawHtml={message?.body_html || message?.body_plain || message?.snippet}/>
-                              </div>
-                            {/* {message.body_plain}
+                            <HtmlViewer rawHtml={message?.body_html || message?.body_plain || message?.snippet} />
+                          </div>
+                          {/* {message.body_plain}
                         </div> */}
                           {/* </div> */}
                         </>
@@ -1224,7 +1240,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
           {/* Action Buttons - Hidden when AI reply is active */}
           {(AIGeneratedReply === "" || AIGeneratedReply.length === 0) && !showReply && (
-            <div className="border-t border-gray-200 p-2 bg-gray-50" style={{ marginTop:"auto", position: "sticky", bottom: 0}}>
+            <div className="border-t border-gray-200 p-2 bg-gray-50" style={{ marginTop: "auto", position: "sticky", bottom: 0 }}>
               <div className="mx-auto">
                 <div className="flex items-center justify-between flex-wrap gap-2 w-full">
                   {/* Left buttons */}
@@ -1232,7 +1248,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                     <button
                       onClick={() => {
                         setReplyType("AI");
-                        setShowReply(!showReply);
+                        setShowReply(true);
                         setReplyContent(true);
                         setReplyingType('reply');
                       }}
@@ -1243,7 +1259,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                     </button>
 
                     <button
-                      onClick={() =>{
+                      onClick={() => {
                         handleReplyAll();
                         setReplyingType('reply-all');
                       }}
@@ -1254,7 +1270,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                     </button>
 
                     <button
-                      onClick={() => { 
+                      onClick={() => {
                         handleForward();
                         setReplyingType('forward');
                       }}
@@ -1266,7 +1282,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                   </div>
 
                   {/* Right button */}
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 cls-ai-btn">
                     {/* <button
                       onClick={() => handleAiReplyGenerate('reply')}
                       disabled={getAIReplyResponseStatus?.isLoading && AIType === 'reply'}
@@ -1281,7 +1297,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                         </>
                       )}
                     </button> */}
-                    <SparkleButton onClick={() => handleAiReplyGenerate('reply')} text={ getAIReplyResponseStatus?.isLoading && AIType === 'reply' ? "" : "Reply with AI"} fontSize="14" borderRad="30"/>
+                    <SparkleButton onClick={() => handleAiReplyGenerate('reply')} text={getAIReplyResponseStatus?.isLoading && AIType === 'reply' ? "" : "Reply with AI"} fontSize="14" borderRad="30" />
                   </div>
                 </div>
               </div>
@@ -1330,10 +1346,10 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                           setEntitiesButtonPosition(entitiesButtonRefAi);
                         }}
                         className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
-                        style={{color: `#4c75e1`}}
+                        style={{ color: `#4c75e1` }}
                       >
                         <FileText className="w-4 h-4 mr-1" />
-                        <span className="text-sm text-gray-600 hover:text-gray-800" style={{color: `#4c75e1`}}>
+                        <span className="text-sm text-gray-600 hover:text-gray-800" style={{ color: `#4c75e1` }}>
                           Entities
                         </span>
                       </button>
@@ -1399,7 +1415,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                           handleAiReply();
                           setReplyingType('reply');
                         }}
-                        className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm"
+                        className="flex items-center space-x-2 px-4 py-2 bg-orange-500 hover:bg-blue-700 text-white rounded-lg transition-colors"
                       >
                         <Reply className="w-4 h-4" />
                         <span>Reply</span>
@@ -1409,7 +1425,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                           handleAiReplyAll();
                           setReplyingType('reply-all');
                         }}
-                        className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors text-sm"
+                        className="flex items-center space-x-2 px-4 py-2 border text-orange-500 border-orange-500 hover:border-blue-500 hover:text-blue-500 hover:bg-gray-50 rounded-lg transition-colors"
                       >
                         <ReplyAll className="w-4 h-4" />
                         <span>Reply All</span>
@@ -1418,7 +1434,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                         onClick={() => {
                           setAIGeneratedReply("");
                         }}
-                        className="px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors text-sm"
+                        className="flex items-center space-x-2 px-4 py-2 border text-orange-500 border-orange-500 hover:border-blue-500 hover:text-blue-500 hover:bg-gray-50 rounded-lg transition-colors"
                       >
                         Dismiss
                       </button>
@@ -1439,17 +1455,17 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                 <div className="mb-4">
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
                     {replyingType === 'reply-all'
-                        ? "Reply All"
-                        : replyingType === 'forward'
-                          ? "Forward"
-                          : "Reply"}
+                      ? "Reply All"
+                      : replyingType === 'forward'
+                        ? "Forward"
+                        : "Reply"}
                   </h3>
                   <div className="text-sm text-gray-600 space-y-1 bg-white p-3 rounded-lg border">
                     <div className="space-y-1 text-sm">
                       {/* To */}
                       <div>
                         <span className="font-medium">To:</span>{" "}
-                        {replyText.includes("--- Reply All ---")
+                        {replyingType === 'reply-all'
                           ? (() => {
                             const lastMessage =
                               sortedMessages[sortedMessages.length - 1];
@@ -1458,7 +1474,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                             ]);
                             return Array.from(allRecipients).join(", ");
                           })()
-                          : replyText.includes("--- Forwarded Message ---")
+                          : replyingType === 'forward'
                             ? "Enter recipient email(s)"
                             : sortedMessages[sortedMessages.length - 1]?.to?.join(
                               ", "
@@ -1472,15 +1488,15 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                         sortedMessages[sortedMessages.length - 1]?.cc?.length >
                         0 && (
                           <>
-                            {sortedMessages[sortedMessages.length - 1].cc?.length > 0  &&<div>
+                            {sortedMessages[sortedMessages.length - 1].cc?.length > 0 && <div>
                               <span className="font-medium">Cc:</span>{" "}
-                              { sortedMessages[sortedMessages.length - 1].cc.join(
+                              {sortedMessages[sortedMessages.length - 1].cc.join(
                                 ", "
                               )}
                             </div>}
-                            { sortedMessages[sortedMessages.length - 1].bcc?.legnth > 0 &&<div>
+                            {sortedMessages[sortedMessages.length - 1].bcc?.legnth > 0 && <div>
                               <span className="font-medium">Bcc:</span>{" "}
-                              { sortedMessages[sortedMessages.length - 1].bcc.join(
+                              {sortedMessages[sortedMessages.length - 1].bcc.join(
                                 ", "
                               )}
                             </div>}
@@ -1518,20 +1534,26 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                     </span>
                   </label>
                   <textarea
-                      value={stripHtml(replyText)}
-                      onChange={(e) => setReplyText(e.target.value)}
-                      placeholder={
-                        replyText.includes("--- Reply All ---")
-                          ? "Write your reply to all recipients..."
-                          : replyText.includes("--- Forwarded Message ---")
+                    value={stripHtml(replyText[email?.mail_id] || "")}
+                    onChange={(e) => {
+                      setReplyText(prev => ({
+                        ...prev,
+                        [email?.mail_id]: e.target.value
+                      }));
+                      console.log(replyText);
+                    }}
+                    placeholder={
+                      replyingType === 'reply-all'
+                        ? "Write your reply to all recipients..."
+                        : replyingType === 'forward'
                           ? "Add a message to forward..."
                           : "Write your reply..."
-                      }
-                      className="w-full h-40 p-4 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
-                    />
-                  </div>
+                    }
+                    className="w-full h-40 p-4 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                  />
+                </div>
 
-                {replyText === aiReplyState.generatedReply &&
+                {replyText[email?.mail_id] === aiReplyState.generatedReply &&
                   aiReplyState.generatedReply && (
                     <div className="mb-3 text-sm text-purple-600 flex items-center space-x-1 bg-purple-50 p-2 rounded">
                       <Sparkles className="w-3 h-3" />
@@ -1541,8 +1563,15 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
                 <div className="flex items-center justify-between">
                   <button
-                    onClick={() => setShowReply(false)}
-                    className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                    onClick={() => {
+                      setShowReply(false);
+                      setReplyText(prev => {
+                        const { [email?.mail_id]: _, ...rest } = prev;
+                        return rest;
+                      });
+
+                    }}
+                    className="flex items-center space-x-2 px-4 py-2 border text-orange-500 border-orange-500 hover:border-blue-500 hover:text-blue-500 hover:bg-gray-50 rounded-lg transition-colors"
                   >
                     Cancel
                   </button>
@@ -1567,8 +1596,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                   )} */}
                     <button
                       onClick={handleSendReply}
-                      disabled={!replyText.trim()}
-                      className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg transition-colors"
+                      disabled={!replyText[email?.mail_id]?.trim()}
+                      className="flex items-center space-x-2 px-4 py-2 bg-orange-500 hover:bg-blue-700 text-white rounded-lg transition-colors"
                     >
                       {replyingType === 'reply-all'
                         ? "Send to All"
@@ -1592,7 +1621,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
           {/* Summary Modal */}
           <SummaryModal
-            isOpen={summaryModalInfo !== undefined && summaryModalInfo !== null && (summaryModalInfo as any)?.length > 0} 
+            isOpen={summaryModalInfo !== undefined && summaryModalInfo !== null && (summaryModalInfo as any)?.length > 0}
             onClose={() => setSummaryModalInfo(undefined)}
             conversationData={summaryModalInfo as any}
             subject={email.subject}

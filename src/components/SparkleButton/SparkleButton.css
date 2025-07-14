@@ -1,7 +1,7 @@
 .sparkle-button {
-  position: relative;
-  background: linear-gradient(90deg, #FC466B 0%, #3F5EFB 100%);
-  color: white; /* Tailwind yellow-400 */
+ position: relative;
+  background-color: #fff;
+  color: #0C28A8; /* Tailwind yellow-400 */
   border: none;
   padding: 10px;
   font-size: 1rem;
@@ -12,6 +12,15 @@
   cursor: pointer;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   overflow: hidden;
+}
+.cls-ai-btn {
+  padding: 2px;
+  border-radius: 30px;
+  background: linear-gradient(90deg, #FD9646 20%, #0C28A8 80%);
+  display: inline-block;
+}
+.sparkle-icon {
+  color: #FD9646;
 }
 
 .sparkle-button:hover {
@@ -43,4 +52,14 @@
     opacity: 1;
     transform: scale(1.3);
   }
+}
+
+.cls-ai-btn {
+  padding: 2px;
+  border-radius: 30px;
+  background: linear-gradient(90deg, #FD9646 20%, #0C28A8 80%);
+  display: inline-block;
+}
+.sparkle-icon {
+  color: #FD9646;
 }
