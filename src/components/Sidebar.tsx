@@ -599,6 +599,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                             intent: JSON.stringify(selectedIntentLabels),
                             setting: 29,
                           }));
+                          dispatch(setFilterFilled(true));
                       }}
                     >
                       Submit
@@ -730,6 +731,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                             corporate_label: JSON.stringify(selectedCorporateLabels),
                             setting: 29,
                           }));
+                          dispatch(setFilterFilled(true));
                       }}
                     >
                       Submit
