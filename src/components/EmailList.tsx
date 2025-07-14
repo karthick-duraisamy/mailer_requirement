@@ -770,14 +770,14 @@ const EmailList: React.FC<EmailListProps> = ({
               key={email.mail_id}
               className={`
                 p-4 cursor-pointer transition-colors hover:bg-gray-50
-                ${isSelected ? "bg-blue-50 border-r-2 border-blue-500" : ""}
+                ${isSelected ? "bg-blue-50 border-l-2 border-blue-500" : ""}
                 ${!email.is_read ? "bg-blue-25" : ""}
               `}
               onClick={() => onEmailSelect(email)}
               onDoubleClick={(e) => handleEmailDoubleClick(email, e)}
               title="Double-click to open in full-page view"
               style={{
-                ...(isSelected ? { borderRight: "1px solid blue" } : {}),
+                ...(isSelected ? { borderLeft: "1px solid blue" } : {}),
               }}
             >
               <div className="flex items-start space-x-3">
