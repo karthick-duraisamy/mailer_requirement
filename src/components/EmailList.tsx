@@ -101,7 +101,8 @@ const EmailList: React.FC<EmailListProps> = ({
     search: undefined,
     folder: "inbox",
   });
-  const [inboxCount, setInboxCount] = useState(0);
+  const [inboxCount, setInboxCount] = useState<number | undefined>();
+  const [paginationCount, setPaginationCount] = useState(0);
   const filters = useSelector((state: RootState) => state.filters);
   // console.log(filters);
   const dispatch = useDispatch();
@@ -115,13 +116,8 @@ const EmailList: React.FC<EmailListProps> = ({
   const isFilterFilled = useSelector((state: any) => state?.alignment?.isFilterFilled);
   const [dummyCount, setDummyContent] = useState(0);
   const dummyCountRef = useRef(dummyCount);
-  const hasInitializedRef = useRef(false); 
-  const [notificationState, setNotificationState] = useState<
-    number | undefined
-  >(undefined);
-  const [differentNotificationCount, setDifferentNotificationCount] = useState<
-    number | undefined
-  >(undefined);
+  const hasInitializedRef = useRef(false);
+
 
   useEffect(() => {
     // Initial call
@@ -156,11 +152,9 @@ const EmailList: React.FC<EmailListProps> = ({
         ?.results;
 
       if (staticList && Array.isArray(staticList)) {
-        setInboxCount(
+        setPaginationCount(
           (getMailListResponse as any)?.data?.response?.data?.count || 0
         );
-
-
 
         const isSearchMode = isInputFilled?.length !== 0;
         const currentPage = isSearchMode ? filters?.page || 1 : filterData.page || 1;
@@ -169,23 +163,23 @@ const EmailList: React.FC<EmailListProps> = ({
           ...email,
           intentLabel: email.labels || "new",
         }));
-
-
         const responseData = (getMailListResponse as any)?.data?.response?.data;
         const latestCount = Number(responseData?.count || 0);
-        if (notificationState !== undefined) {  
-          if (notificationState !== latestCount ) {
-            const notificationCount = latestCount - notificationState;
-            // setDifferentNotificationCount(latestCount - notificationState);
-            console.log("difference generated", latestCount, notificationState);
-            if (notificationCount) {
-              notification.success({
-                message: `You have ${notificationCount} new messages`,
-              });
-            }
+        if (inboxCount === undefined) {
+          setInboxCount(latestCount);
+        }
+        console.log(inboxCount, (latestCount - (inboxCount ?? 0)))
+        if (inboxCount !== undefined && latestCount !== undefined && inboxCount !== latestCount && (latestCount - (inboxCount)) > 0) {
+          const notificationCount = latestCount - inboxCount;
+          setInboxCount(latestCount);
+          console.log("difference generated", latestCount, inboxCount);
+          if (notificationCount) {
+            notification.success({
+              message: `You have ${notificationCount} new messages`,
+            });
           }
         }
-        
+
 
         if (isSearchMode || isFilterFilled) {
           if (currentPage === 1) {
@@ -524,7 +518,7 @@ const EmailList: React.FC<EmailListProps> = ({
           (isFilterFilled === undefined || isFilterFilled === false);
 
         if (shouldFetch) {
-          getMailList({ page_size: 50 });
+          getMailList({ page_size: 50, folder: "inbox" });
         }
 
         return newVal;
@@ -591,7 +585,7 @@ const EmailList: React.FC<EmailListProps> = ({
 
       onScroll={(e) => {
         const target = e.currentTarget;
-        const totalPages = Math.ceil(inboxCount / (isFiltered ? filters?.page_size : filterData.page_size));
+        const totalPages = Math.ceil(paginationCount / (isFiltered ? filters?.page_size : filterData.page_size));
 
         if (isLoadingRef.current) return;
 
@@ -779,7 +773,7 @@ const EmailList: React.FC<EmailListProps> = ({
                   <h4 className="text-sm font-semibold text-gray-900">
                     {activeSectionTab === "sent" ? "Sent" : "Selected Emails"}
                     {activeSectionTab === "sent"
-                      ? ` (${emails.filter((email) => !email.is_read).length}/${readStatus === "all" ? inboxCount : emails.length
+                      ? ` (${emails.filter((email) => !email.is_read).length}/${readStatus === "all" ? paginationCount : emails.length
                       })`
                       : ` (${selectedMails})`}
                   </h4>
