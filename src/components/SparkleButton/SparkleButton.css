@@ -63,3 +63,10 @@
 .sparkle-icon {
   color: #FD9646;
 }
+
+.cls-email {
+  .p-6{
+    width: 100%;
+    overflow-x: auto;
+  }
+} 

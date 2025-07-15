@@ -6,6 +6,7 @@ interface AlignmentState {
   isInputFilled: string;
   selectedMailsCount: number;
   isFilterFilled: any;
+  selectedTabStatus: string;
 }
 
 const initialState: AlignmentState = {
@@ -14,6 +15,7 @@ const initialState: AlignmentState = {
   isInputFilled: '',
   selectedMailsCount: 0,
   isFilterFilled:false,
+  selectedTabStatus: 'inbox',
 };
 
 const alignmentSlice = createSlice({
@@ -31,9 +33,12 @@ const alignmentSlice = createSlice({
     },
     setFilterFilled: (state, action: PayloadAction<any>) => {
       state.isFilterFilled = action.payload;
+    },
+    setSelectedTabStatus:(state,action:PayloadAction<string>)=>{
+        state.selectedTabStatus = action.payload
     }
   },
 });
 
-export const { setWidthAlign, setInputFilled, setSelectedMailsCount , setFilterFilled} = alignmentSlice.actions;
+export const { setWidthAlign, setInputFilled, setSelectedMailsCount , setFilterFilled, setSelectedTabStatus} = alignmentSlice.actions;
 export default alignmentSlice.reducer;

@@ -15,7 +15,7 @@ import EmailFilters, { FilterOptions } from "./EmailFilters";
 import { useSelector, useDispatch } from "react-redux";
 import { setFilterSettings } from "../store/filterSlice";
 import SignatureSetup from "./SignatureSetup";
-import { setFilterFilled } from "../store/alignmentSlice";
+import { setFilterFilled , setSelectedTabStatus } from "../store/alignmentSlice";
 import {
   useLazyGetLabelListQuery,
   useLazyGetMailListResponseQuery,
@@ -296,6 +296,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         setFilterSettings({ is_starred: undefined, is_deleted: undefined })
       );
       dispatch(setFilterFilled(true));
+      dispatch(setSelectedTabStatus("sent"));
     }
     if (selectedTab === "starred" || selectedTab === "bin") {
       dispatch(
@@ -310,12 +311,14 @@ const Sidebar: React.FC<SidebarProps> = ({
         })
       );
       dispatch(setFilterFilled(true));
+      dispatch(setSelectedTabStatus(selectedTab === "starred" ? "starred" : "bin"));
     }
     if (selectedTab === "inbox") {
       getMailList({ page_size: 20, folder: 'inbox' });
       dispatch(setFilterFilled(false));
       dispatch(setFilterSettings({ folder: undefined, is_starred: undefined, is_deleted: undefined }));
       setIsAllConversation(true);
+      dispatch(setSelectedTabStatus("inbox"));
     }
   }, [selectedTab]);
 
@@ -597,7 +600,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                         dispatch(
                           setFilterSettings({
                             intent: JSON.stringify(selectedIntentLabels),
-                            setting: 29,
+                            setting: localStorage.getItem("settingId"),
                           }));
                           dispatch(setFilterFilled(true));
                       }}
@@ -729,7 +732,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                         dispatch(
                           setFilterSettings({
                             corporate_label: JSON.stringify(selectedCorporateLabels),
-                            setting: 29,
+                            setting: localStorage.getItem("settingId"),
                           }));
                           dispatch(setFilterFilled(true));
                       }}

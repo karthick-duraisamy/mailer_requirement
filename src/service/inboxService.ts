@@ -15,7 +15,7 @@ const service = InboxService.enhanceEndpoints({
     }),
     getConversationDetails: builder.query({
       query: (param: any) =>
-        `/mail-inbox/mail/get-inboxes/${param.id}/?project=${localStorage.getItem("project")}&setting=29`,
+        `/mail-inbox/mail/get-inboxes/${param.id}/?project=${localStorage.getItem("project")}&setting=${localStorage.getItem("settingId")}`,
     }),
     getConvoResponse: builder.query({
       query: () => "staticResponse/convoResponse.json",
@@ -47,7 +47,7 @@ const service = InboxService.enhanceEndpoints({
     }),
     setMailStatus: builder.mutation({
       query: (body: any) => ({
-        url: `/mail-inbox/mail/status/?project=${localStorage.getItem("project")}&setting=29`,
+        url: `/mail-inbox/mail/status/?project=${localStorage.getItem("project")}&setting=${localStorage.getItem("settingId")}`,
         method: 'POST',
         body
       }),
@@ -55,7 +55,7 @@ const service = InboxService.enhanceEndpoints({
     }),
     getLabelList: builder.query({
       query: (body: any) => ({
-        url: `/mail-inbox/mail/get-lable-count/?project=${localStorage.getItem("project")}&setting=29`,
+        url: `/mail-inbox/mail/get-lable-count/?project=${localStorage.getItem("project")}&setting=${localStorage.getItem("settingId")}`,
       }),
       invalidatesTags: ['mailer']
     }),

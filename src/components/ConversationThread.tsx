@@ -141,8 +141,11 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   }, []);
   useEffect(() => {
     if (getSettingsResponseStatus?.isSuccess) {
-      console.log("Settings fetched successfully", (getSettingsResponseStatus as any)?.data?.response?.data);
+      const settingList = (getSettingsResponseStatus as any)?.data?.response?.data;
       setSettings((getSettingsResponseStatus as any)?.data?.response?.data);
+      const mailSyncSetting = settingList.find((item: any) => item.setting_name === 'Mail Sync');
+      const settingId = mailSyncSetting?.setting_id;
+      localStorage.setItem('settingId', settingId);
     }
   }, [getSettingsResponseStatus])
   // Auto-scroll to AI reply when it becomes available
@@ -456,6 +459,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
       if (key === "reply" && reply) {
         setAIGeneratedReply(reply);
+        setIsAiReplyExpanded(false);
       }
     } catch (error) {
       console.error("AI Reply fetch failed", error);
@@ -663,14 +667,16 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     setShowMoreMenu(false);
   };
 
-  const toggleMessageExpansion = (messageId: string) => {
+  const toggleMessageExpansion = (messageId: string, lastMessage: string) => {
     setExpandedMessages((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(messageId)) {
-        newSet.delete(messageId);
-      } else {
+      // Create a new empty set (clearing all previous expansions)
+      const newSet = new Set<string>();
+      // Only add the current messageId if it wasn't already expanded
+      // (this creates toggle behavior - click expanded message to collapse)
+      if (!prev.has(messageId)) {
         newSet.add(messageId);
       }
+      newSet.add(`collapsed-${lastMessage}`); // Add last message to the set
       return newSet;
     });
   };
@@ -1119,16 +1125,17 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                                   ])
                               );
                             } else {
-                              setExpandedMessages((prev) => {
-                                const newSet = new Set(prev);
-                                newSet.delete(
-                                  `collapsed-${message.message_id}`
-                                );
-                                return newSet;
-                              });
+                              // setExpandedMessages((prev) => {
+                              //   const newSet = new Set(prev);
+                              //   newSet.delete(
+                              //     `collapsed-${message.message_id}`
+                              //   );
+                              //   return newSet;
+                              // });
+                              setExpandedMessages(() => new Set<string>());
                             }
                           } else {
-                            toggleMessageExpansion(message.message_id);
+                            toggleMessageExpansion(message.message_id, sortedMessages[sortedMessages.length - 1].message_id);
                           }
                         }}
                       >
@@ -1181,7 +1188,11 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
                         {/* Message Metadata - Always visible for expanded messages */}
                         {isExpanded &&
-                          (message.cc.length > 0 || message.bcc.length > 0) && (
+                          // (message.cc.length > 0 || message.bcc.length > 0) && (
+                          (
+                            (message.cc.length > 0 && message.cc[0] !== "") ||
+                            (message.bcc.length > 0 && message.bcc[0] !== "")
+                          ) && (
                             <div className="mb-4 bg-gray-50 rounded-lg p-4 space-y-2">
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                                 {message.cc && message.cc.length > 0 && (
@@ -1324,10 +1335,11 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
               <div>
                 <div
                   ref={aiReplyRef}
-                  className={`bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-4 animate-in slide-in-from-top-2 duration-300 transition-all ${isAiReplyExpanded
-                    ? "fixed inset-4 z-50 bg-white shadow-2xl flex flex-col"
-                    : ""
-                    }`}
+                  className={`bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-4 animate-in slide-in-from-top-2 duration-300 transition-all`}
+                // ${isAiReplyExpanded
+                // ? "fixed inset-4 z-50 bg-white shadow-2xl flex flex-col"
+                // : ""
+                // }
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center space-x-2">
@@ -1500,7 +1512,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                       {/* Cc (render only if exists) */}
                       {replyingType === "reply-all" &&
                         sortedMessages[sortedMessages.length - 1]?.cc?.length >
-                        0 && (
+                        0 && sortedMessages[sortedMessages.length - 1]?.cc[0] !== "" && (
                           <>
                             {sortedMessages[sortedMessages.length - 1].cc?.length > 0 && <div>
                               <span className="font-medium">Cc:</span>{" "}
@@ -1508,12 +1520,13 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                                 ", "
                               )}
                             </div>}
-                            {sortedMessages[sortedMessages.length - 1].bcc?.legnth > 0 && <div>
-                              <span className="font-medium">Bcc:</span>{" "}
-                              {sortedMessages[sortedMessages.length - 1].bcc.join(
-                                ", "
-                              )}
-                            </div>}
+                            {sortedMessages[sortedMessages.length - 1].bcc?.legnth > 0 && sortedMessages[sortedMessages.length - 1]?.bcc &&
+                              <div>
+                                <span className="font-medium">Bcc:</span>{" "}
+                                {sortedMessages[sortedMessages.length - 1].bcc.join(
+                                  ", "
+                                )}
+                              </div>}
                           </>
                         )}
 

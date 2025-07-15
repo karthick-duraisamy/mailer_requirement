@@ -101,7 +101,12 @@ const EmailList: React.FC<EmailListProps> = ({
     search: undefined,
     folder: "inbox",
   });
-  const [inboxCount, setInboxCount] = useState<number | undefined>();
+  const [inboxCount, setInboxCount] = useState<any>({
+    index : undefined,
+    starred : undefined,
+    sent : undefined,
+    bin : undefined,
+  });
   const [paginationCount, setPaginationCount] = useState(0);
   const filters = useSelector((state: RootState) => state.filters);
   // console.log(filters);
@@ -146,6 +151,7 @@ const EmailList: React.FC<EmailListProps> = ({
     }
   }, [searchQuery]);
 
+
   useEffect(() => {
     if (getMailListResponse.isSuccess && setEmails) {
       const staticList = (getMailListResponse as any)?.data?.response?.data
@@ -165,14 +171,20 @@ const EmailList: React.FC<EmailListProps> = ({
         }));
         const responseData = (getMailListResponse as any)?.data?.response?.data;
         const latestCount = Number(responseData?.count || 0);
-        if (inboxCount === undefined) {
+        if (inboxCount[selectedTabStatus] === undefined) {
           setInboxCount(latestCount);
         }
-        console.log(inboxCount, (latestCount - (inboxCount ?? 0)))
-        if (inboxCount !== undefined && latestCount !== undefined && inboxCount !== latestCount && (latestCount - (inboxCount)) > 0) {
-          const notificationCount = latestCount - inboxCount;
-          setInboxCount(latestCount);
-          console.log("difference generated", latestCount, inboxCount);
+        console.log(inboxCount[selectedTabStatus], (latestCount - (inboxCount[selectedTabStatus] ?? 0)), selectedTabStatus)
+        if (inboxCount[selectedTabStatus] !== undefined && latestCount !== undefined && inboxCount[selectedTabStatus] !== latestCount && (latestCount - (inboxCount[selectedTabStatus])) > 0) {
+          const notificationCount = latestCount - inboxCount[selectedTabStatus];
+          setInboxCount((prev: any) => ({
+                              ...prev,
+                              inboxCount: {
+                                ...prev.inboxCount,
+                                [selectedTabStatus]: latestCount
+                              }
+                            }));
+          console.log("difference generated", latestCount, inboxCount[selectedTabStatus]);
           if (notificationCount) {
             notification.success({
               message: `You have ${notificationCount} new messages`,
@@ -239,24 +251,33 @@ const EmailList: React.FC<EmailListProps> = ({
     );
   }, [emails]);
 
+  // To open the first mail
+  useEffect(() => {
+    if (emails.length > 0 && selectedEmailId === null) {
+      onEmailSelect(emails[0])
+    }
+  }, [emails, selectedEmailId]);
+
   const formatTime = (created_at: string) => {
     const date = new Date(created_at);
     const now = new Date();
-    const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
 
-    if (diffInHours < 24) {
+    const isSameDay =
+      date.getDate() === now.getDate() &&
+      date.getMonth() === now.getMonth() &&
+      date.getFullYear() === now.getFullYear();
+
+    if (isSameDay) {
       return date.toLocaleTimeString("en-US", {
         hour: "numeric",
         minute: "2-digit",
         hour12: true,
       });
-    } else if (diffInHours < 168) {
-      // Less than a week
-      return date.toLocaleDateString("en-US", { weekday: "short" });
     } else {
-      return date.toLocaleDateString("en-US", {
+      return date.toLocaleDateString("en-GB", {
+        day: "2-digit",
         month: "short",
-        day: "numeric",
+        year: "numeric",
       });
     }
   };
@@ -474,6 +495,9 @@ const EmailList: React.FC<EmailListProps> = ({
   const selectedMailsCount = useSelector(
     (state: any) => state?.alignment?.selectedMailsCount
   );
+  const selectedTabStatus = useSelector(
+    (state: any) => state?.alignment?.selectedTabStatus
+  );
 
   useEffect(() => {
     dummyCountRef.current = dummyCount;
@@ -519,6 +543,13 @@ const EmailList: React.FC<EmailListProps> = ({
 
         if (shouldFetch) {
           getMailList({ page_size: 50, folder: "inbox" });
+        }else {
+          const updatedFilters = {
+            ...filters,
+            page: undefined,
+            search: isInputFilled ? isInputFilled : undefined,
+          };
+          getMailList(updatedFilters);
         }
 
         return newVal;
@@ -907,7 +938,7 @@ const EmailList: React.FC<EmailListProps> = ({
             <div
               key={email.mail_id}
               className={`
-                p-4 cursor-pointer transition-colors hover:bg-gray-50
+                p-2 cursor-pointer transition-colors hover:bg-gray-50
                 ${isSelected ? "bg-blue-50 border-l-2 border-blue-500" : ""}
                 ${!email.is_read ? "bg-blue-25" : ""}
               `}
@@ -971,16 +1002,13 @@ const EmailList: React.FC<EmailListProps> = ({
                       </p>
                     </div>
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2 min-w-0">
+                      <div className="flex items-center space-x-2 min-w-0 max-w-xs">
                         <p
                           className={`
-                          text-sm mt-1
-                          ${!email.is_read
-                              ? "font-bold text-black"
-                              : "font-semibold text-gray-400"
-                            }
-                          line-clamp-2
-                        `}
+                            text-sm mt-1 truncate
+                            ${!email.is_read ? "font-bold text-black" : "font-semibold text-gray-400"}
+                          `}
+                          title={email.subject}
                         >
                           {email.subject}
                         </p>
