@@ -108,7 +108,7 @@ const EmailList: React.FC<EmailListProps> = ({
     bin : undefined,
   });
   const [paginationCount, setPaginationCount] = useState(0);
-  const filters = useSelector((state: RootState) => state.filters);
+  const filters: any = useSelector((state: RootState) => state.filters);
   // console.log(filters);
   const dispatch = useDispatch();
   const [isFiltered, setIsFiltered] = useState(false);

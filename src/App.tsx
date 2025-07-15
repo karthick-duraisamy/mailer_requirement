@@ -998,6 +998,7 @@ function App() {
                 onDeleteEmail={handleDeleteEmail}
                 onRestoreEmail={handleRestoreEmail}
                 activeSection={activeItem}
+                isFullPageView={isFullPageView}
               />
             ) : (
               <div className="flex flex-1 h-full">
@@ -1047,6 +1048,7 @@ function App() {
                   onRestoreEmail={handleRestoreEmail}
                   activeSection={activeItem}
                   onStarToggle={handleStarToggle}
+                  isFullPageView={isFullPageView}
                 />
               </div>
             )}

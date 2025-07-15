@@ -66,6 +66,7 @@ interface ConversationThreadProps {
   onRestoreEmail?: (emailId: string) => void;
   activeSection?: string;
   onStarToggle?: (emailId: string) => void;
+  isFullPageView?: boolean;
 }
 
 const ConversationThread: React.FC<ConversationThreadProps> = ({
@@ -83,6 +84,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   onRestoreEmail,
   activeSection,
   onStarToggle,
+  isFullPageView
 }) => {
   const { width: windowWidth } = useScreenResolution();
   const [replyText, setReplyText] = useState<{ [key: string]: string }>({});;
@@ -778,7 +780,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
         />
       )
     }
-
   }
   return (
     <>
@@ -789,7 +790,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
         getConversationDetailsStatus?.isFetching ? (
         <ConversationSkeleton />
       ) : (
-        <div ref={containerRef} className="flex-1 flex flex-col bg-white" style={{ maxWidth: `calc(100vw - ${widthAlign}px)`, overflow: 'auto' }}>
+        <div ref={containerRef} className="flex-1 flex flex-col bg-white" style={{maxWidth: isFullPageView ? "" : `calc(100vw - ${widthAlign}px)`, overflow: 'auto' }}>
           {/* Header */}
           <div className="border-b border-gray-200 p-6">
             <div className="flex items-center justify-between">
@@ -1125,13 +1126,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                                   ])
                               );
                             } else {
-                              // setExpandedMessages((prev) => {
-                              //   const newSet = new Set(prev);
-                              //   newSet.delete(
-                              //     `collapsed-${message.message_id}`
-                              //   );
-                              //   return newSet;
-                              // });
                               setExpandedMessages(() => new Set<string>());
                             }
                           } else {
@@ -1188,7 +1182,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
                         {/* Message Metadata - Always visible for expanded messages */}
                         {isExpanded &&
-                          // (message.cc.length > 0 || message.bcc.length > 0) && (
                           (
                             (message.cc.length > 0 && message.cc[0] !== "") ||
                             (message.bcc.length > 0 && message.bcc[0] !== "")
