@@ -105,6 +105,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   const aiReplyRef = useRef<HTMLDivElement>(null);
   const replyBoxRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const lastMessageRef = useRef<HTMLDivElement>(null);
   const entitiesButtonRef = useRef<HTMLButtonElement>(null);
   const entitiesButtonRefAi = useRef<HTMLButtonElement>(null);
   const [entitiesButtonPosition, setEntitiesButtonPosition] = useState<any>();
@@ -292,6 +293,18 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       return acc;
     }, {});
   };
+
+  useEffect(() => {
+    if (lastMessageRef.current && msgData.length > 0) {
+      // Small timeout to ensure the DOM is fully updated
+      setTimeout(() => {
+        lastMessageRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      }, 100);
+    }
+  }, [msgData, email?.mail_id]);
 
   useEffect(() => {
     if (getConversationDetailsStatus?.isSuccess) {
@@ -1078,6 +1091,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                   <div
                     key={message.message_id}
                     className="last:border-b-0"
+                    ref={isLastMessage ? lastMessageRef : null}
                     style={{ marginBottom: 10 }}
                   >
                     <div
