@@ -561,7 +561,7 @@ const EmailList: React.FC<EmailListProps> = ({
           const updatedFilters = {
             ...filters,
             page: undefined,
-            search: isInputFilled ? isInputFilled : undefined,
+            search: isInputFilled ? isInputFilled : "",
           };
           console.log(updatedFilters, "updatedFilters");
           getMailList(updatedFilters);
