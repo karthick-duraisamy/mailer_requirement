@@ -79,3 +79,16 @@ body {
   margin-left: auto;
   font-size: 10px;
 }
+
+.html-content div{
+  width : 100% !important;
+  overflow: auto !important
+
+}
+
+.html-content div {
+  overflow-x: auto !important;
+  width: 100% !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: #0e2071 #fd9646 !important;
+}

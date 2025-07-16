@@ -10,7 +10,7 @@ interface AlignmentState {
 }
 
 const initialState: AlignmentState = {
-  mode: '320',
+  mode: '475',
   status: false,
   isInputFilled: '',
   selectedMailsCount: 0,

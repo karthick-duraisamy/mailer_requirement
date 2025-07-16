@@ -421,6 +421,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       setSelectedIntentLabels(updatedLabels);
       dispatch(
         setFilterSettings({
+          page:1,
           intent: JSON.stringify(updatedLabels),
           setting: localStorage.getItem("settingId"),
         })
@@ -430,6 +431,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       setSelectedCorporateLabels(updatedLabels);
       dispatch(
         setFilterSettings({
+          page:1,
           corporate_label: JSON.stringify(updatedLabels),
           setting: localStorage.getItem("settingId"),
         })
@@ -656,6 +658,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                         setIsIntentOpen(false);
                         dispatch(
                           setFilterSettings({
+                            page:1,
                             intent: JSON.stringify(selectedIntentLabels),
                             setting: localStorage.getItem("settingId"),
                           }));
@@ -811,6 +814,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                         setIsCorporateOpen(false);
                         dispatch(
                           setFilterSettings({
+                            page:1,
                             corporate_label: JSON.stringify(selectedCorporateLabels),
                             setting: localStorage.getItem("settingId"),
                           }));

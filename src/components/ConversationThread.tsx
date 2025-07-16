@@ -780,6 +780,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
         />
       )
     }
+
   }
   return (
     <>
@@ -790,7 +791,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
         getConversationDetailsStatus?.isFetching ? (
         <ConversationSkeleton />
       ) : (
-        <div ref={containerRef} className="flex-1 flex flex-col bg-white" style={{maxWidth: isFullPageView ? "" : `calc(100vw - ${widthAlign}px)`, overflow: 'auto' }}>
+        <div ref={containerRef} className="flex-1 flex flex-col bg-white" style={{ maxWidth: isFullPageView ? "" : `calc(100vw - 475px)`, overflow: 'auto' }}>
           {/* Header */}
           <div className="border-b border-gray-200 p-6">
             <div className="flex items-center justify-between">
@@ -1126,6 +1127,13 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                                   ])
                               );
                             } else {
+                              // setExpandedMessages((prev) => {
+                              //   const newSet = new Set(prev);
+                              //   newSet.delete(
+                              //     `collapsed-${message.message_id}`
+                              //   );
+                              //   return newSet;
+                              // });
                               setExpandedMessages(() => new Set<string>());
                             }
                           } else {
@@ -1182,6 +1190,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
                         {/* Message Metadata - Always visible for expanded messages */}
                         {isExpanded &&
+                          // (message.cc.length > 0 || message.bcc.length > 0) && (
                           (
                             (message.cc.length > 0 && message.cc[0] !== "") ||
                             (message.bcc.length > 0 && message.bcc[0] !== "")
@@ -1258,7 +1267,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
           {/* Action Buttons - Hidden when AI reply is active */}
           {(AIGeneratedReply === "" || AIGeneratedReply.length === 0) && !showReply && (
-            <div className="border-t border-gray-200 p-2 bg-gray-50" style={{ marginTop: "auto", position: "sticky", bottom: 0 }}>
+            <div className="border-t border-gray-200 p-2 bg-gray-50" style={{ marginTop: "auto", position: "sticky", bottom: 0, zIndex: 2 }}>
               <div className="mx-auto">
                 <div className="flex items-center justify-between flex-wrap gap-2 w-full">
                   {/* Left buttons */}
@@ -1300,7 +1309,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                   </div>
 
                   {/* Right button */}
-                  <div className="flex items-center gap-2 cls-ai-btn">
+                  <div className="flex items-center gap-2 cls-ai-btn" style={{ marginRight: isFullPageView ? "0% !important" : "" }}>
                     {/* <button
                       onClick={() => handleAiReplyGenerate('reply')}
                       disabled={getAIReplyResponseStatus?.isLoading && AIType === 'reply'}

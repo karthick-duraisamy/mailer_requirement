@@ -8,7 +8,7 @@ const service = InboxService.enhanceEndpoints({
     getMailListResponse: builder.query({
       // query: () => `/mail-server/?project=${localStorage.getItem("project")}&page=1&page_size=100`, // dynamic project ID
       query: (param: any) => ({
-        url: `/mail-inbox/mail/get-inboxes/?project=${localStorage.getItem("project")}`,
+        url: `/mail-inbox/mail/get-inboxes/?project=${localStorage.getItem("project")}&setting=${localStorage.getItem("settingId")}`,
         method: "GET",
         params: param,
       }),

@@ -125,6 +125,12 @@ const EmailList: React.FC<EmailListProps> = ({
   const selectedTabStatus = useSelector(
     (state: any) => state?.alignment?.selectedTabStatus
   );
+  const isInputFilled = useSelector(
+    (state: any) => state?.alignment?.isInputFilled
+  );
+  const selectedMailsCount = useSelector(
+    (state: any) => state?.alignment?.selectedMailsCount
+  )
 
 
   useEffect(() => {
@@ -166,7 +172,7 @@ const EmailList: React.FC<EmailListProps> = ({
         );
 
         const isSearchMode = isInputFilled?.length !== 0;
-        const currentPage = isSearchMode ? filters?.page || 1 : filterData.page || 1;
+        const currentPage = filters?.page ;
 
         const mappedList = staticList.map((email: any) => ({
           ...email,
@@ -204,10 +210,23 @@ const EmailList: React.FC<EmailListProps> = ({
           else {
             // Append additional pages of search result
             setEmails((prevEmails: any[]) => {
-              const existingIds = new Set(prevEmails.map((e) => e.mail_id));
-              const newItems = mappedList.filter((e) => !existingIds.has(e.mail_id));
-              return [...prevEmails, ...newItems];
+            const prevEmailMap = new Map(
+              prevEmails.map((email) => [email.mail_id, email])
+            );
+
+            const updatedEmails = [...prevEmails];
+
+            staticList.forEach((email: any) => {
+              if (!prevEmailMap.has(email.mail_id)) {
+                updatedEmails.push({
+                  ...email,
+                  intentLabel: email.labels || "new",
+                });
+              }
             });
+
+            return updatedEmails;
+          });
           }
         } else {
           // Preserve previous emails if already present
@@ -493,12 +512,6 @@ const EmailList: React.FC<EmailListProps> = ({
   //   );
   // }
 
-  const isInputFilled = useSelector(
-    (state: any) => state?.alignment?.isInputFilled
-  );
-  const selectedMailsCount = useSelector(
-    (state: any) => state?.alignment?.selectedMailsCount
-  )
 
   useEffect(() => {
     dummyCountRef.current = dummyCount;
@@ -559,7 +572,7 @@ const EmailList: React.FC<EmailListProps> = ({
     }, 10000);
 
     return () => clearInterval(intervalId);
-  }, [getMailList, isInputFilled, isFilterFilled]);
+  }, [getMailList, isInputFilled, isFilterFilled, filters]);
 
 
 
@@ -578,7 +591,7 @@ const EmailList: React.FC<EmailListProps> = ({
 
   const handleSearchChange = (query: any) => {
     setSearchQuery(query);
-    dispatch(setFilterSettings({ search: query, folder: "inbox" }));
+    dispatch(setFilterSettings({ search: query, folder: "inbox", page: 1 }));
   };
 
   const dropdownThreeRef = useRef<HTMLDivElement | null>(null);
@@ -610,7 +623,7 @@ const EmailList: React.FC<EmailListProps> = ({
       ref={containerRef}
       style={{
         width: `${width}px`,
-        minWidth: "365px",
+        minWidth: "320px",
         maxWidth: "800px",
         height: "100%",
         overflow: "auto",
@@ -661,7 +674,7 @@ const EmailList: React.FC<EmailListProps> = ({
         //   if (currentPage > 1) {
         //     isLoadingRef.current = true;
 
-        //     if (isFiltered) {
+        //     if (isFiltered && isFiltered) {
         //       dispatch(
         //         setFilterSettings({ ...filters, page: filters?.page - 1 })
         //       );
@@ -683,12 +696,12 @@ const EmailList: React.FC<EmailListProps> = ({
 
     >
       {/* Resizer */}
-      <div
+      {/* <div
         className="absolute top-0 right-0 h-full w-2 cursor-col-resize flex items-center justify-center hover:bg-blue-50 transition-colors group z-10"
         onMouseDown={handleResizeStart}
       >
         <div className="bg-gray-300 group-hover:bg-blue-400 h-6 w-0.5 rounded-full transition-colors" />
-      </div>
+      </div> */}
       {/* <div className="border-b border-gray-300 mb-4" >
         <nav className="flex space-x-6" style={{justifyContent: "space-around", padding:"10px"}}>          <span
             onClick={() => {

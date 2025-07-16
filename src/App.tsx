@@ -21,7 +21,6 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [getMailList, getMailListResponse] = useLazyGetMailListResponseQuery();
   const [emails, setEmails] = useState<any[]>([]);
-  console.log(emails, "emails")
   const [deletedEmails, setDeletedEmails] = useState<any[]>([]);
   const [customLabels, setCustomLabels] =
     useState<CustomLabel[]>(mockCustomLabels);
@@ -424,7 +423,6 @@ function App() {
         );
         break;
       case "bin":
-        console.log(conversations,"conversations")
         filtered = conversations?.filter((email) => email.is_deleted);  
         break;
 
@@ -994,7 +992,7 @@ function App() {
                 onDeleteEmail={handleDeleteEmail}
                 onRestoreEmail={handleRestoreEmail}
                 activeSection={activeItem}
-                isFullPageView={isFullPageView}
+                isFullPageView = {isFullPageView}
               />
             ) : (
               <div className="flex flex-1 h-full">
@@ -1044,7 +1042,7 @@ function App() {
                   onRestoreEmail={handleRestoreEmail}
                   activeSection={activeItem}
                   onStarToggle={handleStarToggle}
-                  isFullPageView={isFullPageView}
+                  isFullPageView = {isFullPageView}
                 />
               </div>
             )}
