@@ -736,7 +736,7 @@ const EmailList: React.FC<EmailListProps> = ({
         </nav>
       </div> */}
       <div
-        className="p-4 border-b border-gray-200"
+        className="py-4 px-1 border-b border-gray-200"
         style={{ backgroundColor: "#dbeafe" }}
       >
         <div className="flex items-center justify-between">
@@ -751,7 +751,7 @@ const EmailList: React.FC<EmailListProps> = ({
                   onSelectAll();
                 }
               }}
-              className="mt-1 text-gray-400 hover:text-gray-600 transition-colors"
+              className="mt-1 ml-1 text-gray-400 hover:text-gray-600 transition-colors"
               title={
                 checkedEmails.size === emails.length
                   ? "Unselect all"
@@ -810,7 +810,7 @@ const EmailList: React.FC<EmailListProps> = ({
                   </div>
 
                   {/* Email Address Display */}
-                  <p className="text-sm mt-1 text-gray-800 truncate">
+                  <p className="text-sm mt-1 ml-1 text-gray-800 truncate">
                     support@atyourprice.net
                   </p>
                 </>
@@ -834,7 +834,7 @@ const EmailList: React.FC<EmailListProps> = ({
           {/* Right Section: Action Buttons */}
           <div className="flex items-center space-x-2">
             {/* Label Actions */}
-            {hasCheckedEmails && (
+            {/* {hasCheckedEmails && (
               <EmailLabelActions
                 emailIds={checkedEmailsArray}
                 currentLabels={[]}
@@ -845,7 +845,7 @@ const EmailList: React.FC<EmailListProps> = ({
                 }}
                 onCreateLabel={onCreateLabel}
               />
-            )}
+            )} */}
 
             {/* More Actions */}
             {hasCheckedEmails && (
