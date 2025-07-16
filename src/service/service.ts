@@ -5,7 +5,7 @@ import { decryptResponse } from "../utils/crypto";
 const InboxService = createApi({
   reducerPath: "InboxService",
   baseQuery: fetchBaseQuery({
-    baseUrl: "https://notification.infinitisoftware.net/notificationapi/notification", // This allows you to access files in the public folder
+    baseUrl: "https://uat-notificationagent.infinitisoftware.net/notificationapi/notification", // This allows you to access files in the public folder
     credentials: 'include',
     prepareHeaders: (headers) => {
       const user = decryptResponse(localStorage.getItem('user') as string);
