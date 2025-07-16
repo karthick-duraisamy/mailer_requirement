@@ -102,10 +102,10 @@ const EmailList: React.FC<EmailListProps> = ({
     folder: "inbox",
   });
   const [inboxCount, setInboxCount] = useState<any>({
-    index : undefined,
-    starred : undefined,
-    sent : undefined,
-    bin : undefined,
+    index: undefined,
+    starred: undefined,
+    sent: undefined,
+    bin: undefined,
   });
   const [paginationCount, setPaginationCount] = useState(0);
   const filters: any = useSelector((state: RootState) => state.filters);
@@ -122,6 +122,9 @@ const EmailList: React.FC<EmailListProps> = ({
   const [dummyCount, setDummyContent] = useState(0);
   const dummyCountRef = useRef(dummyCount);
   const hasInitializedRef = useRef(false);
+  const selectedTabStatus = useSelector(
+    (state: any) => state?.alignment?.selectedTabStatus
+  );
 
 
   useEffect(() => {
@@ -172,18 +175,18 @@ const EmailList: React.FC<EmailListProps> = ({
         const responseData = (getMailListResponse as any)?.data?.response?.data;
         const latestCount = Number(responseData?.count || 0);
         if (inboxCount[selectedTabStatus] === undefined) {
-          setInboxCount(latestCount);
+          setInboxCount((prev: any) => ({
+            ...prev,
+            [selectedTabStatus]: latestCount,
+          }));
         }
-        console.log(inboxCount[selectedTabStatus], (latestCount - (inboxCount[selectedTabStatus] ?? 0)), selectedTabStatus)
-        if (inboxCount[selectedTabStatus] !== undefined && latestCount !== undefined && inboxCount[selectedTabStatus] !== latestCount && (latestCount - (inboxCount[selectedTabStatus])) > 0) {
+        console.log(inboxCount[selectedTabStatus], (latestCount - (inboxCount[selectedTabStatus] ?? 0)), selectedTabStatus, inboxCount);
+        if (inboxCount[selectedTabStatus] !== undefined && latestCount !== undefined && inboxCount[selectedTabStatus] !== latestCount && (latestCount - (inboxCount[selectedTabStatus])) > 0 ) {
           const notificationCount = latestCount - inboxCount[selectedTabStatus];
           setInboxCount((prev: any) => ({
-                              ...prev,
-                              inboxCount: {
-                                ...prev.inboxCount,
-                                [selectedTabStatus]: latestCount
-                              }
-                            }));
+            ...prev,
+            [selectedTabStatus]: latestCount,
+          }));
           console.log("difference generated", latestCount, inboxCount[selectedTabStatus]);
           if (notificationCount) {
             notification.success({
@@ -196,8 +199,9 @@ const EmailList: React.FC<EmailListProps> = ({
         if (isSearchMode || isFilterFilled) {
           if (currentPage === 1) {
             // First page of search – clear old list
-            setEmails(mappedList);
-          } else {
+            setEmails(staticList);
+          }
+          else {
             // Append additional pages of search result
             setEmails((prevEmails: any[]) => {
               const existingIds = new Set(prevEmails.map((e) => e.mail_id));
@@ -235,7 +239,7 @@ const EmailList: React.FC<EmailListProps> = ({
         // }
       }
     }
-  }, [getMailListResponse]);
+  }, [getMailListResponse, selectedTabStatus]);
 
 
   const handleEmailDoubleClick = (email: Email, event: React.MouseEvent) => {
@@ -494,10 +498,7 @@ const EmailList: React.FC<EmailListProps> = ({
   );
   const selectedMailsCount = useSelector(
     (state: any) => state?.alignment?.selectedMailsCount
-  );
-  const selectedTabStatus = useSelector(
-    (state: any) => state?.alignment?.selectedTabStatus
-  );
+  )
 
   useEffect(() => {
     dummyCountRef.current = dummyCount;
@@ -510,10 +511,10 @@ const EmailList: React.FC<EmailListProps> = ({
         containerRef.current &&
         containerRef.current.scrollTop > 10; // adjust buffer as needed
 
-      if (isScrolledDown) {
-        console.log("Skipping API call due to scroll position");
-        return;
-      }
+      // if (isScrolledDown) {
+      //   console.log("Skipping API call due to scroll position");
+      //   return;
+      // }
       // if (!isScrolledDown) {
       //   // Reset page to 1 if needed
       //   if (isFiltered) {
@@ -543,12 +544,13 @@ const EmailList: React.FC<EmailListProps> = ({
 
         if (shouldFetch) {
           getMailList({ page_size: 50, folder: "inbox" });
-        }else {
+        } else {
           const updatedFilters = {
             ...filters,
             page: undefined,
             search: isInputFilled ? isInputFilled : undefined,
           };
+          console.log(updatedFilters, "updatedFilters");
           getMailList(updatedFilters);
         }
 
@@ -653,30 +655,30 @@ const EmailList: React.FC<EmailListProps> = ({
         }
 
         // Scroll to top: Previous page
-        if (reachedTop) {
-          const currentPage = isFiltered ? filters?.page : filterData.page;
+        // if (reachedTop) {
+        //   const currentPage = isFiltered ? filters?.page : filterData.page;
 
-          if (currentPage > 1) {
-            isLoadingRef.current = true;
+        //   if (currentPage > 1) {
+        //     isLoadingRef.current = true;
 
-            if (isFiltered) {
-              dispatch(
-                setFilterSettings({ ...filters, page: filters?.page - 1 })
-              );
-              setIsFiltered(true);
-            } else {
-              setFilterData((prev: any) => ({
-                ...prev,
-                page: prev.page - 1,
-              }));
-              setIsFiltered(false);
-            }
+        //     if (isFiltered) {
+        //       dispatch(
+        //         setFilterSettings({ ...filters, page: filters?.page - 1 })
+        //       );
+        //       setIsFiltered(true);
+        //     } else {
+        //       setFilterData((prev: any) => ({
+        //         ...prev,
+        //         page: prev.page - 1,
+        //       }));
+        //       setIsFiltered(false);
+        //     }
 
-            setTimeout(() => {
-              isLoadingRef.current = false;
-            }, 300);
-          }
-        }
+        //     setTimeout(() => {
+        //       isLoadingRef.current = false;
+        //     }, 300);
+        //   }
+        // }
       }}
 
     >
@@ -994,11 +996,11 @@ const EmailList: React.FC<EmailListProps> = ({
                           line-clamp-2
                         `}
                         >
-                          {getSenderName(email.from_address)}
+                          {getSenderName(email?.from_address)}
                         </p>
                       </div>
                       <p className="text-xs text-gray-500 ml-2 flex-shrink-0">
-                        {formatTime(email.created_at)}
+                        {formatTime(email?.created_at)}
                       </p>
                     </div>
                     <div className="flex items-center justify-between">
@@ -1008,9 +1010,9 @@ const EmailList: React.FC<EmailListProps> = ({
                             text-sm mt-1 truncate
                             ${!email.is_read ? "font-bold text-black" : "font-semibold text-gray-400"}
                           `}
-                          title={email.subject}
+                          title={email?.subject}
                         >
-                          {email.subject}
+                          {email?.subject}
                         </p>
                       </div>
                     </div>
@@ -1024,7 +1026,7 @@ const EmailList: React.FC<EmailListProps> = ({
                         }
                     `}
                     >
-                      {email.snippet}
+                      {email?.snippet}
                     </p>
                     {/* Right side labels - responsive design */}
                     <div className="flex-shrink-0 flex flex-col items-start space-y-1 mt-2">
@@ -1032,30 +1034,30 @@ const EmailList: React.FC<EmailListProps> = ({
                         <div
                           className={`
                           inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
-                          ${getIntentLabel(email.intent).color}
+                          ${getIntentLabel(email?.intent).color}
                           sm:px-2 sm:py-1 xs:px-1 xs:py-0.5
                         `}
                         >
                           {React.createElement(
-                            getIntentLabel(email.intent).icon,
+                            getIntentLabel(email?.intent).icon,
                             {
                               className: `w-3 h-3 mr-1 sm:w-3 sm:h-3 xs:w-2 xs:h-2 ${getIntentLabel(email.intent).iconColor
                                 }`,
                             }
                           )}
                           <span className="hidden sm:inline">
-                            {getIntentLabel(email.intent).text}
+                            {getIntentLabel(email?.intent)?.text}
                           </span>
                           <span className="sm:hidden text-[10px]">
-                            {getIntentLabel(email.intent).text.substring(0, 3)}
+                            {getIntentLabel(email?.intent)?.text?.substring(0, 3)}
                           </span>
                         </div>
                       )}
 
                       {/* Corporate/Custom Labels */}
-                      {emailLabels.length > 0 && (
+                      {emailLabels?.length > 0 && (
                         <div className="flex flex-col items-end space-y-1 max-w-[120px] sm:max-w-[160px]">
-                          {emailLabels.slice(0, 2).map((label) => (
+                          {emailLabels?.slice(0, 2)?.map((label) => (
                             <div
                               key={label.id}
                               className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium"
@@ -1077,13 +1079,13 @@ const EmailList: React.FC<EmailListProps> = ({
                               </span>
                             </div>
                           ))}
-                          {emailLabels.length > 2 && (
+                          {emailLabels?.length > 2 && (
                             <div className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600">
                               <span className="hidden sm:inline">
-                                +{emailLabels.length - 2} more
+                                +{emailLabels?.length - 2} more
                               </span>
                               <span className="sm:hidden text-[10px]">
-                                +{emailLabels.length - 2}
+                                +{emailLabels?.length - 2}
                               </span>
                             </div>
                           )}

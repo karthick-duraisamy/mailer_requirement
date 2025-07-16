@@ -15,7 +15,7 @@ import EmailFilters, { FilterOptions } from "./EmailFilters";
 import { useSelector, useDispatch } from "react-redux";
 import { setFilterSettings } from "../store/filterSlice";
 import SignatureSetup from "./SignatureSetup";
-import { setFilterFilled , setSelectedTabStatus } from "../store/alignmentSlice";
+import { setFilterFilled, setSelectedTabStatus } from "../store/alignmentSlice";
 import {
   useLazyGetLabelListQuery,
   useLazyGetMailListResponseQuery,
@@ -53,7 +53,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
   const settingsRef = useRef<HTMLDivElement>(null);
   const [getMailList, getMailListResponse] = useLazyGetMailListResponseQuery();
-  const [selectedTab, setSelectedTab] = useState<string>("");
+  const [selectedTab, setSelectedTab] = useState<string>("inbox");
   const [getLabelList, getLabelListResponse] = useLazyGetLabelListQuery();
   const [countsSection, setCountsSection] = useState<any>();
   const [selectedIntentLabels, setSelectedIntentLabels] = useState<string[]>(
@@ -285,56 +285,65 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
   }, [getLabelListResponse]);
 
-  useEffect(() => {
-    getMailList({ page_size: 20, folder: "inbox" });
-  }, [isAllConversation]);
+  // useEffect(() => {
+  //   getMailList({ page_size: 20, folder: "inbox" });
+  // }, [isAllConversation]);
 
   useEffect(() => {
-    if (selectedTab === "sent") {
-      dispatch(setFilterSettings({ folder: selectedTab.toUpperCase() }));
-      dispatch(
-        setFilterSettings({ is_starred: undefined, is_deleted: undefined })
-      );
-      dispatch(setFilterFilled(true));
-      dispatch(setSelectedTabStatus("sent"));
-    }
-    if (selectedTab === "starred" || selectedTab === "bin") {
-      dispatch(
-        setFilterSettings({
-          [selectedTab === "starred" ? "is_starred" : "is_deleted"]: true,
-        })
-      );
-      dispatch(
-        setFilterSettings({
-          folder: undefined,
-          [selectedTab === "starred" ? "is_deleted" : "is_starred"]: undefined,
-        })
-      );
-      dispatch(setFilterFilled(true));
-      dispatch(setSelectedTabStatus(selectedTab === "starred" ? "starred" : "bin"));
-    }
-    if (selectedTab === "inbox") {
-      getMailList({ page_size: 20, folder: 'inbox' });
-      dispatch(setFilterFilled(false));
-      dispatch(setFilterSettings({ folder: undefined, is_starred: undefined, is_deleted: undefined }));
-      setIsAllConversation(true);
-      dispatch(setSelectedTabStatus("inbox"));
-    }
-  }, [selectedTab]);
+  let filterSettings: any = {};
 
-  useEffect(() => {
-    if (getMailListResponse?.isSuccess) {
-      const staticList = (getMailListResponse as any)?.data?.response?.data
-        .results;
-      console.log(staticList, "static list");
-      setEmails(
-        staticList.map((email: any) => ({
-          ...email,
-          intentLabel: email.labels || "new",
-        }))
-      );
-    }
-  }, [getMailListResponse]);
+  if (selectedTab === "sent") {
+    filterSettings = {
+      page: 1,
+      folder: "SENT",
+      is_starred: undefined,
+      is_deleted: undefined,
+    };
+    dispatch(setSelectedTabStatus("sent"));
+  } else if (selectedTab === "starred") {
+    filterSettings = {
+      page: 1,
+      is_starred: true,
+      is_deleted: undefined,
+      folder: undefined,
+    };
+    dispatch(setSelectedTabStatus("starred"));
+  } else if (selectedTab === "bin") {
+    filterSettings = {
+      page: 1,
+      is_deleted: true,
+      is_starred: undefined,
+      folder: undefined,
+    };
+    dispatch(setSelectedTabStatus("bin"));
+  } else if (selectedTab === "inbox") {
+    filterSettings = {
+      page: 1,
+      folder: "inbox",
+      is_starred: undefined,
+      is_deleted: undefined,
+    };
+    dispatch(setSelectedTabStatus("inbox"));
+  }
+
+  dispatch(setFilterSettings(filterSettings));
+  dispatch(setFilterFilled(true));
+}, [selectedTab]);
+
+
+  // useEffect(() => {
+  //   if (getMailListResponse?.isSuccess) {
+  //     const staticList = (getMailListResponse as any)?.data?.response?.data
+  //       .results;
+  //     console.log(staticList, "static list");
+  //     setEmails(
+  //       staticList.map((email: any) => ({
+  //         ...email,
+  //         intentLabel: email.labels || "new",
+  //       }))
+  //     );
+  //   }
+  // }, [getMailListResponse]);
 
   useEffect(() => {
     // if (!isOpen) {
@@ -404,6 +413,30 @@ const Sidebar: React.FC<SidebarProps> = ({
       );
     }
   };
+
+  // On unchecking time of intent labels unStoring
+  const handleUncheck = (labelValue: string, category: "intent" | "corporate") => {
+    if (category === "intent") {
+      const updatedLabels = selectedIntentLabels.filter((value) => value !== labelValue);
+      setSelectedIntentLabels(updatedLabels);
+      dispatch(
+        setFilterSettings({
+          intent: JSON.stringify(updatedLabels),
+          setting: localStorage.getItem("settingId"),
+        })
+      );
+    } else {
+      const updatedLabels = selectedCorporateLabels.filter((value) => value !== labelValue);
+      setSelectedCorporateLabels(updatedLabels);
+      dispatch(
+        setFilterSettings({
+          corporate_label: JSON.stringify(updatedLabels),
+          setting: localStorage.getItem("settingId"),
+        })
+      );
+    }
+  };
+
 
 
   return (
@@ -549,28 +582,36 @@ const Sidebar: React.FC<SidebarProps> = ({
                         <button
                           key={label.value}
                           type="button"
-                          onClick={() => handleLabelClick(label.value, "intent")}
+                          onClick={() => {
+                            if (isSelected) {
+                              handleUncheck(label.value, "intent");
+                            } else {
+                              handleLabelClick(label.value, "intent");
+                            }
+                          }}
                           className={`w-full flex items-center justify-between px-3 py-2 text-sm transition-colors ${isSelected
-                            ? "bg-blue-100 text-blue-700"
-                            : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                              ? "bg-blue-100 text-blue-700"
+                              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                             }`}
                         >
                           {/* Left: checkbox + label */}
                           <div className="w-full flex items-center justify-between">
                             <div className="flex items-center space-x-2">
+                              {/* Visual checkbox only — no handler here */}
                               <input
                                 type="checkbox"
                                 checked={isSelected}
-                                onChange={(e) => {
-                                  e.stopPropagation();
-                                  handleLabelClick(label.value, "intent");
-                                }}
-                                className="form-checkbox h-4 w-4 text-blue-600"
+                                readOnly
+                                className="form-checkbox h-4 w-4 text-blue-600 mr-1 pointer-events-none"
                               />
-                              <span className="truncate max-w-[160px] block" title={label.value}>{label.value}</span>
+                              <span className="truncate max-w-[160px] block" title={label.value}>
+                                {label.value}
+                              </span>
                             </div>
 
-                            <span className="cls-indent-count text-xs text-gray-500">{label.count}</span>
+                            <span className="cls-indent-count text-xs text-gray-500">
+                              {label.count}
+                            </span>
                           </div>
 
                           {/* Right badge */}
@@ -587,8 +628,24 @@ const Sidebar: React.FC<SidebarProps> = ({
                     })
                   )}
 
+
                   {/* Submit Button */}
                   <div className="sticky bottom-0 flex justify-end bg-white py-2 my-1 ml-0">
+                    {selectedIntentLabels?.length > 0 && <button
+                      className={`bg-gray-300 text-white text-sm font-medium py-1 px-2 rounded-full flex items-center space-x-2 mr-2`}
+                      onClick={() => {
+                        setIsIntentOpen(false);
+                        setSelectedIntentLabels([]);
+                        dispatch(
+                          setFilterSettings({
+                            intent: undefined,
+                            setting: localStorage.getItem("settingId"),
+                          }));
+                        dispatch(setFilterFilled(true));
+                      }}
+                    >
+                      Clear
+                    </button>}
                     <button
                       className={`${selectedIntentLabels.length === 0
                         ? "bg-gray-300 cursor-not-allowed"
@@ -602,7 +659,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                             intent: JSON.stringify(selectedIntentLabels),
                             setting: localStorage.getItem("settingId"),
                           }));
-                          dispatch(setFilterFilled(true));
+                        dispatch(setFilterFilled(true));
                       }}
                     >
                       Submit
@@ -683,10 +740,16 @@ const Sidebar: React.FC<SidebarProps> = ({
                         <button
                           key={label.value}
                           type="button"
-                          onClick={() => handleLabelClick(label.value, "corporate")}
+                          onClick={() => {
+                            if (isSelected) {
+                              handleUncheck(label.value, "corporate");
+                            } else {
+                              handleLabelClick(label.value, "corporate");
+                            }
+                          }}
                           className={`w-full flex items-center justify-between px-3 py-2 text-sm transition-colors ${isSelected
-                            ? "bg-blue-100 text-blue-700"
-                            : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                              ? "bg-blue-100 text-blue-700"
+                              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                             }`}
                         >
                           <div className="w-full flex items-center justify-between">
@@ -694,21 +757,24 @@ const Sidebar: React.FC<SidebarProps> = ({
                               <input
                                 type="checkbox"
                                 checked={isSelected}
-                                onChange={(e) => {
-                                  e.stopPropagation();
-                                  handleLabelClick(label.value, "corporate");
-                                }}
-                                className="form-checkbox h-4 w-4 text-blue-600"
+                                readOnly // <- Important: avoids duplicate state calls
+                                className="form-checkbox h-4 w-4 text-blue-600 pointer-events-none" // <- prevents double interaction
                               />
-                              <span className="truncate max-w-[160px] block" title={label.value}>{label.value}</span>
+                              <span className="truncate max-w-[160px] block" title={label.value}>
+                                {label.value}
+                              </span>
                             </div>
 
-                            <span className="cls-indent-count text-xs text-gray-500">{label.count}</span>
+                            <span className="cls-indent-count text-xs text-gray-500">
+                              {label.count}
+                            </span>
                           </div>
 
                           {getLabelCount(label.value) > 0 && (
                             <span
-                              className={`px-2 py-1 text-xs rounded-full ${isSelected ? "bg-blue-200 text-blue-800" : "bg-gray-200 text-gray-600"
+                              className={`px-2 py-1 text-xs rounded-full ${isSelected
+                                  ? "bg-blue-200 text-blue-800"
+                                  : "bg-gray-200 text-gray-600"
                                 }`}
                             >
                               {getLabelCount(label.value)}
@@ -716,11 +782,25 @@ const Sidebar: React.FC<SidebarProps> = ({
                           )}
                         </button>
                       );
-                    })
-                  )}
+                    }))}
 
                   {/* Submit Button */}
                   <div className="flex justify-end my-1 ml-0 py-2 mx-3 sticky bottom-0 bg-white">
+                    {selectedCorporateLabels?.length > 0 && <button
+                      className={`bg-gray-300 text-white text-sm font-medium py-1 px-2 rounded-full flex items-center space-x-2 mr-2`}
+                      onClick={() => {
+                        setIsCorporateOpen(false);
+                        setSelectedCorporateLabels([]);
+                        dispatch(
+                          setFilterSettings({
+                            corporate_label: undefined,
+                            setting: localStorage.getItem("settingId"),
+                          }));
+                        dispatch(setFilterFilled(true));
+                      }}
+                    >
+                      Clear
+                    </button>}
                     <button
                       className={`${selectedCorporateLabels.length === 0
                         ? "bg-gray-300 cursor-not-allowed"
@@ -734,7 +814,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                             corporate_label: JSON.stringify(selectedCorporateLabels),
                             setting: localStorage.getItem("settingId"),
                           }));
-                          dispatch(setFilterFilled(true));
+                        dispatch(setFilterFilled(true));
                       }}
                     >
                       Submit

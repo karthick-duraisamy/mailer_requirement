@@ -25,6 +25,7 @@ const initialState: FilterOptions = {
 //   dateRange: { from: "", to: "" },
 //   intent: "all",
   search: "",
+  folder: 'inbox',
 };
 
 const filterSlice = createSlice({

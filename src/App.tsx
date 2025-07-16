@@ -21,6 +21,7 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [getMailList, getMailListResponse] = useLazyGetMailListResponseQuery();
   const [emails, setEmails] = useState<any[]>([]);
+  console.log(emails, "emails")
   const [deletedEmails, setDeletedEmails] = useState<any[]>([]);
   const [customLabels, setCustomLabels] =
     useState<CustomLabel[]>(mockCustomLabels);
@@ -419,17 +420,12 @@ function App() {
         break;
       case "sent":
         filtered = conversations?.filter(
-          (email) => email.folder === "[Gmail]/Sent Mail"
+          (email) => email.folder === "SENT"
         );
         break;
       case "bin":
-        // Show deleted emails
-        filtered =
-          deletedEmails?.map((email) => ({
-            ...email,
-            messages: email.messages || [],
-            conversationEmails: [email],
-          })) || [];
+        console.log(conversations,"conversations")
+        filtered = conversations?.filter((email) => email.is_deleted);  
         break;
 
       default:
