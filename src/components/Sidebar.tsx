@@ -489,7 +489,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     (() => {
                       // const count = item.count;
                       const count = item?.id === 'inbox'
-                        ? countsSection?.total_unread
+                        ? `${countsSection?.total_unread} / ${countsSection?.total_count}`
                         : item?.id === 'starred'
                           ? countsSection?.total_starred
                           : item?.id === 'sent'
