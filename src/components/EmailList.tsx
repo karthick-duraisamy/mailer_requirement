@@ -132,7 +132,9 @@ const EmailList: React.FC<EmailListProps> = ({
   const selectedMailsCount = useSelector(
     (state: any) => state?.alignment?.selectedMailsCount
   )
-
+  const scrollTopEnable = useSelector(
+    (state: any) => state?.alignment?.scrollTopEnable
+  );
 
   useEffect(() => {
     // Initial call
@@ -631,9 +633,14 @@ const EmailList: React.FC<EmailListProps> = ({
       }}
 
       onScroll={(e) => {
+        // console.log(scrollTopEnable);
         const target = e.currentTarget;
         const totalPages = Math.ceil(paginationCount / (isFiltered ? filters?.page_size : filterData.page_size));
 
+        // if (scrollTopEnable) {
+        //     target.scrollTop = 0; 
+        //   }
+        
         if (isLoadingRef.current) return;
 
         const reachedBottom = target.scrollHeight - target.scrollTop <= target.clientHeight + scrollBuffer;
@@ -641,6 +648,7 @@ const EmailList: React.FC<EmailListProps> = ({
 
         // Scroll to bottom: Next page
         if (reachedBottom) {
+          
           if (
             isFiltered
               ? (filters?.page ?? 1) < totalPages
@@ -777,7 +785,7 @@ const EmailList: React.FC<EmailListProps> = ({
                     <input
                       type="text"
                       placeholder="Search..."
-                      value={searchQuery}
+                      value={isInputFilled}
                       onChange={(e) => {
                         setSearchQuery(e.target.value);
                         handleChange(e);
@@ -794,6 +802,7 @@ const EmailList: React.FC<EmailListProps> = ({
                         onClick={() => {
                           setSearchQuery("");
                           handleSearchChange(""); // trigger clear search
+                          dispatch(setInputFilled(''));
                         }}
                         className="absolute inset-y-0 right-6 flex items-center px-1 text-gray-400 hover:text-red-500 pr-2"
                       >

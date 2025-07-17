@@ -399,7 +399,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       const filledHtml = template.replace('$[[dynamic_content]]', replyText[email?.mail_id]);
       const finalHtml = filledHtml.replace('$[[signature]]', sessionStorage.getItem("defaultSignature") || "");
       setTemplateContent(finalHtml);
-debugger;
       const emailData = {
         mail_id: msgData[msgData.length - 1]?.mail_id,
         message_id: msgData[msgData.length - 1]?.message_id,
@@ -483,8 +482,9 @@ debugger;
         setIsAiReplyExpanded(false);
       }
     } catch (error) {
-      console.error("AI Reply fetch failed", error);
-      // Optional: handle error state
+      notification.error({
+        message: key === "reply" ? "Unable to generate reply now. Please retry later." : "Unable to summarize now. Please retry later.",
+      })
     }
   };
 
@@ -1510,7 +1510,7 @@ debugger;
                   <div className="text-sm text-gray-600 space-y-1 bg-white p-3 rounded-lg border" >
                     <div className="space-y-1 text-sm">
                       {/* To */}
-                      <div contentEditable={true}>
+                      <div>
                         <span className="font-medium">To:</span>{" "}
                         {replyingType === 'reply-all'
                           ? (() => {
@@ -1567,7 +1567,7 @@ debugger;
                         )} */}
                     </div>
 
-                    <p contentEditable={true}>
+                    <p>
                       <span className="font-medium">Subject:</span>{" "}
                       {replyingType === 'forward'
                         ? `Fwd: ${email.subject}`
