@@ -778,10 +778,10 @@ function App() {
     const emailToRestore = deletedEmails.find(
       (email) => email.mail_id === emailId
     );
-    if (!emailToRestore) return;
+    // if (!emailToRestore) return;
 
     // Move email back to active emails
-    setEmails((prev: any) => [...prev, emailToRestore]);
+    // setEmails((prev: any) => [...prev, emailToRestore]);
 
     // Remove from deleted emails
     setDeletedEmails((prev) =>
@@ -789,7 +789,7 @@ function App() {
     );
 
     setMailStatus({
-      mail_ids: emailToRestore,
+      mail_ids: [emailId],
       is_deleted: false
     })
 
@@ -798,7 +798,7 @@ function App() {
       setSelectedEmail(null);
     }
 
-    console.log(`Email restored from bin: ${emailToRestore.subject}`);
+    // console.log(`Email restored from bin: ${emailToRestore.subject}`);
   };
 
   const handleBulkRestore = (emailIds: string[]) => {

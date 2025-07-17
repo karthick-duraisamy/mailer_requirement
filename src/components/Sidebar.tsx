@@ -15,7 +15,7 @@ import EmailFilters, { FilterOptions } from "./EmailFilters";
 import { useSelector, useDispatch } from "react-redux";
 import { setFilterSettings } from "../store/filterSlice";
 import SignatureSetup from "./SignatureSetup";
-import { setFilterFilled, setSelectedTabStatus } from "../store/alignmentSlice";
+import { setFilterFilled, setInputFilled, setSelectedTabStatus } from "../store/alignmentSlice";
 import {
   useLazyGetLabelListQuery,
   useLazyGetMailListResponseQuery,
@@ -275,11 +275,19 @@ const Sidebar: React.FC<SidebarProps> = ({
       setIsCorporateLabels(hasEmailData)
       setIntentLableOptions(Object.entries(intentLables).map(([key]) => ({
         value: key,
-        count: intentLables[key]?.total
+        count: (
+          <>
+            <strong>{intentLables[key]?.unread}</strong> / {intentLables[key]?.total}
+          </>
+        )
       })));
       setCorporateLableOptions(Object.entries(corporateLabels).map(([key]) => ({
         value: key,
-        count: corporateLabels[key]?.total
+        count: (
+          <>
+            <strong>{corporateLabels[key]?.unread}</strong> / {corporateLabels[key]?.total}
+          </>
+        )
       })));
       setCountsSection((getLabelListResponse as any)?.data?.response?.data);
     }
@@ -290,45 +298,53 @@ const Sidebar: React.FC<SidebarProps> = ({
   // }, [isAllConversation]);
 
   useEffect(() => {
-  let filterSettings: any = {};
+    let filterSettings: any = {};
 
-  if (selectedTab === "sent") {
-    filterSettings = {
-      page: 1,
-      folder: "SENT",
-      is_starred: undefined,
-      is_deleted: undefined,
-    };
-    dispatch(setSelectedTabStatus("sent"));
-  } else if (selectedTab === "starred") {
-    filterSettings = {
-      page: 1,
-      is_starred: true,
-      is_deleted: undefined,
-      folder: undefined,
-    };
-    dispatch(setSelectedTabStatus("starred"));
-  } else if (selectedTab === "bin") {
-    filterSettings = {
-      page: 1,
-      is_deleted: true,
-      is_starred: undefined,
-      folder: undefined,
-    };
-    dispatch(setSelectedTabStatus("bin"));
-  } else if (selectedTab === "inbox") {
-    filterSettings = {
-      page: 1,
-      folder: "inbox",
-      is_starred: undefined,
-      is_deleted: undefined,
-    };
-    dispatch(setSelectedTabStatus("inbox"));
-  }
+    if (selectedTab === "sent") {
+      filterSettings = {
+        page: undefined,
+        folder: "SENT",
+        is_starred: undefined,
+        is_deleted: undefined,
+        search: undefined
+      };
+      dispatch(setSelectedTabStatus("sent"));
+       dispatch(setInputFilled(''));
+    } else if (selectedTab === "starred") {
+      filterSettings = {
+        page: undefined,
+        is_starred: true,
+        is_deleted: undefined,
+        folder: undefined,
+        search: undefined
+      };
+      dispatch(setSelectedTabStatus("starred"));
+      dispatch(setInputFilled(''));
+    } else if (selectedTab === "bin") {
+      filterSettings = {
+        page: undefined,
+        is_deleted: true,
+        is_starred: undefined,
+        folder: undefined,
+        search: undefined
+      };
+      dispatch(setSelectedTabStatus("bin"));
+      dispatch(setInputFilled(''));
+    } else if (selectedTab === "inbox") {
+      filterSettings = {
+        page: undefined,
+        folder: "inbox",
+        is_starred: undefined,
+        is_deleted: undefined,
+        search: undefined
+      };
+      dispatch(setSelectedTabStatus("inbox"));
+      dispatch(setInputFilled(''));
+    }
 
-  dispatch(setFilterSettings(filterSettings));
-  dispatch(setFilterFilled(true));
-}, [selectedTab]);
+    dispatch(setFilterSettings(filterSettings));
+    dispatch(setFilterFilled(true));
+  }, [selectedTab]);
 
 
   // useEffect(() => {
@@ -421,7 +437,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       setSelectedIntentLabels(updatedLabels);
       dispatch(
         setFilterSettings({
-          page:1,
+          page: 1,
           intent: JSON.stringify(updatedLabels),
           setting: localStorage.getItem("settingId"),
         })
@@ -431,7 +447,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       setSelectedCorporateLabels(updatedLabels);
       dispatch(
         setFilterSettings({
-          page:1,
+          page: 1,
           corporate_label: JSON.stringify(updatedLabels),
           setting: localStorage.getItem("settingId"),
         })
@@ -487,29 +503,37 @@ const Sidebar: React.FC<SidebarProps> = ({
                   <span className="hidden sm:inline">{item.label}</span>
                   {countsSection &&
                     (() => {
-                      // const count = item.count;
-                      const count = item?.id === 'inbox'
-                        ? countsSection?.total_unread
-                        : item?.id === 'starred'
-                          ? countsSection?.total_starred
-                          : item?.id === 'sent'
-                            ? countsSection?.total_sent
-                            : countsSection?.total_deleted;
+                      let countContent;
 
-                      return count ? (
+                      if (item?.id === 'inbox') {
+                        const unread = countsSection?.total_unread ?? 0;
+                        const total = countsSection?.total_count ?? 0;
+
+                        countContent = (
+                          <>
+                            <strong>{unread}</strong> / {total}
+                          </>
+                        );
+                      } else if (item?.id === 'starred') {
+                        countContent = countsSection?.total_starred;
+                      } else if (item?.id === 'sent') {
+                        countContent = countsSection?.total_sent;
+                      } else {
+                        countContent = countsSection?.total_deleted;
+                      }
+
+                      return countContent ? (
                         <span
                           className={`
-                            px-2 py-1 text-xs rounded-full
-                            ${isActive
-                              ? "bg-blue-200 text-blue-800"
-                              : "bg-gray-200 text-gray-600"
-                            }
-                          `}
+                              px-2 py-1 text-xs rounded-full
+                              ${isActive ? "bg-blue-200 text-blue-800" : "bg-gray-200 text-gray-600"}
+                            `}
                         >
-                          {count}
+                          {countContent}
                         </span>
                       ) : null;
-                    })()}
+                    })()
+                  }
                 </button>
               );
             })}
@@ -592,8 +616,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                             }
                           }}
                           className={`w-full flex items-center justify-between px-3 py-2 text-sm transition-colors ${isSelected
-                              ? "bg-blue-100 text-blue-700"
-                              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                            ? "bg-blue-100 text-blue-700"
+                            : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                             }`}
                         >
                           {/* Left: checkbox + label */}
@@ -606,7 +630,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                 readOnly
                                 className="form-checkbox h-4 w-4 text-blue-600 mr-1 pointer-events-none"
                               />
-                              <span className="truncate max-w-[160px] block" title={label.value}>
+                              <span className="truncate max-w-[150px] block" title={label.value}>
                                 {label.value}
                               </span>
                             </div>
@@ -658,7 +682,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                         setIsIntentOpen(false);
                         dispatch(
                           setFilterSettings({
-                            page:1,
+                            page: 1,
                             intent: JSON.stringify(selectedIntentLabels),
                             setting: localStorage.getItem("settingId"),
                           }));
@@ -751,8 +775,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                             }
                           }}
                           className={`w-full flex items-center justify-between px-3 py-2 text-sm transition-colors ${isSelected
-                              ? "bg-blue-100 text-blue-700"
-                              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                            ? "bg-blue-100 text-blue-700"
+                            : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                             }`}
                         >
                           <div className="w-full flex items-center justify-between">
@@ -763,7 +787,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                 readOnly // <- Important: avoids duplicate state calls
                                 className="form-checkbox h-4 w-4 text-blue-600 pointer-events-none" // <- prevents double interaction
                               />
-                              <span className="truncate max-w-[160px] block" title={label.value}>
+                              <span className="truncate max-w-[150px] block" title={label.value}>
                                 {label.value}
                               </span>
                             </div>
@@ -776,8 +800,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                           {getLabelCount(label.value) > 0 && (
                             <span
                               className={`px-2 py-1 text-xs rounded-full ${isSelected
-                                  ? "bg-blue-200 text-blue-800"
-                                  : "bg-gray-200 text-gray-600"
+                                ? "bg-blue-200 text-blue-800"
+                                : "bg-gray-200 text-gray-600"
                                 }`}
                             >
                               {getLabelCount(label.value)}
@@ -814,7 +838,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                         setIsCorporateOpen(false);
                         dispatch(
                           setFilterSettings({
-                            page:1,
+                            page: 1,
                             corporate_label: JSON.stringify(selectedCorporateLabels),
                             setting: localStorage.getItem("settingId"),
                           }));

@@ -205,20 +205,20 @@ Generated on: ${new Date().toLocaleString()}
             Summary generated on {new Date().toLocaleString()}
           </p>
           <div className="flex items-center space-x-3">
-            <button
+            {/* <button
               onClick={handleCopy}
               className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-white rounded-lg transition-colors border border-gray-300"
             >
               <Copy className="w-4 h-4" />
               <span>Copy</span>
-            </button>
-            <button
+            </button> */}
+            {/* <button
               onClick={handleDownload}
               className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-white rounded-lg transition-colors border border-gray-300"
             >
               <Download className="w-4 h-4" />
               <span>Download</span>
-            </button>
+            </button> */}
             <button
               onClick={onClose}
               className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
