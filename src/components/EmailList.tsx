@@ -32,7 +32,7 @@ import {
   setFilterSettings,
 } from "../store/filterSlice";
 import { getIntentLabel, getSenderName } from "../hooks/commonFunction";
-import { setInputFilled, setWidthAlign } from "../store/alignmentSlice";
+import { setInputFilled, setWidthAlign, setScrollTop } from "../store/alignmentSlice";
 import { NoMailFoundIcon } from "./Icons";
 import { notification } from "antd";
 import { SearchOutlined, CloseCircleOutlined } from '@ant-design/icons';
@@ -190,7 +190,7 @@ const EmailList: React.FC<EmailListProps> = ({
           }));
         }
         console.log(inboxCount[selectedTabStatus], (latestCount - (inboxCount[selectedTabStatus] ?? 0)), selectedTabStatus, inboxCount);
-        if (inboxCount[selectedTabStatus] !== undefined && latestCount !== undefined && inboxCount[selectedTabStatus] !== latestCount && (latestCount - (inboxCount[selectedTabStatus])) > 0) {
+        if (inboxCount[selectedTabStatus] !== undefined && latestCount !== undefined && inboxCount[selectedTabStatus] !== latestCount && (latestCount - (inboxCount[selectedTabStatus])) > 0 && inboxCount[selectedTabStatus] === 'inbox') {
           const notificationCount = latestCount - inboxCount[selectedTabStatus];
           setInboxCount((prev: any) => ({
             ...prev,
@@ -620,6 +620,16 @@ const EmailList: React.FC<EmailListProps> = ({
     };
   }, [showMoreActions]);
 
+  // Scroll to top when scrollTopEnable becomes true
+  useEffect(() => {
+    if (scrollTopEnable && containerRef.current) {
+      containerRef.current.scrollTop = 0;
+
+      // Optionally reset scrollTopEnable to false if it's a state
+      dispatch(setScrollTop(false)); // if managed in useState
+    }
+  }, [scrollTopEnable]);
+
   return (
     <div
       className="bg-white border-r border-gray-200 relative"
@@ -634,12 +644,13 @@ const EmailList: React.FC<EmailListProps> = ({
 
       onScroll={(e) => {
         // console.log(scrollTopEnable);
+
         const target = e.currentTarget;
         const totalPages = Math.ceil(paginationCount / (isFiltered ? filters?.page_size : filterData.page_size));
 
-        // if (scrollTopEnable) {
-        //     target.scrollTop = 0; 
-        //   }
+        if (scrollTopEnable) {
+            target.scrollTop = 0;
+          }
         
         if (isLoadingRef.current) return;
 
