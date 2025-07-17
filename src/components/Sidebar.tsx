@@ -9,13 +9,14 @@ import {
   ChevronRight,
   Settings,
   UserCircle,
+  Scroll,
 } from "lucide-react";
 import { CustomLabel } from "../types/email";
 import EmailFilters, { FilterOptions } from "./EmailFilters";
 import { useSelector, useDispatch } from "react-redux";
 import { setFilterSettings } from "../store/filterSlice";
 import SignatureSetup from "./SignatureSetup";
-import { setFilterFilled, setInputFilled, setSelectedTabStatus } from "../store/alignmentSlice";
+import { setFilterFilled, setInputFilled, setSelectedTabStatus, setScrollTop } from "../store/alignmentSlice";
 import {
   useLazyGetLabelListQuery,
   useLazyGetMailListResponseQuery,
@@ -344,6 +345,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
     dispatch(setFilterSettings(filterSettings));
     dispatch(setFilterFilled(true));
+    dispatch(setScrollTop(true));
   }, [selectedTab]);
 
 

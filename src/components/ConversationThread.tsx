@@ -482,8 +482,9 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
         setIsAiReplyExpanded(false);
       }
     } catch (error) {
-      console.error("AI Reply fetch failed", error);
-      // Optional: handle error state
+      notification.error({
+        message: key === "reply" ? "Unable to generate reply now. Please retry later." : "Unable to summarize now. Please retry later.",
+      })
     }
   };
 
@@ -1509,7 +1510,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                   <div className="text-sm text-gray-600 space-y-1 bg-white p-3 rounded-lg border" >
                     <div className="space-y-1 text-sm">
                       {/* To */}
-                      <div contentEditable={true}>
+                      <div>
                         <span className="font-medium">To:</span>{" "}
                         {replyingType === 'reply-all'
                           ? (() => {
@@ -1566,7 +1567,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                         )} */}
                     </div>
 
-                    <p contentEditable={true}>
+                    <p>
                       <span className="font-medium">Subject:</span>{" "}
                       {replyingType === 'forward'
                         ? `Fwd: ${email.subject}`

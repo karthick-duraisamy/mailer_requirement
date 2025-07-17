@@ -7,6 +7,7 @@ interface AlignmentState {
   selectedMailsCount: number;
   isFilterFilled: any;
   selectedTabStatus: string;
+  scrollTopEnable: boolean;
 }
 
 const initialState: AlignmentState = {
@@ -16,6 +17,7 @@ const initialState: AlignmentState = {
   selectedMailsCount: 0,
   isFilterFilled:false,
   selectedTabStatus: 'inbox',
+  scrollTopEnable: true
 };
 
 const alignmentSlice = createSlice({
@@ -36,9 +38,12 @@ const alignmentSlice = createSlice({
     },
     setSelectedTabStatus:(state,action:PayloadAction<string>)=>{
         state.selectedTabStatus = action.payload
+    },
+    setScrollTop:(state,action:PayloadAction<boolean>)=>{
+        state.scrollTopEnable = action.payload
     }
   },
 });
 
-export const { setWidthAlign, setInputFilled, setSelectedMailsCount , setFilterFilled, setSelectedTabStatus} = alignmentSlice.actions;
+export const { setWidthAlign, setInputFilled, setSelectedMailsCount , setFilterFilled, setSelectedTabStatus, setScrollTop} = alignmentSlice.actions;
 export default alignmentSlice.reducer;
