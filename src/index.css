@@ -92,3 +92,16 @@ body {
   scrollbar-width: thin !important;
   scrollbar-color: #0e2071 #fd9646 !important;
 }
+
+.cls-active-status {
+  position: relative;
+  &::after{
+    content:"";
+    position:absolute;
+    border-top:20px solid #16a34a;
+    border-bottom: 20px solid transparent;
+    border-left: 20px solid transparent;
+    top: 0px;
+    right: 0px;
+  }
+}

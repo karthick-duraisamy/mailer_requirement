@@ -190,14 +190,14 @@ const EmailList: React.FC<EmailListProps> = ({
           }));
         }
         console.log(inboxCount[selectedTabStatus], (latestCount - (inboxCount[selectedTabStatus] ?? 0)), selectedTabStatus, inboxCount);
-        if (inboxCount[selectedTabStatus] !== undefined && latestCount !== undefined && inboxCount[selectedTabStatus] !== latestCount && (latestCount - (inboxCount[selectedTabStatus])) > 0 && inboxCount[selectedTabStatus] === 'inbox') {
+        if (inboxCount[selectedTabStatus] !== undefined && latestCount !== undefined && inboxCount[selectedTabStatus] !== latestCount && (latestCount - (inboxCount[selectedTabStatus])) > 0 ) {
           const notificationCount = latestCount - inboxCount[selectedTabStatus];
           setInboxCount((prev: any) => ({
             ...prev,
             [selectedTabStatus]: latestCount,
           }));
           console.log("difference generated", latestCount, inboxCount[selectedTabStatus]);
-          if (notificationCount) {
+          if (notificationCount && inboxCount[selectedTabStatus] === 'inbox') {
             notification.success({
               message: `You have ${notificationCount} new messages`,
             });
@@ -977,6 +977,7 @@ const EmailList: React.FC<EmailListProps> = ({
                 p-2 cursor-pointer transition-colors hover:bg-gray-50
                 ${isSelected ? "bg-blue-50 border-l-2 border-blue-500" : ""}
                 ${!email.is_read ? "bg-blue-25" : ""}
+                ${email.is_replied&&"cls-active-status"}
               `}
               onClick={() => onEmailSelect(email)}
               onDoubleClick={(e) => handleEmailDoubleClick(email, e)}
