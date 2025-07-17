@@ -399,7 +399,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       const filledHtml = template.replace('$[[dynamic_content]]', replyText[email?.mail_id]);
       const finalHtml = filledHtml.replace('$[[signature]]', sessionStorage.getItem("defaultSignature") || "");
       setTemplateContent(finalHtml);
-debugger;
       const emailData = {
         mail_id: msgData[msgData.length - 1]?.mail_id,
         message_id: msgData[msgData.length - 1]?.message_id,
