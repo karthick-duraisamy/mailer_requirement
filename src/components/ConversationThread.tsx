@@ -134,6 +134,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     setAIGeneratedReply("");
     setReplyContent(false);
     setShowReply(false);
+    setAIGeneratedReply("");
   }, [email]);
 
   useEffect(() => {
@@ -221,8 +222,9 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   useEffect(() => {
     if (sentMailResponseStatus?.isSuccess) {
       const responseData = (sentMailResponseStatus as any)?.data?.response?.data?.message;
-      setAIGeneratedReply("");
-      if ((sentMailResponseStatus as any)?.data?.response?.data?.success === true && localStorage.getItem('notify') === 'true') {
+      if ((sentMailResponseStatus as any)?.data?.response?.data?.success === true) {
+        setAIGeneratedReply("");
+        setShowReply(false);
         notification.success({
           message: responseData || "Mail sent successfully!",
         });
@@ -235,7 +237,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
             folder: "sent",
             subject: msgData[msgData.length - 1].subject,
             from_address: email.from_address,
-            to: msgData[msgData.length - 1].to,
+            to: sortedMessages[sortedMessages.length - 1]?.folder === "SENT" ? sortedMessages[sortedMessages.length - 1]?.to :
+              [extractEmail(sortedMessages[sortedMessages.length - 1]?.from_address)],
             cc: msgData[msgData.length - 1].cc,
             bcc: msgData[msgData.length - 1].bcc,
             body_plain: replyText[email?.mail_id],
@@ -249,12 +252,15 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
           },
         ]);
       }
-      else if (localStorage.getItem('notify') === 'true') {
-        const errorData = (sentMailResponseStatus as any)?.data?.response?.data?.message;
+      else {
         notification.error({
-          message: errorData || "Failed to send mail.",
+          message: "Failed to send email. Retry later.",
         });
       }
+    } else if ((sentMailResponseStatus as any)?.isError) {
+      notification.error({
+        message: "Failed to send email. Retry later.",
+      });
     }
 
   }, [sentMailResponseStatus]);
@@ -352,6 +358,17 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     });
   };
 
+  // const extractEmail = (input: string): string | null => {
+  //   const match = input.match(/<([^>]+)>/);
+  //   return match ? match[1] : null;
+  // };
+
+  function extractEmail(input: any) {
+  const match = input.match(/[\w.-]+@[\w.-]+\.\w+/);
+  return match ? match[0] : null;
+}
+
+
   const handleSendReply = () => {
     if (replyText[email?.mail_id].trim()) {
       // Determine reply type based on whether AI was used
@@ -382,7 +399,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       const filledHtml = template.replace('$[[dynamic_content]]', replyText[email?.mail_id]);
       const finalHtml = filledHtml.replace('$[[signature]]', sessionStorage.getItem("defaultSignature") || "");
       setTemplateContent(finalHtml);
-
+debugger;
       const emailData = {
         mail_id: msgData[msgData.length - 1]?.mail_id,
         message_id: msgData[msgData.length - 1]?.message_id,
@@ -390,7 +407,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
         folder: msgData[msgData.length - 1]?.folder,
         subject: msgData[msgData.length - 1]?.subject,
         // to: [msgData[msgData.length - 1]?.from_address],
-        to: ['madhivanan.e@infinitisoftware.net'],
+        to: sortedMessages[sortedMessages.length - 1]?.folder === "SENT" ? sortedMessages[sortedMessages.length - 1]?.to :
+          [extractEmail(sortedMessages[sortedMessages.length - 1]?.from_address)],
         cc: msgData[msgData.length - 1]?.cc,
         bcc: msgData[msgData.length - 1]?.bcc,
         body_plain: replyText[email?.mail_id],
@@ -398,6 +416,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
         reply_type: replyType,
         edited: false,
         labels: msgData[msgData.length - 1]?.labels || [],
+        intent: msgData[msgData.length - 1]?.intent || "reply",
+        compose_content: replyText[email?.mail_id],
         ai_response: {
           intent: msgData[msgData.length - 1]?.intent || "reply",
           entities: msgData[msgData.length - 1]?.entities || {},
@@ -406,7 +426,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
         setting_id: 29
       };
       sentMail(emailData);
-      setShowReply(false);
       setReplyText(prev => ({
         ...prev,
         [email?.mail_id]: (prev[email?.mail_id] || "") + "\n" + finalHtml
@@ -1402,7 +1421,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                         </button>
                       ) : (
                         <button
-                          onClick={() => handleAiReplyGenerate}
+                          onClick={() => handleAiReplyGenerate('reply')}
                           disabled={aiReplyState.isGenerating}
                           className="text-purple-600 hover:text-purple-700 p-1 disabled:text-gray-400"
                           title="Regenerate"
@@ -1488,10 +1507,10 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                         ? "Forward"
                         : "Reply"}
                   </h3>
-                  <div className="text-sm text-gray-600 space-y-1 bg-white p-3 rounded-lg border">
+                  <div className="text-sm text-gray-600 space-y-1 bg-white p-3 rounded-lg border" >
                     <div className="space-y-1 text-sm">
                       {/* To */}
-                      <div>
+                      <div contentEditable={true}>
                         <span className="font-medium">To:</span>{" "}
                         {replyingType === 'reply-all'
                           ? (() => {
@@ -1504,9 +1523,12 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                           })()
                           : replyingType === 'forward'
                             ? "Enter recipient email(s)"
-                            : sortedMessages[sortedMessages.length - 1]?.to?.join(
-                              ", "
-                            )}
+                            : (() => {
+                              const lastMessage = sortedMessages[sortedMessages.length - 1] || {};
+                              return lastMessage.folder === "SENT"
+                                ? (lastMessage.to || []).join(", ")
+                                : lastMessage.from_address || "";
+                            })()}
 
                         {replyContent}
                       </div>
@@ -1545,7 +1567,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                         )} */}
                     </div>
 
-                    <p>
+                    <p contentEditable={true}>
                       <span className="font-medium">Subject:</span>{" "}
                       {replyingType === 'forward'
                         ? `Fwd: ${email.subject}`

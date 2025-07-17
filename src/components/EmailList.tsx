@@ -35,6 +35,7 @@ import { getIntentLabel, getSenderName } from "../hooks/commonFunction";
 import { setInputFilled, setWidthAlign } from "../store/alignmentSlice";
 import { NoMailFoundIcon } from "./Icons";
 import { notification } from "antd";
+import { SearchOutlined, CloseCircleOutlined } from '@ant-design/icons';
 
 interface EmailListProps {
   emails: any[];
@@ -172,7 +173,7 @@ const EmailList: React.FC<EmailListProps> = ({
         );
 
         const isSearchMode = isInputFilled?.length !== 0;
-        const currentPage = filters?.page ;
+        const currentPage = filters?.page;
 
         const mappedList = staticList.map((email: any) => ({
           ...email,
@@ -187,7 +188,7 @@ const EmailList: React.FC<EmailListProps> = ({
           }));
         }
         console.log(inboxCount[selectedTabStatus], (latestCount - (inboxCount[selectedTabStatus] ?? 0)), selectedTabStatus, inboxCount);
-        if (inboxCount[selectedTabStatus] !== undefined && latestCount !== undefined && inboxCount[selectedTabStatus] !== latestCount && (latestCount - (inboxCount[selectedTabStatus])) > 0 ) {
+        if (inboxCount[selectedTabStatus] !== undefined && latestCount !== undefined && inboxCount[selectedTabStatus] !== latestCount && (latestCount - (inboxCount[selectedTabStatus])) > 0) {
           const notificationCount = latestCount - inboxCount[selectedTabStatus];
           setInboxCount((prev: any) => ({
             ...prev,
@@ -210,23 +211,23 @@ const EmailList: React.FC<EmailListProps> = ({
           else {
             // Append additional pages of search result
             setEmails((prevEmails: any[]) => {
-            const prevEmailMap = new Map(
-              prevEmails.map((email) => [email.mail_id, email])
-            );
+              const prevEmailMap = new Map(
+                prevEmails.map((email) => [email.mail_id, email])
+              );
 
-            const updatedEmails = [...prevEmails];
+              const updatedEmails = [...prevEmails];
 
-            staticList.forEach((email: any) => {
-              if (!prevEmailMap.has(email.mail_id)) {
-                updatedEmails.push({
-                  ...email,
-                  intentLabel: email.labels || "new",
-                });
-              }
+              staticList.forEach((email: any) => {
+                if (!prevEmailMap.has(email.mail_id)) {
+                  updatedEmails.push({
+                    ...email,
+                    intentLabel: email.labels || "new",
+                  });
+                }
+              });
+
+              return updatedEmails;
             });
-
-            return updatedEmails;
-          });
           }
         } else {
           // Preserve previous emails if already present
@@ -642,21 +643,21 @@ const EmailList: React.FC<EmailListProps> = ({
         if (reachedBottom) {
           if (
             isFiltered
-              ? filters?.page < totalPages
-              : filterData.page < totalPages
+              ? (filters?.page ?? 1) < totalPages
+              : (filterData.page ?? 1) < totalPages
           ) {
             isLoadingRef.current = true;
 
             if (isFiltered) {
               dispatch(
-                setFilterSettings({ ...filters, page: filters?.page + 1 })
+                setFilterSettings({ ...filters, page: (filters?.page ?? 1) + 1 })
               );
               setIsFiltered(true);
               console.log("dispatching");
             } else {
               setFilterData((prev: any) => ({
                 ...prev,
-                page: prev.page + 1,
+                page: (prev.page ?? 1) + 1,
               }));
               setIsFiltered(false);
             }
@@ -796,7 +797,7 @@ const EmailList: React.FC<EmailListProps> = ({
                         }}
                         className="absolute inset-y-0 right-6 flex items-center px-1 text-gray-400 hover:text-red-500 pr-2"
                       >
-                        ×
+                        <CloseCircleOutlined />
                       </button>
                     )}
                     <button
@@ -805,7 +806,7 @@ const EmailList: React.FC<EmailListProps> = ({
                       }}
                       className="absolute inset-y-0 right-2 flex items-center text-gray-500 hover:text-blue-600"
                     >
-                      🔍
+                      <SearchOutlined />
                     </button>
                   </div>
 
@@ -947,7 +948,7 @@ const EmailList: React.FC<EmailListProps> = ({
         {emails.map((email) => {
           const isSelected = selectedEmailId === email.mail_id;
           const isChecked = checkedEmails.has(email.mail_id);
-          const emailLabels = getEmailCustomLabels(email);
+          const emailLabels = email?.corporate_label;
 
           return (
             <div
@@ -1042,68 +1043,56 @@ const EmailList: React.FC<EmailListProps> = ({
                       {email?.snippet}
                     </p>
                     {/* Right side labels - responsive design */}
-                    <div className="flex-shrink-0 flex flex-col items-start space-y-1 mt-2">
+                    <div className="flex items-center space-x-2 mt-2 max-w-[240px] flex-wrap">
+                      {/* Intent Label */}
                       {email?.intent && (
                         <div
-                          className={`
-                          inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
-                          ${getIntentLabel(email?.intent).color}
-                          sm:px-2 sm:py-1 xs:px-1 xs:py-0.5
-                        `}
+                          className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 max-w-[100px]"
+                          title={email.intent} // Tooltip on hover
                         >
-                          {React.createElement(
-                            getIntentLabel(email?.intent).icon,
-                            {
-                              className: `w-3 h-3 mr-1 sm:w-3 sm:h-3 xs:w-2 xs:h-2 ${getIntentLabel(email.intent).iconColor
-                                }`,
-                            }
-                          )}
-                          <span className="hidden sm:inline">
-                            {getIntentLabel(email?.intent)?.text}
+                          {React.createElement(getIntentLabel(email?.intent).icon, {
+                            className: "w-3 h-3 mr-1 text-blue-800",
+                          })}
+                          <span
+                            className="hidden sm:inline truncate text-ellipsis overflow-hidden whitespace-nowrap max-w-[70px]"
+                            title={email.intent}
+                          >
+                            {email.intent}
                           </span>
-                          <span className="sm:hidden text-[10px]">
-                            {getIntentLabel(email?.intent)?.text?.substring(0, 3)}
+                          <span
+                            className="sm:hidden text-[10px] truncate text-ellipsis overflow-hidden whitespace-nowrap max-w-[50px]"
+                            title={email.intent}
+                          >
+                            {email.intent}
                           </span>
                         </div>
                       )}
 
-                      {/* Corporate/Custom Labels */}
-                      {emailLabels?.length > 0 && (
-                        <div className="flex flex-col items-end space-y-1 max-w-[120px] sm:max-w-[160px]">
-                          {emailLabels?.slice(0, 2)?.map((label) => (
-                            <div
-                              key={label.id}
-                              className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium"
-                              style={{
-                                backgroundColor: `${label.color}15`,
-                                color: label.color,
-                                border: `1px solid ${label.color}30`,
-                              }}
-                            >
-                              <div
-                                className="w-2 h-2 rounded-full mr-1"
-                                style={{ backgroundColor: label.color }}
-                              />
-                              <span className="hidden sm:inline truncate">
-                                {label.name}
-                              </span>
-                              <span className="sm:hidden text-[10px]">
-                                {label.name.substring(0, 3)}
-                              </span>
-                            </div>
-                          ))}
-                          {emailLabels?.length > 2 && (
-                            <div className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600">
-                              <span className="hidden sm:inline">
-                                +{emailLabels?.length - 2} more
-                              </span>
-                              <span className="sm:hidden text-[10px]">
-                                +{emailLabels?.length - 2}
-                              </span>
-                            </div>
-                          )}
+
+                      {/* Corporate / Custom Labels */}
+                      {email?.corporate_label && (
+                        <div
+                          className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 max-w-[100px]"
+                          title={email.intent} // Tooltip on hover
+                        >
+                          {React.createElement(getIntentLabel(email?.corporate_label).icon, {
+                            className: "w-3 h-3 mr-1 bg-yellow-100 text-yellow-800",
+                          })}
+                          <span
+                            className="hidden sm:inline truncate text-ellipsis overflow-hidden whitespace-nowrap max-w-[70px]"
+                            title={email.corporate_label}
+                          >
+                            {email.corporate_label}
+                          </span>
+                          <span
+                            className="sm:hidden text-[10px] truncate text-ellipsis overflow-hidden whitespace-nowrap max-w-[50px]"
+                            title={email.corporate_label}
+                          >
+                            {email.corporate_label}
+                          </span>
                         </div>
                       )}
+
                     </div>
 
                     {/* Custom Labels */}
