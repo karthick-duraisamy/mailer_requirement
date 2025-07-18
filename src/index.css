@@ -80,19 +80,6 @@ body {
   font-size: 10px;
 }
 
-.html-content div{
-  width : 100% !important;
-  overflow: auto !important
-
-}
-
-.html-content div {
-  overflow-x: auto !important;
-  width: 100% !important;
-  scrollbar-width: thin !important;
-  scrollbar-color: #0e2071 #fd9646 !important;
-}
-
 .cls-active-status {
   position: relative;
   &::after{
@@ -104,4 +91,22 @@ body {
     top: 0px;
     right: 0px;
   }
+}
+
+.html-content div{
+  width : 100% !important;
+  overflow: auto !important
+}
+.html-content{
+  width : 100% !important;
+  overflow: auto !important
+}
+.html-content div {
+  scrollbar-width: thin !important;
+  scrollbar-color: #0e2071 #fd9646 !important;
+}
+
+.html-content {
+  scrollbar-width: thin !important;
+  scrollbar-color: #0e2071 #fd9646 !important;
 }

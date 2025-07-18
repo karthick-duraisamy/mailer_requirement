@@ -310,7 +310,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         search: undefined
       };
       dispatch(setSelectedTabStatus("sent"));
-       dispatch(setInputFilled(''));
+      dispatch(setInputFilled(''));
     } else if (selectedTab === "starred") {
       filterSettings = {
         page: undefined,
@@ -399,6 +399,13 @@ const Sidebar: React.FC<SidebarProps> = ({
       const allSelected = allValues.every((val: any) => selectedIntentLabels.includes(val));
       if (allSelected) {
         setSelectedIntentLabels([]);
+        dispatch(
+          setFilterSettings({
+            page: 1,
+            intent: JSON.stringify([]),
+            setting: localStorage.getItem("settingId"),
+          })
+        );
       } else {
         setSelectedIntentLabels(allValues);
       }
@@ -428,6 +435,13 @@ const Sidebar: React.FC<SidebarProps> = ({
     } else {
       setSelectedCorporateLabels((prev) =>
         prev.filter((val) => !filteredValues.includes(val))
+      );
+      dispatch(
+        setFilterSettings({
+          page: 1,
+          corporate_label: JSON.stringify([]),
+          setting: localStorage.getItem("settingId"),
+        })
       );
     }
   };
@@ -584,8 +598,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                       </label>
                     )}
 
-                    {/* Only hide input if full list is selected and no search is active */}
-                    {(!allFilteredSelected || searchIntentLabel.length > 0) && (
                       <input
                         type="text"
                         placeholder="Search..."
@@ -593,7 +605,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                         onChange={(e) => setSearchIntentLabel(e.target.value)}
                         className="flex-1 px-1 py-[2px] border border-gray-300 rounded-sm text-[14px] focus:outline-none focus:ring-1 focus:ring-blue-400"
                       />
-                    )}
                   </div>
 
                   {/* No Results Found */}
@@ -745,8 +756,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                       </label>
                     )}
 
-                    {/* Only show input if not all filtered are selected OR search is active */}
-                    {(!allFilteredCorporateSelected || isCorporateSearchActive) && (
                       <input
                         type="text"
                         placeholder="Search..."
@@ -754,7 +763,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                         onChange={(e) => setSearchCorporateLabel(e.target.value)}
                         className="flex-1 px-1 py-[2px] border border-gray-300 rounded-sm text-[14px] focus:outline-none focus:ring-1 focus:ring-blue-400"
                       />
-                    )}
                   </div>
 
                   {/* No Results */}
@@ -814,7 +822,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     }))}
 
                   {/* Submit Button */}
-                  <div className="flex justify-end my-1 ml-0 py-2 mx-3 sticky bottom-0 bg-white">
+                  <div className="flex justify-end my-1 ml-0 py-2 sticky bottom-0 bg-white">
                     {selectedCorporateLabels?.length > 0 && <button
                       className={`bg-gray-300 text-white text-sm font-medium py-1 px-2 rounded-full flex items-center space-x-2 mr-2`}
                       onClick={() => {

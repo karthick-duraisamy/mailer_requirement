@@ -13,7 +13,7 @@ import { setFilterSettings } from "./store/filterSlice";
 import Sidebar from "./components/Sidebar";
 import { notification } from "antd";
 import { useScreenResolution } from "./hooks/commonFunction";
-import { setSelectedMailsCount } from "./store/alignmentSlice";
+import { setFilterFilled, setSelectedMailsCount } from "./store/alignmentSlice";
 
 function App() {
   const [activeItem, setActiveItem] = useState("inbox");
@@ -791,7 +791,14 @@ function App() {
     setMailStatus({
       mail_ids: [emailId],
       is_deleted: false
-    })
+    });
+    
+    dispatch(
+      setFilterSettings({
+        page: 1
+      }));
+    dispatch(setFilterFilled(true));
+
 
     // Clear selection if this email was selected
     if (selectedEmail && selectedEmail.mail_id === emailId) {

@@ -102,18 +102,13 @@ const EmailList: React.FC<EmailListProps> = ({
     search: undefined,
     folder: "inbox",
   });
-  const [inboxCount, setInboxCount] = useState<any>({
-    index: undefined,
-    starred: undefined,
-    sent: undefined,
-    bin: undefined,
-  });
+  const [inboxCount, setInboxCount] = useState<any>({});
   const [paginationCount, setPaginationCount] = useState(0);
   const filters: any = useSelector((state: RootState) => state.filters);
   // console.log(filters);
   const dispatch = useDispatch();
   const [isFiltered, setIsFiltered] = useState(false);
-  const [activeSectionTab, setActiveSectionTab] = useState("inbox");
+  // const [activeSectionTab, setActiveSectionTab] = useState("inbox");
   const [inputValue, setInputValue] = useState("");
   const [searchQuery, setSearchQuery] = useState<any>("");
   const [selectedMails, setSelectedMails] = useState(0);
@@ -136,6 +131,16 @@ const EmailList: React.FC<EmailListProps> = ({
     (state: any) => state?.alignment?.scrollTopEnable
   );
 
+  // Update filterData when filters change
+  useEffect(() => {
+    if (filters?.folder) {
+      setFilterData((prev: any) => ({
+        ...prev,
+        folder: filters.folder,
+      }));
+    }
+  }, [filters?.folder]);
+
   useEffect(() => {
     // Initial call
     if (filters?.search === "") {
@@ -149,17 +154,16 @@ const EmailList: React.FC<EmailListProps> = ({
     if ((filters !== undefined && Object.keys(filters).length > 3) || (isInputFilled?.length !== 0 && filters.search !== "")) {
       console.log("inside filtered");
       setIsFiltered(true);
-      if (setEmails && isInputFilled?.length !== 0) setEmails([]);
       getMailList(filters);
     }
     else {
-      getMailList({ page_size: 20, page: 1, folder: "inbox" });
+      getMailList({ page_size: 20, page: 1, folder: filters?.folder || "inbox" });
     }
   }, [filters]);
 
   useEffect(() => {
     if (searchQuery?.length === 0) {
-      getMailList({ page_size: 20, page: 1, folder: "inbox" });
+      getMailList({ page_size: 20, page: 1, folder: filters?.folder || "inbox" });
     }
   }, [searchQuery]);
 
@@ -196,8 +200,8 @@ const EmailList: React.FC<EmailListProps> = ({
             ...prev,
             [selectedTabStatus]: latestCount,
           }));
-          console.log("difference generated", latestCount, inboxCount[selectedTabStatus]);
-          if (notificationCount && inboxCount[selectedTabStatus] === 'inbox') {
+          console.log("difference generated", latestCount, inboxCount[selectedTabStatus], selectedTabStatus);
+          if (notificationCount && selectedTabStatus === 'inbox') {
             notification.success({
               message: `You have ${notificationCount} new messages`,
             });
@@ -559,7 +563,7 @@ const EmailList: React.FC<EmailListProps> = ({
           (isFilterFilled === undefined || isFilterFilled === false);
 
         if (shouldFetch) {
-          getMailList({ page_size: 50, folder: "inbox" });
+          getMailList({ page_size: 50, folder: filters?.folder || "inbox" });
         } else {
           const updatedFilters = {
             ...filters,
@@ -594,7 +598,7 @@ const EmailList: React.FC<EmailListProps> = ({
 
   const handleSearchChange = (query: any) => {
     setSearchQuery(query);
-    dispatch(setFilterSettings({ search: query, folder: "inbox", page: 1 }));
+    dispatch(setFilterSettings({ search: query, folder: filters?.folder || "inbox", page: 1 }));
   };
 
   const dropdownThreeRef = useRef<HTMLDivElement | null>(null);
@@ -715,6 +719,10 @@ const EmailList: React.FC<EmailListProps> = ({
       }}
 
     >
+      {/* {getMailListResponse?.isFetching &&
+        <p className="cls-sending-status">Loading ...</p>
+      } */}
+
       {/* Resizer */}
       {/* <div
         className="absolute top-0 right-0 h-full w-2 cursor-col-resize flex items-center justify-center hover:bg-blue-50 transition-colors group z-10"
@@ -838,11 +846,13 @@ const EmailList: React.FC<EmailListProps> = ({
               ) : (
                 <>
                   <h4 className="text-sm font-semibold text-gray-900">
-                    {activeSectionTab === "sent" ? "Sent" : "Selected Emails"}
+                    {/* {activeSectionTab === "sent" ? "Sent" : "Selected Emails"}
                     {activeSectionTab === "sent"
-                      ? ` (${emails.filter((email) => !email.is_read).length}/${readStatus === "all" ? paginationCount : emails.length
+                      ? ` Selected Emails ${emails.filter((email) => !email.is_read).length}/${readStatus === "all" ? paginationCount : emails.length
                       })`
-                      : ` (${selectedMails})`}
+                      : ` (${selectedMails})`} */}
+                      {` Selected Emails ${emails.filter((email) => !email.is_read).length}/${readStatus === "all" ? paginationCount : emails.length}
+                      `}
                   </h4>
                   <p className="text-sm mt-1 text-gray-800 truncate">
                     support@atyourprice.net
@@ -977,7 +987,7 @@ const EmailList: React.FC<EmailListProps> = ({
                 p-2 cursor-pointer transition-colors hover:bg-gray-50
                 ${isSelected ? "bg-blue-50 border-l-2 border-blue-500" : ""}
                 ${!email.is_read ? "bg-blue-25" : ""}
-                ${email.is_replied&&"cls-active-status"}
+                ${email.is_replied && "cls-active-status"}
               `}
               onClick={() => onEmailSelect(email)}
               onDoubleClick={(e) => handleEmailDoubleClick(email, e)}

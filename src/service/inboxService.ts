@@ -42,9 +42,9 @@ const service = InboxService.enhanceEndpoints({
       }),
       invalidatesTags: ['mailer']
     }),
-    getTemplate: builder.query({
-      query: () => `/template/107/?folder=17`
-    }),
+    // getTemplate: builder.query({
+    //   query: () => `/template/107/?folder=17`
+    // }),
     setMailStatus: builder.mutation({
       query: (body: any) => ({
         url: `/mail-inbox/mail/status/?project=${localStorage.getItem("project")}&setting=${localStorage.getItem("settingId")}`,
@@ -70,7 +70,7 @@ export const {
   useGetAIReplyResponseMutation,
   useLazyGetSettingsQuery,
   useSentMailMutation,
-  useLazyGetTemplateQuery,
+  // useLazyGetTemplateQuery,
   useSetMailStatusMutation,
   useLazyGetLabelListQuery
 } = service;

@@ -30,7 +30,7 @@ import {
   useGetAIReplyResponseMutation,
   useLazyGetConversationDetailsQuery,
   useLazyGetSettingsQuery,
-  useLazyGetTemplateQuery,
+  // useLazyGetTemplateQuery,
   useSentMailMutation,
 } from "../service/inboxService";
 import { getIntentLabel, getSenderName, useScreenResolution } from "../hooks/commonFunction";
@@ -121,8 +121,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   const [getSettings, getSettingsResponseStatus] = useLazyGetSettingsQuery();
   const [sentMail, sentMailResponseStatus] = useSentMailMutation();
   const [intent, setIntent] = useState<string>("");
-  const [getTemplate, getTemplateResponseStatus] = useLazyGetTemplateQuery();
-  const [template, setTemplate] = useState<any>();
+  // const [getTemplate, getTemplateResponseStatus] = useLazyGetTemplateQuery();
+  // const [template, setTemplate] = useState<any>();
   const [templateContent, setTemplateContent] = useState<any>();
   const [listWidth, setListWidth] = useState<string>(() => localStorage.getItem('listwidth') || '320px');
   const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
@@ -139,8 +139,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
   useEffect(() => {
     getSettings({});
-    getTemplate({});
-    localStorage.setItem('notify', 'true');
+    // getTemplate({});
+    // localStorage.setItem('notify', 'true');
   }, []);
   useEffect(() => {
     if (getSettingsResponseStatus?.isSuccess) {
@@ -265,12 +265,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
   }, [sentMailResponseStatus]);
 
-  useEffect(() => {
-    if (getTemplateResponseStatus?.isSuccess) {
-      setTemplate((getTemplateResponseStatus as any)?.data?.response?.data?.template_content)
-    }
-  }, [getTemplateResponseStatus])
-
   // Handle click outside for more menu
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -364,9 +358,9 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   // };
 
   function extractEmail(input: any) {
-  const match = input.match(/[\w.-]+@[\w.-]+\.\w+/);
-  return match ? match[0] : null;
-}
+    const match = input.match(/[\w.-]+@[\w.-]+\.\w+/);
+    return match ? match[0] : null;
+  }
 
 
   const handleSendReply = () => {
@@ -388,17 +382,17 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       // Handle reply logic here - would typically save the message with replyType
       console.log("Reply sent with type:", replyType);
 
-      const lastFromAddress = msgData[msgData.length - 1]?.from_address;
+      // const lastFromAddress = msgData[msgData.length - 1]?.from_address;
 
-      const matchedSetting = settings?.find(
-        (s: any) => s.from_email_id === lastFromAddress
-      );
+      // const matchedSetting = settings?.find(
+      //   (s: any) => s.from_email_id === lastFromAddress
+      // );
 
-      const settingId = matchedSetting?.setting_id;
+      // const settingId = matchedSetting?.setting_id;
       // setReplyText("");
-      const filledHtml = template.replace('$[[dynamic_content]]', replyText[email?.mail_id]);
-      const finalHtml = filledHtml.replace('$[[signature]]', sessionStorage.getItem("defaultSignature") || "");
-      setTemplateContent(finalHtml);
+      // const filledHtml = template.replace('$[[dynamic_content]]', replyText[email?.mail_id]);
+      // const finalHtml = filledHtml.replace('$[[signature]]', sessionStorage.getItem("defaultSignature") || "");
+      setTemplateContent(replyText[email?.mail_id]);
       const emailData = {
         mail_id: msgData[msgData.length - 1]?.mail_id,
         message_id: msgData[msgData.length - 1]?.message_id,
@@ -411,7 +405,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
         cc: msgData[msgData.length - 1]?.cc,
         bcc: msgData[msgData.length - 1]?.bcc,
         body_plain: replyText[email?.mail_id],
-        body_html: finalHtml,
+        body_html: replyText[email?.mail_id],
         reply_type: replyType,
         edited: false,
         labels: msgData[msgData.length - 1]?.labels || [],
@@ -420,14 +414,14 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
         ai_response: {
           intent: msgData[msgData.length - 1]?.intent || "reply",
           entities: msgData[msgData.length - 1]?.entities || {},
-          reply: replyText[email?.mail_id] + "\n" + finalHtml
+          reply: replyText[email?.mail_id] + "\n" + replyText[email?.mail_id]
         },
         setting_id: 29
       };
       sentMail(emailData);
       setReplyText(prev => ({
         ...prev,
-        [email?.mail_id]: (prev[email?.mail_id] || "") + "\n" + finalHtml
+        [email?.mail_id]: (prev[email?.mail_id] || "") + "\n" + replyText[email?.mail_id]
       }));
       onAiReplyStateChange({
         ...aiReplyState,
@@ -443,8 +437,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     div.innerHTML = html;
     return div.textContent || div.innerText || "";
   }
-
-
 
   // Determine if this should be a reply-all based on email context
   const shouldUseReplyAll = (email: Email): any => {
@@ -1650,11 +1642,15 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                       disabled={!replyText[email?.mail_id]?.trim()}
                       className="flex items-center space-x-2 px-4 py-2 bg-orange-500 hover:bg-blue-700 text-white rounded-lg transition-colors"
                     >
-                      {replyingType === 'reply-all'
-                        ? "Send to All"
-                        : replyingType === 'forward'
-                          ? "Forward"
-                          : "Send Reply"}
+                      {sentMailResponseStatus?.isLoading ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : replyingType === "reply-all" ? (
+                        "Send to All"
+                      ) : replyingType === "forward" ? (
+                        "Forward"
+                      ) : (
+                        "Send Reply"
+                      )}
                     </button>
                   </div>
                 </div>
