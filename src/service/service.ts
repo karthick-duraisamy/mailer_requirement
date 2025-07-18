@@ -5,24 +5,24 @@ import { decryptResponse } from "../utils/crypto";
 const InboxService = createApi({
   reducerPath: "InboxService",
   baseQuery: fetchBaseQuery({
-    baseUrl: "https://notification.infinitisoftware.net/notificationapi/notification", // This allows you to access files in the public folder
-    credentials: 'include',
+    baseUrl: window?.location?.origin?.includes("uat")
+      ? "https://uat-notificationagent.infinitisoftware.net/notificationapi/notification"
+      : "https://notification.infinitisoftware.net/notificationapi/notification", // This allows you to access files in the public folder
+    credentials: "include",
     prepareHeaders: (headers) => {
-      const user = decryptResponse(localStorage.getItem('user') as string);
-      const iframe_token = sessionStorage.getItem('iframe_token');
+      const user = decryptResponse(localStorage.getItem("user") as string);
+      const iframe_token = sessionStorage.getItem("iframe_token");
       if (iframe_token) {
-        iframe_token && headers.set('Authorization', `Bearer ${iframe_token}`);
+        iframe_token && headers.set("Authorization", `Bearer ${iframe_token}`);
       }
       if (user) {
         const token = JSON.parse(user)?.token;
-        token && headers.set('X-XSRF-TOKEN', token);
+        token && headers.set("X-XSRF-TOKEN", token);
       }
       return headers;
-    }
+    },
   }),
-  endpoints: () => ({
-   
-  }),
+  endpoints: () => ({}),
 });
 
 // export const { useGetLocalDataQuery } = InboxService;
