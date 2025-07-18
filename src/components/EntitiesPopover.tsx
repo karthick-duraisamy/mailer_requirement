@@ -120,18 +120,26 @@ const EntitiesPopover: React.FC<EntitiesPopoverProps> = ({
           {entitiesInfo &&
             Object.entries(entitiesInfo).map(([key, value]) => (
               <div key={key} className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  {getEntityIcon(key)}
-                  <span className="text-sm font-medium text-gray-700 capitalize">
-                    {key.replace(/_/g, " ")}:
+                <div className="relative group max-w-[120px]">
+                  <span className="text-sm font-medium text-gray-700 capitalize whitespace-nowrap overflow-hidden text-ellipsis block pr-4 cursor-default">
+                    {key.replace(/_/g, " ")}
+                    <span className="absolute right-0 bg-white">{":"}</span>
                   </span>
+                  <div className="absolute z-10 hidden group-hover:block bg-gray-800 text-white text-xs rounded p-2 shadow-lg max-w-xs w-max break-words top-full mt-1">
+                    {key.replace(/_/g, " ")}:
+                  </div>
                 </div>
-                <span title={String(value)} className="text-sm text-gray-900 font-mono truncate max-w-[150px] text-right">
-                  {String(value)}
-                </span>
+                <div className="relative group max-w-[150px] text-right">
+                  <span className="text-sm text-gray-900 font-mono truncate block cursor-default">
+                    {String(value)}
+                  </span>
+                  <div className="absolute z-10 hidden group-hover:block bg-gray-800 text-white text-xs rounded p-2 shadow-lg max-w-xs w-max break-words right-0 top-full mt-1">
+                    {String(value)}
+                  </div>
+                </div>
               </div>
             ))}
-          {(Object.keys(entitiesInfo ?? {}).length === undefined || Object.keys(entitiesInfo ?? {}).length === 0 ) && <p>No entities is mapped for this conversion </p>}
+          {(Object.keys(entitiesInfo ?? {}).length === undefined || Object.keys(entitiesInfo ?? {}).length === 0) && <p>No entities is mapped for this conversion </p>}
         </div>
       </div>
     </>

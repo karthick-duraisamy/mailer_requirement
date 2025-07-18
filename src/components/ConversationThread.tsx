@@ -41,6 +41,7 @@ import { TypedUseSelectorHook, useSelector } from "react-redux";
 import { RootState } from "../store/store";
 import HtmlViewer from "./HtmlViewer";
 import SparkleButton from "./SparkleButton/SparkleButton";
+import EmailChipsInput from "./EmailInputChips";
 
 interface AiReplyState {
   isGenerating: boolean;
@@ -128,6 +129,177 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
   const widthAlign = useAppSelector(state => state.alignment?.mode);
   const [replyingType, setReplyingType] = useState<"reply" | "reply-all" | "forward" | undefined>(undefined);
+  // --- State ---
+  const [shouldScroll, setShouldScroll] = useState(false);
+
+  const [editingCcIndex, setEditingCcIndex] = useState<number | null>(null);
+  const [editingCcValue, setEditingCcValue] = useState("");
+  const [originalCcValue, setOriginalCcValue] = useState("");
+
+  const [editingBccIndex, setEditingBccIndex] = useState<number | null>(null);
+  const [editingBccValue, setEditingBccValue] = useState("");
+  const [originalBccValue, setOriginalBccValue] = useState("");
+
+  const [toRecipients, setToRecipients] = useState<string[]>([]);
+  const [ccRecipients, setCcRecipients] = useState<string[]>([]);
+  const [bccRecipients, setBccRecipients] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!showReply || !replyContent) return;
+  
+    const lastMsg = sortedMessages[sortedMessages.length - 1] || {};
+  
+    const norm = (addr: string) => (addr ? extractEmail(addr) || addr.trim() : "");
+    const dedupe = (arr: string[]) => Array.from(new Set(arr.map(norm).filter(Boolean)));
+  
+    if (replyingType === "reply-all") {
+      setToRecipients(dedupe(lastMsg.to || []));
+      setCcRecipients(dedupe(lastMsg.cc || []));
+      setBccRecipients(dedupe(lastMsg.bcc || []));
+    } else if (replyingType === "forward") {
+      // Forwards start empty – user will fill
+      setToRecipients([]);
+      setCcRecipients([]);
+      setBccRecipients([]);
+    } else {
+      // Simple reply
+      if (lastMsg.folder === "SENT") {
+        setToRecipients(dedupe(lastMsg.to || []));
+      } else {
+        setToRecipients([norm(lastMsg.from_address)]);
+      }
+      setCcRecipients([]);
+      setBccRecipients([]);
+    }
+  }, [showReply, replyContent, replyingType, msgData]);  
+  
+  // --- Validation ---
+  const isValidEmail = (email:string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+
+
+  // --- Enter edit mode ---
+
+  const handleCcDoubleClick = (email: string, index: number) => {
+    setEditingCcIndex(index);
+    setEditingCcValue(email);
+    setOriginalCcValue(email);
+  };
+  
+  const handleBccDoubleClick = (email: string, index: number) => {
+    setEditingBccIndex(index);
+    setEditingBccValue(email);
+    setOriginalBccValue(email);
+  };  
+  
+  const handleCcCommit = (index: number) => {
+    const newEmails = editingCcValue.split(",").map(e => e.trim()).filter(Boolean);
+    if (!newEmails.length || editingCcValue.trim() === originalCcValue.trim()) {
+      setEditingCcIndex(null);
+      setEditingCcValue("");
+      setOriginalCcValue("");
+      return;
+    }
+  
+    const updatedMsgData = [...msgData];
+    const lastIndex = updatedMsgData.findIndex(
+      m => new Date(m.created_at).getTime() === Math.max(...updatedMsgData.map(m => new Date(m.created_at).getTime()))
+    );
+    if (lastIndex === -1) return;
+  
+    const lastMessage = { ...updatedMsgData[lastIndex] };
+    const updatedCc = [...(lastMessage.cc || [])];
+  
+    if (isValidEmail(newEmails[0])) {
+      updatedCc[index] = newEmails[0];
+    }
+    newEmails.slice(1).forEach(email => {
+      if (isValidEmail(email)) updatedCc.push(email);
+    });
+  
+    lastMessage.cc = updatedCc;
+    updatedMsgData[lastIndex] = lastMessage;
+    setMsgData(updatedMsgData);
+  
+    setEditingCcIndex(null);
+    setEditingCcValue("");
+    setOriginalCcValue("");
+  };
+
+  const handleBccCommit = (index: number) => {
+    const newEmails = editingBccValue.split(",").map(e => e.trim()).filter(Boolean);
+    if (!newEmails.length || editingBccValue.trim() === originalBccValue.trim()) {
+      setEditingBccIndex(null);
+      setEditingBccValue("");
+      setOriginalBccValue("");
+      return;
+    }
+  
+    const updatedMsgData = [...msgData];
+    const lastIndex = updatedMsgData.findIndex(
+      m => new Date(m.created_at).getTime() === Math.max(...updatedMsgData.map(m => new Date(m.created_at).getTime()))
+    );
+    if (lastIndex === -1) return;
+  
+    const lastMessage = { ...updatedMsgData[lastIndex] };
+    const updatedBcc = [...(lastMessage.bcc || [])];
+  
+    // Replace current with first valid email
+    if (isValidEmail(newEmails[0])) {
+      updatedBcc[index] = newEmails[0];
+    }
+    // Append remaining valid emails
+    newEmails.slice(1).forEach(email => {
+      if (isValidEmail(email)) updatedBcc.push(email);
+    });
+  
+    lastMessage.bcc = updatedBcc;
+    updatedMsgData[lastIndex] = lastMessage;
+    setMsgData(updatedMsgData);
+  
+    setEditingBccIndex(null);
+    setEditingBccValue("");
+    setOriginalBccValue("");
+  };  
+
+  const handleCcRemove = (index: number) => {
+    setShouldScroll(true);
+    const updatedMsgData = [...msgData];
+    const lastIndex = updatedMsgData.findIndex(
+      m => new Date(m.created_at).getTime() === Math.max(...updatedMsgData.map(m => new Date(m.created_at).getTime()))
+    );
+    if (lastIndex === -1) return;
+  
+    const lastMessage = { ...updatedMsgData[lastIndex] };
+    const updatedCc = [...(lastMessage.cc || [])];
+  
+    if (updatedCc.length > 1) {
+      updatedCc.splice(index, 1);
+      lastMessage.cc = updatedCc;
+      updatedMsgData[lastIndex] = lastMessage;
+      setMsgData(updatedMsgData);
+    }
+  };
+
+  const handleBccRemove = (index: number) => {
+    setShouldScroll(true);
+    const updatedMsgData = [...msgData];
+    const lastIndex = updatedMsgData.findIndex(
+      m => new Date(m.created_at).getTime() === Math.max(...updatedMsgData.map(m => new Date(m.created_at).getTime()))
+    );
+    if (lastIndex === -1) return;
+  
+    const lastMessage = { ...updatedMsgData[lastIndex] };
+    const updatedBcc = [...(lastMessage.bcc || [])];
+  
+    if (updatedBcc.length > 1) {
+      updatedBcc.splice(index, 1);
+      lastMessage.bcc = updatedBcc;
+      updatedMsgData[lastIndex] = lastMessage;
+      setMsgData(updatedMsgData);
+    }
+  };  
+  
+  
 
   // When the conversation changes, reset AI reply state
   useEffect(() => {
@@ -300,7 +472,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   };
 
   useEffect(() => {
-    if (lastMessageRef.current && msgData.length > 0) {
+    if (lastMessageRef.current && msgData.length > 0 && !shouldScroll) {
       // Small timeout to ensure the DOM is fully updated
       setTimeout(() => {
         lastMessageRef.current?.scrollIntoView({
@@ -309,6 +481,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
         });
       }, 100);
     }
+    setShouldScroll(false);
   }, [msgData, email?.mail_id]);
 
   useEffect(() => {
@@ -358,9 +531,9 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   // };
 
   function extractEmail(input: any) {
-    const match = input.match(/[\w.-]+@[\w.-]+\.\w+/);
-    return match ? match[0] : null;
-  }
+  const match = input.match(/[\w.-]+@[\w.-]+\.\w+/);
+  return match ? match[0] : null;
+}
 
 
   const handleSendReply = () => {
@@ -400,10 +573,9 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
         folder: msgData[msgData.length - 1]?.folder,
         subject: msgData[msgData.length - 1]?.subject,
         // to: [msgData[msgData.length - 1]?.from_address],
-        to: sortedMessages[sortedMessages.length - 1]?.folder === "SENT" ? sortedMessages[sortedMessages.length - 1]?.to :
-          [extractEmail(sortedMessages[sortedMessages.length - 1]?.from_address)],
-        cc: msgData[msgData.length - 1]?.cc,
-        bcc: msgData[msgData.length - 1]?.bcc,
+        to: toRecipients,
+        cc: ccRecipients,
+        bcc: bccRecipients,
         body_plain: replyText[email?.mail_id],
         body_html: replyText[email?.mail_id],
         reply_type: replyType,
@@ -437,6 +609,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     div.innerHTML = html;
     return div.textContent || div.innerText || "";
   }
+
+
 
   // Determine if this should be a reply-all based on email context
   const shouldUseReplyAll = (email: Email): any => {
@@ -793,6 +967,9 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     }
 
   }
+
+  const lastMessage = sortedMessages[sortedMessages.length - 1] || {};
+
   return (
     <>
       {sentMailResponseStatus?.isLoading &&
@@ -1501,50 +1678,17 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                   </h3>
                   <div className="text-sm text-gray-600 space-y-1 bg-white p-3 rounded-lg border" >
                     <div className="space-y-1 text-sm">
-                      {/* To */}
-                      <div>
-                        <span className="font-medium">To:</span>{" "}
-                        {replyingType === 'reply-all'
-                          ? (() => {
-                            const lastMessage =
-                              sortedMessages[sortedMessages.length - 1];
-                            const allRecipients = new Set([
-                              ...lastMessage.to,
-                            ]);
-                            return Array.from(allRecipients).join(", ");
-                          })()
-                          : replyingType === 'forward'
-                            ? "Enter recipient email(s)"
-                            : (() => {
-                              const lastMessage = sortedMessages[sortedMessages.length - 1] || {};
-                              return lastMessage.folder === "SENT"
-                                ? (lastMessage.to || []).join(", ")
-                                : lastMessage.from_address || "";
-                            })()}
+                    <EmailChipsInput label="To" emails={toRecipients} setEmails={setToRecipients} />
 
-                        {replyContent}
-                      </div>
+                    {(replyingType === "reply-all" || replyingType === "forward") && (
+                      <>
+                        <EmailChipsInput label="Cc" emails={ccRecipients} setEmails={setCcRecipients} />
+                        <EmailChipsInput label="Bcc" emails={bccRecipients} setEmails={setBccRecipients} />
+                      </>
+                    )}
 
-                      {/* Cc (render only if exists) */}
-                      {replyingType === "reply-all" &&
-                        sortedMessages[sortedMessages.length - 1]?.cc?.length >
-                        0 && sortedMessages[sortedMessages.length - 1]?.cc[0] !== "" && (
-                          <>
-                            {sortedMessages[sortedMessages.length - 1].cc?.length > 0 && <div>
-                              <span className="font-medium">Cc:</span>{" "}
-                              {sortedMessages[sortedMessages.length - 1].cc.join(
-                                ", "
-                              )}
-                            </div>}
-                            {sortedMessages[sortedMessages.length - 1].bcc?.legnth > 0 && sortedMessages[sortedMessages.length - 1]?.bcc &&
-                              <div>
-                                <span className="font-medium">Bcc:</span>{" "}
-                                {sortedMessages[sortedMessages.length - 1].bcc.join(
-                                  ", "
-                                )}
-                              </div>}
-                          </>
-                        )}
+
+
 
                       {/* Bcc (render only if exists) */}
                       {/* {replyType === "reply-all" &&
@@ -1642,15 +1786,11 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                       disabled={!replyText[email?.mail_id]?.trim()}
                       className="flex items-center space-x-2 px-4 py-2 bg-orange-500 hover:bg-blue-700 text-white rounded-lg transition-colors"
                     >
-                      {sentMailResponseStatus?.isLoading ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : replyingType === "reply-all" ? (
-                        "Send to All"
-                      ) : replyingType === "forward" ? (
-                        "Forward"
-                      ) : (
-                        "Send Reply"
-                      )}
+                      {replyingType === 'reply-all'
+                        ? "Send to All"
+                        : replyingType === 'forward'
+                          ? "Forward"
+                          : "Send Reply"}
                     </button>
                   </div>
                 </div>

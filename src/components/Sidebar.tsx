@@ -274,22 +274,8 @@ const Sidebar: React.FC<SidebarProps> = ({
       const corporateLabels = (getLabelListResponse as any)?.data?.response?.data.corporate_labels;
       const hasEmailData = Object.values(corporateLabels).some((item: any) => item.total > 0);
       setIsCorporateLabels(hasEmailData)
-      setIntentLableOptions(Object.entries(intentLables).map(([key]) => ({
-        value: key,
-        count: (
-          <>
-            <strong>{intentLables[key]?.unread}</strong> / {intentLables[key]?.total}
-          </>
-        )
-      })));
-      setCorporateLableOptions(Object.entries(corporateLabels).map(([key]) => ({
-        value: key,
-        count: (
-          <>
-            <strong>{corporateLabels[key]?.unread}</strong> / {corporateLabels[key]?.total}
-          </>
-        )
-      })));
+      generateSortedLabelOptions(intentLables, setIntentLableOptions);
+      generateSortedLabelOptions(corporateLabels, setCorporateLableOptions);
       setCountsSection((getLabelListResponse as any)?.data?.response?.data);
     }
   }, [getLabelListResponse]);
@@ -297,6 +283,25 @@ const Sidebar: React.FC<SidebarProps> = ({
   // useEffect(() => {
   //   getMailList({ page_size: 20, folder: "inbox" });
   // }, [isAllConversation]);
+
+  // Intent / Corporate labels sorting based on unread count.
+  const generateSortedLabelOptions = (
+    data: Record<string, { unread: number; total: number }>,
+    filterSetter: (val: any[]) => void
+  ) => {
+    const sorted = Object.entries(data)
+      .sort(([, a], [, b]) => (b?.unread || 0) - (a?.unread || 0))
+      .map(([key, val]) => ({
+        value: key,
+        count: (
+          <>
+            <strong>{val?.unread}</strong> / {val?.total}
+          </>
+        )
+      }));
+
+    filterSetter(sorted);
+  };
 
   useEffect(() => {
     let filterSettings: any = {};
@@ -433,6 +438,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     if (!allFilteredSelected) {
       setSelectedCorporateLabels((prev) => [...new Set([...prev, ...filteredValues])]);
     } else {
+
       setSelectedCorporateLabels((prev) =>
         prev.filter((val) => !filteredValues.includes(val))
       );
@@ -451,23 +457,27 @@ const Sidebar: React.FC<SidebarProps> = ({
     if (category === "intent") {
       const updatedLabels = selectedIntentLabels.filter((value) => value !== labelValue);
       setSelectedIntentLabels(updatedLabels);
-      dispatch(
-        setFilterSettings({
-          page: 1,
-          intent: JSON.stringify(updatedLabels),
-          setting: localStorage.getItem("settingId"),
-        })
-      );
+      if (updatedLabels.length == 0) {
+        dispatch(
+          setFilterSettings({
+            page: 1,
+            intent: JSON.stringify(updatedLabels),
+            setting: localStorage.getItem("settingId"),
+          })
+        );
+      }
     } else {
       const updatedLabels = selectedCorporateLabels.filter((value) => value !== labelValue);
       setSelectedCorporateLabels(updatedLabels);
-      dispatch(
-        setFilterSettings({
-          page: 1,
-          corporate_label: JSON.stringify(updatedLabels),
-          setting: localStorage.getItem("settingId"),
-        })
-      );
+      if (updatedLabels.length == 0) {
+        dispatch(
+          setFilterSettings({
+            page: 1,
+            corporate_label: JSON.stringify(updatedLabels),
+            setting: localStorage.getItem("settingId"),
+          })
+        );
+      }
     }
   };
 
@@ -598,13 +608,13 @@ const Sidebar: React.FC<SidebarProps> = ({
                       </label>
                     )}
 
-                      <input
-                        type="text"
-                        placeholder="Search..."
-                        value={searchIntentLabel}
-                        onChange={(e) => setSearchIntentLabel(e.target.value)}
-                        className="flex-1 px-1 py-[2px] border border-gray-300 rounded-sm text-[14px] focus:outline-none focus:ring-1 focus:ring-blue-400"
-                      />
+                    <input
+                      type="text"
+                      placeholder="Search..."
+                      value={searchIntentLabel}
+                      onChange={(e) => setSearchIntentLabel(e.target.value)}
+                      className="flex-1 px-1 py-[2px] border border-gray-300 rounded-sm text-[14px] focus:outline-none focus:ring-1 focus:ring-blue-400"
+                    />
                   </div>
 
                   {/* No Results Found */}
@@ -673,7 +683,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     {selectedIntentLabels?.length > 0 && <button
                       className={`bg-gray-300 text-white text-sm font-medium py-1 px-2 rounded-full flex items-center space-x-2 mr-2`}
                       onClick={() => {
-                        setIsIntentOpen(false);
+                        // setIsIntentOpen(false);
                         setSelectedIntentLabels([]);
                         dispatch(
                           setFilterSettings({
@@ -756,13 +766,13 @@ const Sidebar: React.FC<SidebarProps> = ({
                       </label>
                     )}
 
-                      <input
-                        type="text"
-                        placeholder="Search..."
-                        value={searchCorporateLabel}
-                        onChange={(e) => setSearchCorporateLabel(e.target.value)}
-                        className="flex-1 px-1 py-[2px] border border-gray-300 rounded-sm text-[14px] focus:outline-none focus:ring-1 focus:ring-blue-400"
-                      />
+                    <input
+                      type="text"
+                      placeholder="Search..."
+                      value={searchCorporateLabel}
+                      onChange={(e) => setSearchCorporateLabel(e.target.value)}
+                      className="flex-1 px-1 py-[2px] border border-gray-300 rounded-sm text-[14px] focus:outline-none focus:ring-1 focus:ring-blue-400"
+                    />
                   </div>
 
                   {/* No Results */}
@@ -826,7 +836,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     {selectedCorporateLabels?.length > 0 && <button
                       className={`bg-gray-300 text-white text-sm font-medium py-1 px-2 rounded-full flex items-center space-x-2 mr-2`}
                       onClick={() => {
-                        setIsCorporateOpen(false);
+                        // setIsCorporateOpen(false);
                         setSelectedCorporateLabels([]);
                         dispatch(
                           setFilterSettings({
