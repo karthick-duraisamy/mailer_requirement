@@ -445,7 +445,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       dispatch(
         setFilterSettings({
           page: 1,
-          corporate_label: JSON.stringify([]),
+          corporate_labels: JSON.stringify([]),
           setting: localStorage.getItem("settingId"),
         })
       );
@@ -473,7 +473,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         dispatch(
           setFilterSettings({
             page: 1,
-            corporate_label: JSON.stringify(updatedLabels),
+            corporate_labels: JSON.stringify(updatedLabels),
             setting: localStorage.getItem("settingId"),
           })
         );
@@ -840,7 +840,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                         setSelectedCorporateLabels([]);
                         dispatch(
                           setFilterSettings({
-                            corporate_label: undefined,
+                            corporate_labels: undefined,
                             setting: localStorage.getItem("settingId"),
                           }));
                         dispatch(setFilterFilled(true));
@@ -859,7 +859,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                         dispatch(
                           setFilterSettings({
                             page: 1,
-                            corporate_label: JSON.stringify(selectedCorporateLabels),
+                            corporate_labels: JSON.stringify(selectedCorporateLabels),
                             setting: localStorage.getItem("settingId"),
                           }));
                         dispatch(setFilterFilled(true));

@@ -14,7 +14,7 @@ export interface FilterOptions {
   folder?: string | null;
   is_deleted?: boolean | null;
   setting?: string | number | null;
-  corporate_label?: string | null;
+  corporate_labels?: string | null;
 }
 
 const initialState: FilterOptions = {
