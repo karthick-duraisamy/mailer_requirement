@@ -1019,7 +1019,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       ) : (
         <div ref={containerRef} className="flex-1 flex flex-col bg-white" style={{ maxWidth: isFullPageView ? "" : `calc(100vw - 475px)`, overflow: 'auto' }}>
           {/* Header */}
-          <div className="border-b border-gray-200 p-6">
+          <div className="border-b border-gray-200 p-2" style={{position: "sticky", top: '0', backgroundColor: '#fff'}} >
             <div className="flex items-center justify-between">
               <div className="flex-1 min-w-0 flex items-center space-x-3">
                 {isFullPage && onBack && (
@@ -1032,12 +1032,12 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                   </button>
                 )}
                 <div className="flex-1 min-w-0">
-                  <h2
-                    className="text-2xl font-semibold text-gray-900 truncate"
-                    style={{ whiteSpace: "unset" }}
-                  >
-                    {email.subject}
-                  </h2>
+                <h2
+                  className="text-xl font-semibold text-gray-900 truncate text-ellipsis overflow-hidden whitespace-nowrap max-w-[500px]"
+                  title={email.subject}
+                >
+                  {email.subject}
+                </h2>
                   <div className="flex items-center space-x-4 mt-2">
                     <p className="text-sm text-gray-500">
                       {msgData.length} message
@@ -1329,7 +1329,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                     style={{ marginBottom: 10 }}
                   >
                     <div
-                      className={`p-6 ${isFromCurrentUser ? "bg-blue-50" : "bg-gray-50"
+                      className={`p-2 ${isFromCurrentUser ? "bg-blue-50" : "bg-gray-50"
                         }`}
                       style={{
                         marginBottom: 10,
@@ -1340,7 +1340,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                     >
                       {/* Message Header */}
                       <div
-                        className="cursor-pointer hover:bg-gray-50 -m-2 p-2 rounded-lg"
+                        className="cursor-pointer hover:bg-gray-50 -m-2 p-1 rounded-lg"
                         onClick={() => {
                           if (isLastMessage) {
                             // For last message, use a special collapsed state

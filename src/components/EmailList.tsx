@@ -765,7 +765,7 @@ const EmailList: React.FC<EmailListProps> = ({
       </div> */}
       <div
         className="py-4 px-1 border-b border-gray-200"
-        style={{ backgroundColor: "#dbeafe" }}
+        style={{ backgroundColor: "#dbeafe", position: "sticky", top: '0' }}
       >
         <div className="flex items-center justify-between">
           {/* Left Section: Checkbox + Search + Email Info */}
