@@ -537,6 +537,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
 
   const handleSendReply = () => {
+    let contentChanges = getContentChangeStatusSmart(AIGeneratedReply, Object.values(replyText)[0]).status;
     if (replyText[email?.mail_id].trim()) {
       // Determine reply type based on whether AI was used
       let replyType: "MANUAL" | "AI" | "AI_EDITED" = "MANUAL";
@@ -585,6 +586,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
         compose_content: replyText[email?.mail_id],
         ai_response: {
           intent: msgData[msgData.length - 1]?.intent || "reply",
+          isPartiallyEdited: contentChanges==="partial" ? "true":"false",
+          isFullyEdited: contentChanges==="full" ? "true":"false",
           entities: msgData[msgData.length - 1]?.entities || {},
           reply: replyText[email?.mail_id] + "\n" + replyText[email?.mail_id]
         },
@@ -602,6 +605,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
         replyType: undefined,
       });
     }
+    setReplyText({});
   };
   //html render value
   function stripHtml(html: string): string {
@@ -653,6 +657,40 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       })
     }
   };
+
+  const getContentChangeStatusSmart = (
+    original: string,
+    edited: string,
+    fullThreshold: number = 70
+  ): { status: "unchanged" | "partial" | "full"; changePercent: number }  =>{
+    if (!original.trim() && !edited.trim()) {
+      return { status: "unchanged", changePercent: 0 };
+    }
+  
+    const origArr = original.trim().split(/\s+/);
+    const editArr = edited.trim().split(/\s+/);
+  
+    // Count common words (order-independent)
+    let commonCount = 0;
+    const editSet = new Set(editArr);
+    for (const word of origArr) {
+      if (editSet.has(word)) {
+        commonCount++;
+      }
+    }
+  
+    const totalWords = Math.max(origArr.length, editArr.length);
+    const changePercent = ((totalWords - commonCount) / totalWords) * 100;
+  
+    let status: "unchanged" | "partial" | "full" = "unchanged";
+    if (changePercent > 0 && changePercent < fullThreshold) {
+      status = "partial";
+    } else if (changePercent >= fullThreshold) {
+      status = "full";
+    }
+  
+    return { status, changePercent };
+  }
 
   const handleToggleAiReplyExpand = () => {
     setIsAiReplyExpanded(!isAiReplyExpanded);
@@ -1619,8 +1657,20 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                         }`}
                       style={isAiReplyExpanded ? { minHeight: "350px" } : {}}
                     >
-                      <pre className="whitespace-pre-wrap text-gray-800 text-sm font-sans" contentEditable={true}>
-                        <div dangerouslySetInnerHTML={{ __html: AIGeneratedReply }} />
+                      <pre className="whitespace-pre-wrap text-gray-800 text-sm font-sans">
+                        <div
+                          contentEditable={true}
+                          suppressContentEditableWarning={true}
+                          className="outline-none"
+                          dangerouslySetInnerHTML={{ __html: AIGeneratedReply }}
+                          onInput={(e) => {
+                            const reply = (e.target as HTMLDivElement).innerHTML; // capture edited HTML
+                            setReplyText((prev) => ({
+                              ...prev,
+                              [email?.mail_id]: reply, // store updated content
+                            }));
+                          }}
+                        />
                       </pre>
                     </div>
                   )}
