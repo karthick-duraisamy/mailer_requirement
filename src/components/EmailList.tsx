@@ -851,7 +851,7 @@ const EmailList: React.FC<EmailListProps> = ({
                       ? ` Selected Emails ${emails.filter((email) => !email.is_read).length}/${readStatus === "all" ? paginationCount : emails.length
                       })`
                       : ` (${selectedMails})`} */}
-                      {` Selected Emails ${emails.filter((email) => !email.is_read).length}/${readStatus === "all" ? paginationCount : emails.length}
+                      {` Selected Emails (${emails.filter((email) => !email.is_read).length})
                       `}
                   </h4>
                   <p className="text-sm mt-1 text-gray-800 truncate">
@@ -865,7 +865,7 @@ const EmailList: React.FC<EmailListProps> = ({
           {/* Right Section: Action Buttons */}
           <div className="flex items-center space-x-2">
             {/* Label Actions */}
-            {/* {hasCheckedEmails && (
+            {hasCheckedEmails && (
               <EmailLabelActions
                 emailIds={checkedEmailsArray}
                 currentLabels={[]}
@@ -876,16 +876,16 @@ const EmailList: React.FC<EmailListProps> = ({
                 }}
                 onCreateLabel={onCreateLabel}
               />
-            )} */}
+            )}
 
             {/* More Actions */}
             {hasCheckedEmails && (
-              <div className="relative">
+              <div className="relative" style={{ marginLeft: "3px" }}>
                 <button
                   onClick={() => setShowMoreActions(!showMoreActions)}
-                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                   title="More actions"
-                >
+                > 
                   <MoreHorizontal className="w-4 h-4" />
                 </button>
 
