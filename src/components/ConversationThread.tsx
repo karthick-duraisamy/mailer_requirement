@@ -954,7 +954,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
     return (
       <div
-        className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${bgColor} ${textColor} ${borderColor}`}
+        className={`inline-flex items-center mr-1 px-2 py-1 rounded-md text-xs font-medium border ${bgColor} ${textColor} ${borderColor}`}
       >
         <Icon className="w-3 h-3 mr-1" />
         {label}
@@ -1367,8 +1367,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                           }
                         }}
                       >
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="flex items-center space-x-3">
+                        <div className="flex items-start justify-between mb-4" style={{ width: "100%" }}>
+                          <div className="flex items-center space-x-3" style={{ width: "100%" }}>
                             <div
                               className={`w-10 h-10 ${isFromCurrentUser
                                 ? "bg-gradient-to-br from-green-500 to-green-600"
@@ -1381,22 +1381,24 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                             </div>
 
                             {/* Left content (Name, reply type, mail icon, timestamp) */}
-                            <div className="min-w-0">
+                            <div style={{ width: "100%" }}>
                               <div className="flex items-center space-x-2">
                                 <p className="font-semibold text-gray-900">
                                   {message.from_address}
                                 </p>
-                                <ReplyTypeLabel replyType={message.reply_type} />
-                                {/* {isFromCurrentUser ? (
+                                <div className="flex justify-between mr-1" style={{ minWidth: "160px" }}>
+                                  <ReplyTypeLabel replyType={message.reply_type}/>
+                                  {/* {isFromCurrentUser ? (
                                   <MailSend className="w-5 h-5 text-blue-600 mt-0.5" />
                                 ) : (
                                   <InboxIcon className="w-5 h-5 text-green-600 mt-0.5" />
                                 )} */}
-                                {isFromCurrentUser ? (
-                                  <SendIcon />
-                                ) : (
-                                  <InboxIcon />
-                                )}
+                                  {isFromCurrentUser ? (
+                                    <SendIcon />
+                                  ) : (
+                                    <InboxIcon />
+                                  )}
+                                </div>
                               </div>
                               <p className="text-sm text-gray-500">
                                 {formatTimestamp(message.created_at)}
@@ -1479,7 +1481,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                       {/* Collapsed Message Preview */}
                       {!isExpanded && (
                         <>
-                          <div className="text-sm text-gray-500 truncate mb-3">
+                          <div className="text-sm text-gray-500 truncate mb-1 mt-3">
                             {message?.body_plain?.substring(0, 100)}...
                           </div>
                         </>

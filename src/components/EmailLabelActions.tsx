@@ -62,17 +62,17 @@ const EmailLabelActions: React.FC<EmailLabelActionsProps> = ({
   );
 
   return (
-    <div ref={containerRef} className={`relative ${className}`}>
+    <div ref={containerRef} className={`relative ${className}`} style={{marginLeft: "0px"}}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         disabled={isUpdating}
-        className={`flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors ${
+        className={`flex items-center space-x-2 px-1 py-1 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors ${
           isUpdating ? 'opacity-50 cursor-not-allowed' : ''
         }`}
         title="Manage labels"
       >
         <Tag className={`w-4 h-4 ${isUpdating ? 'animate-spin' : ''}`} />
-        <span className="text-sm">Labels</span>
+        <span className="text-sm" style={{fontSize:"13px"}}>Labels</span>
         {selectedLabels.length > 0 && (
           <span className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">
             {selectedLabels.length}
@@ -84,8 +84,8 @@ const EmailLabelActions: React.FC<EmailLabelActionsProps> = ({
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-          <div className="p-3 border-b border-gray-100">
+        <div className="absolute top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50" style={{left:"-195px",width:"290px"}}>
+<div className="p-3 border-b border-gray-100">
             <h3 className="text-sm font-semibold text-gray-900 mb-2">
               Manage Labels {emailIds.length > 1 && `(${emailIds.length} emails)`}
             </h3>
