@@ -161,11 +161,11 @@ const EmailList: React.FC<EmailListProps> = ({
     }
   }, [filters]);
 
-  useEffect(() => {
-    if (searchQuery?.length === 0) {
-      getMailList({ page_size: 20, page: 1, folder: filters?.folder || "inbox" });
-    }
-  }, [searchQuery]);
+  // useEffect(() => {
+  //   if (searchQuery?.length === 0) {
+  //     getMailList({ page_size: 20, page: 1, folder: filters?.folder});
+  //   }
+  // }, [searchQuery]);
 
 
   useEffect(() => {
@@ -598,7 +598,7 @@ const EmailList: React.FC<EmailListProps> = ({
 
   const handleSearchChange = (query: any) => {
     setSearchQuery(query);
-    dispatch(setFilterSettings({ search: query, folder: filters?.folder || "inbox", page: 1 }));
+    dispatch(setFilterSettings({...filters, search: query, page: 1 }));
   };
 
   const dropdownThreeRef = useRef<HTMLDivElement | null>(null);

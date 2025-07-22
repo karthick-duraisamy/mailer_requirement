@@ -33,7 +33,7 @@ import {
   // useLazyGetTemplateQuery,
   useSentMailMutation,
 } from "../service/inboxService";
-import { getIntentLabel, getSenderName, useScreenResolution } from "../hooks/commonFunction";
+import { formatTimestamp, getIntentLabel, getSenderName, useScreenResolution } from "../hooks/commonFunction";
 import { ConversationSkeleton } from "./skeletonLoader";
 import { SendIcon, InboxIcon } from "./Icons";
 import { notification } from "antd";
@@ -42,6 +42,7 @@ import { RootState } from "../store/store";
 import HtmlViewer from "./HtmlViewer";
 import SparkleButton from "./SparkleButton/SparkleButton";
 import EmailChipsInput from "./EmailInputChips";
+import PrintConversation from "./PrintConversation";
 
 interface AiReplyState {
   isGenerating: boolean;
@@ -146,12 +147,12 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
   useEffect(() => {
     if (!showReply || !replyContent) return;
-  
+
     const lastMsg = sortedMessages[sortedMessages.length - 1] || {};
-  
+
     const norm = (addr: string) => (addr ? extractEmail(addr) || addr.trim() : "");
     const dedupe = (arr: string[]) => Array.from(new Set(arr.map(norm).filter(Boolean)));
-  
+
     if (replyingType === "reply-all") {
       setToRecipients(dedupe(lastMsg.to || []));
       setCcRecipients(dedupe(lastMsg.cc || []));
@@ -171,10 +172,10 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       setCcRecipients([]);
       setBccRecipients([]);
     }
-  }, [showReply, replyContent, replyingType, msgData]);  
-  
+  }, [showReply, replyContent, replyingType, msgData]);
+
   // --- Validation ---
-  const isValidEmail = (email:string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+  const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
 
   // --- Enter edit mode ---
@@ -184,13 +185,13 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     setEditingCcValue(email);
     setOriginalCcValue(email);
   };
-  
+
   const handleBccDoubleClick = (email: string, index: number) => {
     setEditingBccIndex(index);
     setEditingBccValue(email);
     setOriginalBccValue(email);
-  };  
-  
+  };
+
   const handleCcCommit = (index: number) => {
     const newEmails = editingCcValue.split(",").map(e => e.trim()).filter(Boolean);
     if (!newEmails.length || editingCcValue.trim() === originalCcValue.trim()) {
@@ -199,27 +200,27 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       setOriginalCcValue("");
       return;
     }
-  
+
     const updatedMsgData = [...msgData];
     const lastIndex = updatedMsgData.findIndex(
       m => new Date(m.created_at).getTime() === Math.max(...updatedMsgData.map(m => new Date(m.created_at).getTime()))
     );
     if (lastIndex === -1) return;
-  
+
     const lastMessage = { ...updatedMsgData[lastIndex] };
     const updatedCc = [...(lastMessage.cc || [])];
-  
+
     if (isValidEmail(newEmails[0])) {
       updatedCc[index] = newEmails[0];
     }
     newEmails.slice(1).forEach(email => {
       if (isValidEmail(email)) updatedCc.push(email);
     });
-  
+
     lastMessage.cc = updatedCc;
     updatedMsgData[lastIndex] = lastMessage;
     setMsgData(updatedMsgData);
-  
+
     setEditingCcIndex(null);
     setEditingCcValue("");
     setOriginalCcValue("");
@@ -233,16 +234,16 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       setOriginalBccValue("");
       return;
     }
-  
+
     const updatedMsgData = [...msgData];
     const lastIndex = updatedMsgData.findIndex(
       m => new Date(m.created_at).getTime() === Math.max(...updatedMsgData.map(m => new Date(m.created_at).getTime()))
     );
     if (lastIndex === -1) return;
-  
+
     const lastMessage = { ...updatedMsgData[lastIndex] };
     const updatedBcc = [...(lastMessage.bcc || [])];
-  
+
     // Replace current with first valid email
     if (isValidEmail(newEmails[0])) {
       updatedBcc[index] = newEmails[0];
@@ -251,15 +252,15 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     newEmails.slice(1).forEach(email => {
       if (isValidEmail(email)) updatedBcc.push(email);
     });
-  
+
     lastMessage.bcc = updatedBcc;
     updatedMsgData[lastIndex] = lastMessage;
     setMsgData(updatedMsgData);
-  
+
     setEditingBccIndex(null);
     setEditingBccValue("");
     setOriginalBccValue("");
-  };  
+  };
 
   const handleCcRemove = (index: number) => {
     setShouldScroll(true);
@@ -268,10 +269,10 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       m => new Date(m.created_at).getTime() === Math.max(...updatedMsgData.map(m => new Date(m.created_at).getTime()))
     );
     if (lastIndex === -1) return;
-  
+
     const lastMessage = { ...updatedMsgData[lastIndex] };
     const updatedCc = [...(lastMessage.cc || [])];
-  
+
     if (updatedCc.length > 1) {
       updatedCc.splice(index, 1);
       lastMessage.cc = updatedCc;
@@ -287,19 +288,19 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       m => new Date(m.created_at).getTime() === Math.max(...updatedMsgData.map(m => new Date(m.created_at).getTime()))
     );
     if (lastIndex === -1) return;
-  
+
     const lastMessage = { ...updatedMsgData[lastIndex] };
     const updatedBcc = [...(lastMessage.bcc || [])];
-  
+
     if (updatedBcc.length > 1) {
       updatedBcc.splice(index, 1);
       lastMessage.bcc = updatedBcc;
       updatedMsgData[lastIndex] = lastMessage;
       setMsgData(updatedMsgData);
     }
-  };  
-  
-  
+  };
+
+
 
   // When the conversation changes, reset AI reply state
   useEffect(() => {
@@ -513,27 +514,15 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     );
   }
 
-  const formatTimestamp = (timestamp: string) => {
-    return new Date(timestamp).toLocaleString("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    });
-  };
-
   // const extractEmail = (input: string): string | null => {
   //   const match = input.match(/<([^>]+)>/);
   //   return match ? match[1] : null;
   // };
 
   function extractEmail(input: any) {
-  const match = input.match(/[\w.-]+@[\w.-]+\.\w+/);
-  return match ? match[0] : null;
-}
+    const match = input.match(/[\w.-]+@[\w.-]+\.\w+/);
+    return match ? match[0] : null;
+  }
 
 
   const handleSendReply = () => {
@@ -586,8 +575,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
         compose_content: replyText[email?.mail_id],
         ai_response: {
           intent: msgData[msgData.length - 1]?.intent || "reply",
-          isPartiallyEdited: contentChanges==="partial" ? "true":"false",
-          isFullyEdited: contentChanges==="full" ? "true":"false",
+          isPartiallyEdited: contentChanges === "partial" ? "true" : "false",
+          isFullyEdited: contentChanges === "full" ? "true" : "false",
           entities: msgData[msgData.length - 1]?.entities || {},
           reply: replyText[email?.mail_id] + "\n" + replyText[email?.mail_id]
         },
@@ -662,14 +651,14 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     original: string,
     edited: string,
     fullThreshold: number = 70
-  ): { status: "unchanged" | "partial" | "full"; changePercent: number }  =>{
+  ): { status: "unchanged" | "partial" | "full"; changePercent: number } => {
     if (!original.trim() && !edited.trim()) {
       return { status: "unchanged", changePercent: 0 };
     }
-  
+
     const origArr = original.trim().split(/\s+/);
     const editArr = edited.trim().split(/\s+/);
-  
+
     // Count common words (order-independent)
     let commonCount = 0;
     const editSet = new Set(editArr);
@@ -678,17 +667,17 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
         commonCount++;
       }
     }
-  
+
     const totalWords = Math.max(origArr.length, editArr.length);
     const changePercent = ((totalWords - commonCount) / totalWords) * 100;
-  
+
     let status: "unchanged" | "partial" | "full" = "unchanged";
     if (changePercent > 0 && changePercent < fullThreshold) {
       status = "partial";
     } else if (changePercent >= fullThreshold) {
       status = "full";
     }
-  
+
     return { status, changePercent };
   }
 
@@ -851,11 +840,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
     // Open calendar in new tab
     window.open(calendarUrl, "_blank");
-    setShowMoreMenu(false);
-  };
-
-  const handlePrintEmail = () => {
-    window.print();
     setShowMoreMenu(false);
   };
 
@@ -1242,7 +1226,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                       </button>
 
                       <button
-                        onClick={handlePrintEmail}
                         className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
                       >
                         <svg
@@ -1258,7 +1241,39 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                             d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
                           />
                         </svg>
-                        <span>Print</span>
+                        <span><PrintConversation sortedMessages={sortedMessages} email={email} collections={true} /></span>
+                      </button>
+
+                      <button
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+                          />
+                        </svg>
+                        <span>
+                          <PrintConversation
+                            sortedMessages={sortedMessages.filter((message, index) => {
+                              const isExpanded =
+                                expandedMessages.has(message.message_id) ||
+                                (index === sortedMessages.length - 1 &&
+                                  !expandedMessages.has(`collapsed-${message.message_id}`));
+                              return isExpanded;
+                            })}
+                            email={email}
+                            collections={false}
+                          />
+
+                        </span>
                       </button>
 
                       <div className="border-t border-gray-100 my-1"></div>
@@ -1387,7 +1402,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                                   {message.from_address}
                                 </p>
                                 <div className="flex justify-between mr-1" style={{ minWidth: "160px" }}>
-                                  <ReplyTypeLabel replyType={message.reply_type}/>
+                                  <ReplyTypeLabel replyType={message.reply_type} />
                                   {/* {isFromCurrentUser ? (
                                   <MailSend className="w-5 h-5 text-blue-600 mt-0.5" />
                                 ) : (
@@ -1730,14 +1745,14 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                   </h3>
                   <div className="text-sm text-gray-600 space-y-1 bg-white p-3 rounded-lg border" >
                     <div className="space-y-1 text-sm">
-                    <EmailChipsInput label="To" emails={toRecipients} setEmails={setToRecipients} />
+                      <EmailChipsInput label="To" emails={toRecipients} setEmails={setToRecipients} />
 
-                    {(replyingType === "reply-all" || replyingType === "forward") && (
-                      <>
-                        <EmailChipsInput label="Cc" emails={ccRecipients} setEmails={setCcRecipients} />
-                        <EmailChipsInput label="Bcc" emails={bccRecipients} setEmails={setBccRecipients} />
-                      </>
-                    )}
+                      {(replyingType === "reply-all" || replyingType === "forward") && (
+                        <>
+                          <EmailChipsInput label="Cc" emails={ccRecipients} setEmails={setCcRecipients} />
+                          <EmailChipsInput label="Bcc" emails={bccRecipients} setEmails={setBccRecipients} />
+                        </>
+                      )}
 
 
 

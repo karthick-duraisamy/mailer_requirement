@@ -976,6 +976,8 @@ function App() {
         onSearch={handleSearch}
         searchQuery={searchQuery}
         setEmails ={setEmails}
+        setIsFullPageView = {setIsFullPageView}
+        isFullPageView = {isFullPageView}
       />
 
       <div className="flex-1 flex overflow-hidden">

@@ -33,6 +33,8 @@ interface SidebarProps {
   onSearch: (query: string) => void;
   searchQuery: string;
   setEmails: Function;
+  setIsFullPageView: Function;
+  isFullPageView: boolean;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -46,6 +48,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   onSearch,
   searchQuery,
   setEmails,
+  setIsFullPageView,
+  isFullPageView
 }) => {
   const [labelsExpanded, setLabelsExpanded] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -516,6 +520,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   onClick={() => {
                     onItemSelect(item.id);
                     setSelectedTab(item.id);
+                    setIsFullPageView(isFullPageView === true ? false : false);
                   }}
                   className={`
                     flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors
