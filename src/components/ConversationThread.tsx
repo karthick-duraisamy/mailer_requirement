@@ -580,7 +580,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
         mail_id: msgData[msgData.length - 1]?.mail_id,
         message_id: msgData[msgData.length - 1]?.message_id,
         thread_id: msgData[msgData.length - 1]?.thread_id,
-        folder: msgData[msgData.length - 1]?.folder,
+        folder: "[Gmail]/Sent Mail",
         subject: msgData[msgData.length - 1]?.subject,
         // to: [msgData[msgData.length - 1]?.from_address],
         to: toRecipients,
