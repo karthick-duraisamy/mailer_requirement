@@ -851,7 +851,7 @@ const EmailList: React.FC<EmailListProps> = ({
                       ? ` Selected Emails ${emails.filter((email) => !email.is_read).length}/${readStatus === "all" ? paginationCount : emails.length
                       })`
                       : ` (${selectedMails})`} */}
-                      {` Selected Emails (${emails.filter((email) => !email.is_read).length})
+                      {` Selected Emails (${selectedMails})
                       `}
                   </h4>
                   <p className="text-sm mt-1 text-gray-800 truncate">

@@ -69,6 +69,7 @@ interface ConversationThreadProps {
   activeSection?: string;
   onStarToggle?: (emailId: string) => void;
   isFullPageView?: boolean;
+  deletedEmail?: any | null;
 }
 
 const ConversationThread: React.FC<ConversationThreadProps> = ({
@@ -86,7 +87,8 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   onRestoreEmail,
   activeSection,
   onStarToggle,
-  isFullPageView
+  isFullPageView,
+  deletedEmail
 }) => {
   const { width: windowWidth } = useScreenResolution();
   const [replyText, setReplyText] = useState<{ [key: string]: string }>({});;
@@ -497,6 +499,24 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   }, [getConversationDetailsStatus]);
 
   if (!email) {
+    return (
+      <div className="flex-1 flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-4xl text-gray-400">📧</span>
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            Select an email
+          </h3>
+          <p className="text-gray-500">
+            Choose an email from the list to view the conversation
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (deletedEmail.length===0 && activeSection === "bin") {
     return (
       <div className="flex-1 flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -1189,7 +1209,10 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
                       <button
                         onClick={() => {
-                          if (onStarToggle) onStarToggle(email.mail_id);
+                          if (onStarToggle) {
+                            onStarToggle(email.mail_id);
+                            email.is_starred = !email.is_starred;
+                          }
                           setShowMoreMenu(false);
                         }}
                         className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
