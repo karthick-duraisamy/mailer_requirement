@@ -5,12 +5,10 @@ import {
   Forward,
   MoreHorizontal,
   Star,
-  Archive,
   ChevronDown,
   ChevronUp,
   Sparkles,
   RotateCcw,
-  Tag,
   ArrowLeft,
   Loader2,
   Trash2,
@@ -20,8 +18,6 @@ import {
   User,
   Bot,
   UserCog,
-  // Send as MailSend,
-  // Inbox as InboxIcon,
 } from "lucide-react";
 import { Email, CustomLabel } from "../types/email";
 import EntitiesPopover from "./EntitiesPopover";
@@ -30,15 +26,12 @@ import {
   useGetAIReplyResponseMutation,
   useLazyGetConversationDetailsQuery,
   useLazyGetSettingsQuery,
-  // useLazyGetTemplateQuery,
   useSentMailMutation,
 } from "../service/inboxService";
-import { formatTimestamp, getIntentLabel, getSenderName, useScreenResolution } from "../hooks/commonFunction";
+import { formatTimestamp, getIntentLabel, getSenderName } from "../hooks/commonFunction";
 import { ConversationSkeleton } from "./skeletonLoader";
 import { SendIcon, InboxIcon } from "./Icons";
 import { notification } from "antd";
-import { TypedUseSelectorHook, useSelector } from "react-redux";
-import { RootState } from "../store/store";
 import HtmlViewer from "./HtmlViewer";
 import SparkleButton from "./SparkleButton/SparkleButton";
 import EmailChipsInput from "./EmailInputChips";
@@ -59,17 +52,13 @@ interface ConversationThreadProps {
   onBack?: () => void;
   isFullPage?: boolean;
   aiReplyState: AiReplyState;
-  onGenerateAiReply: (email: any, tone?: string, replyType?: string) => void;
   onAiReplyStateChange: (state: AiReplyState) => void;
   customLabels: CustomLabel[];
-  onEmailLabelsChange: (emailIds: string[], labelIds: string[]) => void;
-  onCreateLabel: (labelData: Omit<CustomLabel, "id" | "createdAt">) => void;
   onDeleteEmail?: (emailId: string) => void;
   onRestoreEmail?: (emailId: string) => void;
   activeSection?: string;
   onStarToggle?: (emailId: string) => void;
   isFullPageView?: boolean;
-  deletedEmail?: any | null;
 }
 
 const ConversationThread: React.FC<ConversationThreadProps> = ({
@@ -78,33 +67,26 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   onBack,
   isFullPage = false,
   aiReplyState,
-  onGenerateAiReply,
   onAiReplyStateChange,
   customLabels,
-  onEmailLabelsChange,
-  onCreateLabel,
   onDeleteEmail,
   onRestoreEmail,
   activeSection,
   onStarToggle,
   isFullPageView,
-  deletedEmail
 }) => {
-  const { width: windowWidth } = useScreenResolution();
-  const [replyText, setReplyText] = useState<{ [key: string]: string }>({});;
+  const [replyText, setReplyText] = useState<{ [key: string]: string }>({});
   const [replyContent, setReplyContent] = useState(false);
   const [AIGeneratedReply, setAIGeneratedReply] = useState("");
   const [showReply, setShowReply] = useState(false);
-  const [replyType, setReplyType] = useState<undefined | string>(undefined);
   const [expandedMessages, setExpandedMessages] = useState<Set<string>>(
     new Set()
   );
-  // const [listWidth, setListWidth] = useState<string>(localStorage.getItem('listwidth') || '320px');
   const [isAiReplyExpanded, setIsAiReplyExpanded] = useState(false);
   const [showEntitiesPopover, setShowEntitiesPopover] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [entitiesInfo, setEntitiesInfo] = useState<any[]>([]);
-  const [summaryModalInfo, setSummaryModalInfo] = useState(undefined);
+  const [summaryModalInfo, setSummaryModalInfo] = useState<any | undefined>(undefined);
   const [AIType, setAIType] = useState<"reply" | "summarize" | undefined>(undefined);
 
   // Refs for auto-scrolling
@@ -121,28 +103,15 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     useGetAIReplyResponseMutation();
   const [msgData, setMsgData] = useState<any[]>([]);
   const moreMenuRef = useRef<HTMLDivElement>(null);
-  const [settings, setSettings] = useState<any>();
+  const [_settings, setSettings] = useState<any>();
   const [getSettings, getSettingsResponseStatus] = useLazyGetSettingsQuery();
   const [sentMail, sentMailResponseStatus] = useSentMailMutation();
   const [intent, setIntent] = useState<string>("");
-  // const [getTemplate, getTemplateResponseStatus] = useLazyGetTemplateQuery();
-  // const [template, setTemplate] = useState<any>();
   const [templateContent, setTemplateContent] = useState<any>();
-  const [listWidth, setListWidth] = useState<string>(() => localStorage.getItem('listwidth') || '320px');
-  const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
-  const widthAlign = useAppSelector(state => state.alignment?.mode);
+  const [_listWidth, setListWidth] = useState<string>(() => localStorage.getItem('listwidth') || '320px');
   const [replyingType, setReplyingType] = useState<"reply" | "reply-all" | "forward" | undefined>(undefined);
   // --- State ---
   const [shouldScroll, setShouldScroll] = useState(false);
-
-  const [editingCcIndex, setEditingCcIndex] = useState<number | null>(null);
-  const [editingCcValue, setEditingCcValue] = useState("");
-  const [originalCcValue, setOriginalCcValue] = useState("");
-
-  const [editingBccIndex, setEditingBccIndex] = useState<number | null>(null);
-  const [editingBccValue, setEditingBccValue] = useState("");
-  const [originalBccValue, setOriginalBccValue] = useState("");
-
   const [toRecipients, setToRecipients] = useState<string[]>([]);
   const [ccRecipients, setCcRecipients] = useState<string[]>([]);
   const [bccRecipients, setBccRecipients] = useState<string[]>([]);
@@ -176,134 +145,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     }
   }, [showReply, replyContent, replyingType, msgData]);
 
-  // --- Validation ---
-  const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
-
-
-  // --- Enter edit mode ---
-
-  const handleCcDoubleClick = (email: string, index: number) => {
-    setEditingCcIndex(index);
-    setEditingCcValue(email);
-    setOriginalCcValue(email);
-  };
-
-  const handleBccDoubleClick = (email: string, index: number) => {
-    setEditingBccIndex(index);
-    setEditingBccValue(email);
-    setOriginalBccValue(email);
-  };
-
-  const handleCcCommit = (index: number) => {
-    const newEmails = editingCcValue.split(",").map(e => e.trim()).filter(Boolean);
-    if (!newEmails.length || editingCcValue.trim() === originalCcValue.trim()) {
-      setEditingCcIndex(null);
-      setEditingCcValue("");
-      setOriginalCcValue("");
-      return;
-    }
-
-    const updatedMsgData = [...msgData];
-    const lastIndex = updatedMsgData.findIndex(
-      m => new Date(m.created_at).getTime() === Math.max(...updatedMsgData.map(m => new Date(m.created_at).getTime()))
-    );
-    if (lastIndex === -1) return;
-
-    const lastMessage = { ...updatedMsgData[lastIndex] };
-    const updatedCc = [...(lastMessage.cc || [])];
-
-    if (isValidEmail(newEmails[0])) {
-      updatedCc[index] = newEmails[0];
-    }
-    newEmails.slice(1).forEach(email => {
-      if (isValidEmail(email)) updatedCc.push(email);
-    });
-
-    lastMessage.cc = updatedCc;
-    updatedMsgData[lastIndex] = lastMessage;
-    setMsgData(updatedMsgData);
-
-    setEditingCcIndex(null);
-    setEditingCcValue("");
-    setOriginalCcValue("");
-  };
-
-  const handleBccCommit = (index: number) => {
-    const newEmails = editingBccValue.split(",").map(e => e.trim()).filter(Boolean);
-    if (!newEmails.length || editingBccValue.trim() === originalBccValue.trim()) {
-      setEditingBccIndex(null);
-      setEditingBccValue("");
-      setOriginalBccValue("");
-      return;
-    }
-
-    const updatedMsgData = [...msgData];
-    const lastIndex = updatedMsgData.findIndex(
-      m => new Date(m.created_at).getTime() === Math.max(...updatedMsgData.map(m => new Date(m.created_at).getTime()))
-    );
-    if (lastIndex === -1) return;
-
-    const lastMessage = { ...updatedMsgData[lastIndex] };
-    const updatedBcc = [...(lastMessage.bcc || [])];
-
-    // Replace current with first valid email
-    if (isValidEmail(newEmails[0])) {
-      updatedBcc[index] = newEmails[0];
-    }
-    // Append remaining valid emails
-    newEmails.slice(1).forEach(email => {
-      if (isValidEmail(email)) updatedBcc.push(email);
-    });
-
-    lastMessage.bcc = updatedBcc;
-    updatedMsgData[lastIndex] = lastMessage;
-    setMsgData(updatedMsgData);
-
-    setEditingBccIndex(null);
-    setEditingBccValue("");
-    setOriginalBccValue("");
-  };
-
-  const handleCcRemove = (index: number) => {
-    setShouldScroll(true);
-    const updatedMsgData = [...msgData];
-    const lastIndex = updatedMsgData.findIndex(
-      m => new Date(m.created_at).getTime() === Math.max(...updatedMsgData.map(m => new Date(m.created_at).getTime()))
-    );
-    if (lastIndex === -1) return;
-
-    const lastMessage = { ...updatedMsgData[lastIndex] };
-    const updatedCc = [...(lastMessage.cc || [])];
-
-    if (updatedCc.length > 1) {
-      updatedCc.splice(index, 1);
-      lastMessage.cc = updatedCc;
-      updatedMsgData[lastIndex] = lastMessage;
-      setMsgData(updatedMsgData);
-    }
-  };
-
-  const handleBccRemove = (index: number) => {
-    setShouldScroll(true);
-    const updatedMsgData = [...msgData];
-    const lastIndex = updatedMsgData.findIndex(
-      m => new Date(m.created_at).getTime() === Math.max(...updatedMsgData.map(m => new Date(m.created_at).getTime()))
-    );
-    if (lastIndex === -1) return;
-
-    const lastMessage = { ...updatedMsgData[lastIndex] };
-    const updatedBcc = [...(lastMessage.bcc || [])];
-
-    if (updatedBcc.length > 1) {
-      updatedBcc.splice(index, 1);
-      lastMessage.bcc = updatedBcc;
-      updatedMsgData[lastIndex] = lastMessage;
-      setMsgData(updatedMsgData);
-    }
-  };
-
-
-
   // When the conversation changes, reset AI reply state
   useEffect(() => {
     setAIGeneratedReply("");
@@ -314,8 +155,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
   useEffect(() => {
     getSettings({});
-    // getTemplate({});
-    // localStorage.setItem('notify', 'true');
   }, []);
   useEffect(() => {
     if (getSettingsResponseStatus?.isSuccess) {
@@ -363,12 +202,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       window.removeEventListener('storage', handleResize);
     };
   }, []);
-
-
-  // useEffect(() => {
-  //   setReplyContent(false);
-  //   setShowReply(false);
-  // }, [email]);
 
   // Auto-scroll to reply box when AI reply is used
   useEffect(() => {
@@ -516,7 +349,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     );
   }
 
-  if (deletedEmail.length===0 && activeSection === "bin") {
+  if (email.length === 0 && activeSection === "bin") {
     return (
       <div className="flex-1 flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -534,15 +367,11 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     );
   }
 
-  // const extractEmail = (input: string): string | null => {
-  //   const match = input.match(/<([^>]+)>/);
-  //   return match ? match[1] : null;
-  // };
 
-  function extractEmail(input: any) {
+  const extractEmail = (input: any) => {
     const match = input.match(/[\w.-]+@[\w.-]+\.\w+/);
     return match ? match[0] : null;
-  }
+  };
 
 
   const handleSendReply = () => {
@@ -562,25 +391,12 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
         replyType = "AI_EDITED";
       }
 
-      // Handle reply logic here - would typically save the message with replyType
-      console.log("Reply sent with type:", replyType);
-
-      // const lastFromAddress = msgData[msgData.length - 1]?.from_address;
-
-      // const matchedSetting = settings?.find(
-      //   (s: any) => s.from_email_id === lastFromAddress
-      // );
-
-      // const settingId = matchedSetting?.setting_id;
-      // setReplyText("");
-      // const filledHtml = template.replace('$[[dynamic_content]]', replyText[email?.mail_id]);
-      // const finalHtml = filledHtml.replace('$[[signature]]', sessionStorage.getItem("defaultSignature") || "");
       setTemplateContent(replyText[email?.mail_id]);
       const emailData = {
         mail_id: msgData[msgData.length - 1]?.mail_id,
         message_id: msgData[msgData.length - 1]?.message_id,
         thread_id: msgData[msgData.length - 1]?.thread_id,
-        folder: "[Gmail]/Sent Mail",
+        folder: msgData[msgData.length - 1]?.folder,
         subject: msgData[msgData.length - 1]?.subject,
         // to: [msgData[msgData.length - 1]?.from_address],
         to: toRecipients,
@@ -616,17 +432,16 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
     }
     setReplyText({});
   };
+
   //html render value
-  function stripHtml(html: string): string {
+  const stripHtml = (html: string): string => {
     const div = document.createElement("div");
     div.innerHTML = html;
     return div.textContent || div.innerText || "";
   }
 
-
-
   // Determine if this should be a reply-all based on email context
-  const shouldUseReplyAll = (email: Email): any => {
+  const shouldUseReplyAll = (_email: Email): any => {
     const lastMessage = sortedMessages[sortedMessages.length - 1];
 
     // Check if there are multiple recipients (to + cc)
@@ -649,7 +464,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       const reply = (result as any)?.response.data.reply;
       setEntitiesInfo((result as any)?.response.data.entities || []);
       setIntent((result as any)?.response.data.intent || "");
-      console.log("AI Reply generated:", reply);
       if (key === "reply") setReplyText(prev => ({
         ...prev,
         [email?.mail_id]: reply
@@ -707,7 +521,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
   // Handle AI Reply button click
   const handleAiReply = () => {
-    // setReplyText(replyText);
     setShowReply(true);
     setReplyContent(true);
     onAiReplyStateChange({ ...aiReplyState, showAiReply: false });
@@ -715,42 +528,16 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
   // Handle AI Reply All button click
   const handleAiReplyAll = () => {
-    // if (msgData && sortedMessages.length > 0) {
-    const lastMessage = sortedMessages[sortedMessages.length - 1];
-    // Get all unique recipients (to, cc) excluding our own email if needed
-    const allRecipients = new Set([
-      ...lastMessage.to,
-      ...(lastMessage.cc || []),
-    ]);
-    // Optionally remove your own email from recipients here
-
     // Set reply text with appropriate header and AI reply
-    const replyAllText = `\n\n--- Reply All ---\nTo: ${Array.from(
-      allRecipients
-    ).join(", ")}\n\n${aiReplyState.generatedReply}`;
     setShowReply(true);
-    // setReplyText(replyAllText);x
     setReplyContent(true);
     onAiReplyStateChange({ ...aiReplyState, showAiReply: false });
-    // }
   };
 
   const handleReplyAll = () => {
-    setReplyType("reply-all");
     setReplyContent(true);
     if (email) {
-      const lastMessage = sortedMessages[sortedMessages.length - 1];
-      // Get all unique recipients (to, cc) excluding our own email
-      const allRecipients = new Set([
-        lastMessage.to,
-        ...lastMessage.to,
-        ...(lastMessage.cc || []),
-      ]);
-
       // Set reply text with appropriate header
-      const replyAllText = `\n\n--- Reply All ---\nTo: ${Array.from(
-        allRecipients
-      ).join(", ")}\n\n`;
       setReplyText(prev => ({
         ...prev,
         [email?.mail_id]: aiReplyState.generatedReply
@@ -767,13 +554,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
   const handleForward = () => {
     if (msgData) {
-      const lastMessage = sortedMessages[sortedMessages.length - 1];
       // Format the forwarded message
-      const forwardedText = `\n\n--- Forwarded Message ---\nFrom: ${lastMessage.from_address
-        }\nDate: ${formatTimestamp(lastMessage.create_to)}\nSubject: ${lastMessage.subject
-        }\nTo: ${lastMessage.to.join(", ")}\n${lastMessage.cc ? `Cc: ${lastMessage.cc.join(", ")}\n` : ""
-        }\n${lastMessage.body_plain}`;
-
       setReplyText(prev => ({
         ...prev,
         [email?.mail_id]: aiReplyState.generatedReply
@@ -787,20 +568,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       });
     }
   };
-
-  // const handleDeleteEmail = () => {
-  //   if (email) {
-  //     onDeleteEmail(email.message_id);
-  //     onClose(); // Close the conversation thread after deletion
-  //   }
-  // };
-
-  // const handleRestoreEmail = () => {
-  //   if (email && onRestoreEmail) {
-  //     onRestoreEmail(email.mail_id);
-  //     onClose();
-  //   }
-  // };
 
   const handleAddToCalendar = () => {
     if (!email) return;
@@ -866,9 +633,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
   const handleReportSpam = () => {
     if (!email) return;
 
-    // Mark email as spam and move to appropriate section
-    // In a real app, this would make an API call to mark as spam
-    console.log("Reporting spam for email:", email.message_id);
 
     // Show confirmation
     if (
@@ -876,13 +640,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
         `Report "${email.subject}" as spam? This conversation will be moved to spam folder.`
       )
     ) {
-      // TODO: In a real implementation, you would:
-      // 1. Call API to mark as spam
-      // 2. Move email to spam folder
-      // 3. Update email status
-
-      // alert("Email reported as spam successfully");
-
       // Close the conversation and go back to list
       onClose();
     }
@@ -981,36 +738,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
       <span>Generating...</span>
     </div>
   );
-
-
-  const messageBody = () => {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(replyText[email?.mail_id], 'text/html');
-    if (Array.from(doc.body.childNodes).some(node => node.nodeType === 1)) {
-      return <div dangerouslySetInnerHTML={{ __html: replyText[email?.mail_id] }} />
-    }
-    else {
-      return (
-        <textarea
-          value={stripHtml(replyText[email?.mail_id])}
-          onChange={(e) => setReplyText(prev => ({
-            ...prev,
-            [email?.mail_id]: e.target.value
-          }))}
-          placeholder={`${replyText[email?.mail_id].includes("--- Reply All ---")
-            ? "Write your reply to all recipients..."
-            : replyText[email?.mail_id].includes("--- Forwarded Message ---")
-              ? "Add a message to forward..."
-              : "Write your reply..."
-            }`}
-          className="w-full h-40 p-4 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
-        />
-      )
-    }
-
-  }
-
-  const lastMessage = sortedMessages[sortedMessages.length - 1] || {};
 
   return (
     <>
@@ -1144,13 +871,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
               </div>
 
               <div className="flex items-center space-x-2 ml-4">
-                {/* <EmailLabelActions
-              emailIds={[email.message_id]}
-              currentLabels={email.customLabels || []}
-              availableLabels={customLabels}
-              onLabelsChange={onEmailLabelsChange}
-              onCreateLabel={onCreateLabel}
-            /> */}
                 <button
                   ref={entitiesButtonRef}
                   onClick={() => {
@@ -1168,15 +888,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                 <div className="cls-ai-btn">
                   <SparkleButton onClick={() => handleAiReplyGenerate('summarize')} text={getAIReplyResponseStatus?.isLoading && AIType === 'summarize' ? '' : "Summarize"} fontSize="14" borderRad="30" />
                 </div>
-                {/* <button
-                  onClick={() => handleAiReplyGenerate('summarize')}
-                  className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <Sparkles className="w-4 h-4 mr-1" />
-                  <span className="text-sm text-gray-600 hover:text-gray-800">
-                    Summarize
-                  </span>
-                </button> */}
                 {activeSection === "bin" && onRestoreEmail ? (
                   <button
                     onClick={() => onRestoreEmail(email.mail_id)}
@@ -1391,13 +1102,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                                   ])
                               );
                             } else {
-                              // setExpandedMessages((prev) => {
-                              //   const newSet = new Set(prev);
-                              //   newSet.delete(
-                              //     `collapsed-${message.message_id}`
-                              //   );
-                              //   return newSet;
-                              // });
                               setExpandedMessages(() => new Set<string>());
                             }
                           } else {
@@ -1426,11 +1130,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                                 </p>
                                 <div className="flex justify-between mr-1" style={{ minWidth: "160px" }}>
                                   <ReplyTypeLabel replyType={message.reply_type} />
-                                  {/* {isFromCurrentUser ? (
-                                  <MailSend className="w-5 h-5 text-blue-600 mt-0.5" />
-                                ) : (
-                                  <InboxIcon className="w-5 h-5 text-green-600 mt-0.5" />
-                                )} */}
                                   {isFromCurrentUser ? (
                                     <SendIcon />
                                   ) : (
@@ -1454,9 +1153,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                           </button>
                         </div>
 
-                        {/* Message Metadata - Always visible for expanded messages */}
                         {isExpanded &&
-                          // (message.cc.length > 0 || message.bcc.length > 0) && (
                           (
                             (message.cc.length > 0 && message.cc[0] !== "") ||
                             (message.bcc.length > 0 && message.bcc[0] !== "")
@@ -1504,15 +1201,9 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                             <div
                               className="text-gray-800 leading-relaxed whitespace-pre-wrap"
                               style={{ wordBreak: "break-word" }}
-                            //  dangerouslySetInnerHTML={{
-                            //    __html: message?.body_html || message?.body_plain || message?.snippet,
-                            //  }}
                             />
                             <HtmlViewer rawHtml={message?.body_html || message?.body_plain || message?.snippet} />
                           </div>
-                          {/* {message.body_plain}
-                        </div> */}
-                          {/* </div> */}
                         </>
                       )}
 
@@ -1540,7 +1231,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                   <div className="flex items-center gap-2 flex-wrap">
                     <button
                       onClick={() => {
-                        setReplyType("AI");
                         setShowReply(true);
                         setReplyContent(true);
                         setReplyingType('reply');
@@ -1576,20 +1266,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
 
                   {/* Right button */}
                   <div className="flex items-center gap-2 cls-ai-btn" style={{ marginRight: isFullPageView ? "0% !important" : "" }}>
-                    {/* <button
-                      onClick={() => handleAiReplyGenerate('reply')}
-                      disabled={getAIReplyResponseStatus?.isLoading && AIType === 'reply'}
-                      className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-400 text-white rounded-lg transition-colors"
-                    >
-                      {getAIReplyResponseStatus?.isLoading && AIType === 'reply' ? (
-                        <LoadingIndicator />
-                      ) : (
-                        <>
-                          <Sparkles className="w-4 h-4" />
-                          <span>Reply with AI</span>
-                        </>
-                      )}
-                    </button> */}
                     <SparkleButton onClick={() => handleAiReplyGenerate('reply')} text={getAIReplyResponseStatus?.isLoading && AIType === 'reply' ? "" : "Reply with AI"} fontSize="14" borderRad="30" />
                   </div>
                 </div>
@@ -1604,10 +1280,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                 <div
                   ref={aiReplyRef}
                   className={`bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-4 animate-in slide-in-from-top-2 duration-300 transition-all`}
-                // ${isAiReplyExpanded
-                // ? "fixed inset-4 z-50 bg-white shadow-2xl flex flex-col"
-                // : ""
-                // }
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center space-x-2">
@@ -1631,7 +1303,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                               }`,
                           }
                         )}
-                        {getIntentLabel(intent).text}
+                        {intent}
                       </div>
                       <button
                         ref={entitiesButtonRefAi}
@@ -1776,21 +1448,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                           <EmailChipsInput label="Bcc" emails={bccRecipients} setEmails={setBccRecipients} />
                         </>
                       )}
-
-
-
-
-                      {/* Bcc (render only if exists) */}
-                      {/* {replyType === "reply-all" &&
-                        sortedMessages[sortedMessages.length - 1]?.bcc?.length >
-                        0 && (
-                          <div>
-                            <span className="font-medium">Bcc:</span>{" "}
-                            {sortedMessages[sortedMessages.length - 1].bcc.join(
-                              ", "
-                            )}
-                          </div>
-                        )} */}
                     </div>
 
                     <p>
@@ -1817,7 +1474,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                         ...prev,
                         [email?.mail_id]: e.target.value
                       }));
-                      console.log(replyText);
                     }}
                     placeholder={
                       replyingType === 'reply-all'
@@ -1853,24 +1509,6 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({
                     Cancel
                   </button>
                   <div className="flex items-center space-x-2">
-                    {/* Show AI generate button if not already using AI reply */}
-                    {/* {replyText !== aiReplyState.generatedReply &&
-                  !aiReplyState.showAiReply && (
-                    <button
-                      onClick={handleAiReplyGenerate}
-                      disabled={aiReplyState.isGenerating}
-                      className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-400 text-white rounded-lg transition-colors"
-                    >
-                      {aiReplyState.isGenerating ? (
-                        <LoadingIndicator />
-                      ) : (
-                        <>
-                          <Sparkles className="w-4 h-4" />
-                          <span>Generate with AI</span>
-                        </>
-                      )}
-                    </button>
-                  )} */}
                     <button
                       onClick={handleSendReply}
                       disabled={!replyText[email?.mail_id]?.trim()}

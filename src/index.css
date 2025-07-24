@@ -109,4 +109,9 @@ body {
 .html-content {
   scrollbar-width: thin !important;
   scrollbar-color: #0e2071 #fd9646 !important;
+  
+}
+
+.html-content .MsoNormal span{
+    position: unset !important;
 }

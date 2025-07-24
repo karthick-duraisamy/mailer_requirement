@@ -3,32 +3,14 @@ import {
   Star,
   Square,
   CheckSquare,
-  Inbox,
-  Send,
-  FileText,
-  Clock,
-  Tag,
-  Calendar,
-  Megaphone,
-  AlertTriangle,
-  BarChart3,
-  MessageSquare,
-  Mail,
   MoreHorizontal,
-  CheckCircle,
-  XCircle,
-  Ticket,
 } from "lucide-react";
 import { Email, CustomLabel } from "../types/email";
 import EmailLabelActions from "./EmailLabelActions";
-import LabelList from "./CustomLabel";
 import { useLazyGetMailListResponseQuery } from "../service/inboxService";
-// import { FilterOptions } from "../components/EmailFilters";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../store/store";
 import {
-  FilterOptions,
-  resetFilters,
   setFilterSettings,
 } from "../store/filterSlice";
 import { getIntentLabel, getSenderName } from "../hooks/commonFunction";
@@ -56,15 +38,7 @@ interface EmailListProps {
   onUndo?: () => void;
   setEmails?: Function;
   readStatus: string;
-  searchFilter: any;
 }
-
-type IntentLabel = {
-  text: string;
-  icon: React.ElementType;
-  color: string;
-  iconColor: string;
-};
 
 const EmailList: React.FC<EmailListProps> = ({
   emails,
@@ -73,26 +47,21 @@ const EmailList: React.FC<EmailListProps> = ({
   onStarToggle,
   onCheckToggle,
   checkedEmails,
-  activeSection,
   customLabels,
   onEmailLabelsChange,
   onCreateLabel,
   onBulkMarkAsRead,
   onBulkDelete,
-  onBulkRestore,
   onSelectAll,
   onUnselectAll,
   onUndo,
   setEmails,
-  readStatus,
-  searchFilter,
 }) => {
-  const [toAddress, setToAddress] = useState("");
+  const [_toAddress, setToAddress] = useState("");
   const [width, setWidth] = useState(320); // Default width
   const [isResizing, setIsResizing] = useState(false);
   const [showMoreActions, setShowMoreActions] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [searchText, setSearchText] = useState("");
   const startXRef = useRef<number>(0);
   const startWidthRef = useRef<number>(320);
   const [getMailList, getMailListResponse] = useLazyGetMailListResponseQuery();
@@ -105,11 +74,8 @@ const EmailList: React.FC<EmailListProps> = ({
   const [inboxCount, setInboxCount] = useState<any>({});
   const [paginationCount, setPaginationCount] = useState(0);
   const filters: any = useSelector((state: RootState) => state.filters);
-  // console.log(filters);
   const dispatch = useDispatch();
   const [isFiltered, setIsFiltered] = useState(false);
-  // const [activeSectionTab, setActiveSectionTab] = useState("inbox");
-  const [inputValue, setInputValue] = useState("");
   const [searchQuery, setSearchQuery] = useState<any>("");
   const [selectedMails, setSelectedMails] = useState(0);
   const isLoadingRef = useRef(false); // prevent multiple calls
@@ -117,7 +83,6 @@ const EmailList: React.FC<EmailListProps> = ({
   const isFilterFilled = useSelector((state: any) => state?.alignment?.isFilterFilled);
   const [dummyCount, setDummyContent] = useState(0);
   const dummyCountRef = useRef(dummyCount);
-  const hasInitializedRef = useRef(false);
   const selectedTabStatus = useSelector(
     (state: any) => state?.alignment?.selectedTabStatus
   );
@@ -152,7 +117,6 @@ const EmailList: React.FC<EmailListProps> = ({
   useEffect(() => {
     // Initial call
     if ((filters !== undefined && Object.keys(filters).length > 3) || (isInputFilled?.length !== 0 && filters.search !== "")) {
-      console.log("inside filtered");
       setIsFiltered(true);
       getMailList(filters);
     }
@@ -161,13 +125,7 @@ const EmailList: React.FC<EmailListProps> = ({
     }
   }, [filters]);
 
-  // useEffect(() => {
-  //   if (searchQuery?.length === 0) {
-  //     getMailList({ page_size: 20, page: 1, folder: filters?.folder});
-  //   }
-  // }, [searchQuery]);
-
-
+  // List api response handling
   useEffect(() => {
     if (getMailListResponse.isSuccess && setEmails) {
       const staticList = (getMailListResponse as any)?.data?.response?.data
@@ -181,10 +139,6 @@ const EmailList: React.FC<EmailListProps> = ({
         const isSearchMode = isInputFilled?.length !== 0;
         const currentPage = filters?.page;
 
-        const mappedList = staticList.map((email: any) => ({
-          ...email,
-          intentLabel: email.labels || "new",
-        }));
         const responseData = (getMailListResponse as any)?.data?.response?.data;
         const latestCount = Number(responseData?.count || 0);
         if (inboxCount[selectedTabStatus] === undefined) {
@@ -193,14 +147,12 @@ const EmailList: React.FC<EmailListProps> = ({
             [selectedTabStatus]: latestCount,
           }));
         }
-        console.log(inboxCount[selectedTabStatus], (latestCount - (inboxCount[selectedTabStatus] ?? 0)), selectedTabStatus, inboxCount);
         if (inboxCount[selectedTabStatus] !== undefined && latestCount !== undefined && inboxCount[selectedTabStatus] !== latestCount && (latestCount - (inboxCount[selectedTabStatus])) > 0 ) {
           const notificationCount = latestCount - inboxCount[selectedTabStatus];
           setInboxCount((prev: any) => ({
             ...prev,
             [selectedTabStatus]: latestCount,
           }));
-          console.log("difference generated", latestCount, inboxCount[selectedTabStatus], selectedTabStatus);
           if (notificationCount && selectedTabStatus === 'inbox') {
             notification.success({
               message: `You have ${notificationCount} new messages`,
@@ -256,13 +208,6 @@ const EmailList: React.FC<EmailListProps> = ({
             return updatedEmails;
           });
         }
-
-        // if (!hasInitializedRef.current) {
-        //   setNotificationState(latestCount);
-        // }
-        // else if (!isSearchMode && !isFilterFilled ) {
-        //   setNotificationState(latestCount);
-        // }
       }
     }
   }, [getMailListResponse, selectedTabStatus]);
@@ -312,104 +257,11 @@ const EmailList: React.FC<EmailListProps> = ({
     }
   };
 
-  const getSectionTitle = (section: string) => {
-    switch (section) {
-      case "inbox":
-        return "Inbox";
-      case "sent":
-        return "Sent";
-      case "drafts":
-        return "Drafts";
-      case "starred":
-        return "Starred";
-      case "snoozed":
-        return "Snoozed";
-      case "label-work":
-        return "Work";
-      case "label-personal":
-        return "Personal";
-      case "label-important":
-        return "Important";
-      case "label-travel":
-        return "Travel";
-      default:
-        // Handle custom labels
-        if (section.startsWith("custom-label-")) {
-          const labelId = section.replace("custom-label-", "");
-          const label = customLabels.find((l) => l.id === labelId);
-          return label?.name || "Unknown Label";
-        }
-        return "Inbox";
-    }
-  };
-
-  const getSectionIcon = (section: string) => {
-    switch (section) {
-      case "inbox":
-        return Inbox;
-      case "sent":
-        return Send;
-      case "drafts":
-        return FileText;
-      case "starred":
-        return Star;
-      case "snoozed":
-        return Clock;
-      default:
-        return Tag;
-    }
-  };
-
-  const getEmailCustomLabels = (email: Email) => {
-    if (!email.labels) return [];
-    return email.labels
-      .map((labelId) => customLabels.find((label) => label.id === labelId))
-      .filter(Boolean) as CustomLabel[];
-  };
-
-  const EmptyState = ({ section }: { section: string }) => {
-    const Icon = getSectionIcon(section);
-    const title = getSectionTitle(section);
-
-    return (
-      <div className="flex flex-col items-center justify-center h-96 text-center p-8">
-        <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-          <Icon className="w-10 h-10 text-gray-400" />
-        </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
-          No emails in {title}
-        </h3>
-        <p className="text-gray-500 max-w-sm">
-          {section === "starred"
-            ? "Star important conversations to find them quickly here."
-            : section === "snoozed"
-              ? "Snoozed conversations will appear here when it's time to deal with them."
-              : section.startsWith("custom-label-") ||
-                section.startsWith("label-")
-                ? `Conversations with the "${title}" label will appear here.`
-                : `No conversations available yet.`}
-        </p>
-      </div>
-    );
-  };
 
   const checkedEmailsArray = Array.from(checkedEmails);
   const hasCheckedEmails = checkedEmailsArray.length > 0;
 
-  const handleResizeStart = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      setIsResizing(true);
-      startXRef.current = e.clientX;
-      startWidthRef.current = width;
-
-      // Add cursor style to body to prevent cursor flickering
-      document.body.style.cursor = "col-resize";
-      document.body.style.userSelect = "none";
-    },
-    [width]
-  );
-
+  // To resize the list width
   const handleResize = useCallback(
     (e: MouseEvent) => {
       if (!isResizing) return;
@@ -452,74 +304,6 @@ const EmailList: React.FC<EmailListProps> = ({
     };
   }, [isResizing, handleResize, handleResizeStop]);
 
-  // if (emails.length === 0) {
-  //   return (
-  //     <div
-  //       className="bg-white border-r border-gray-200 relative"
-  //       ref={containerRef}
-  //       style={{
-  //         width: `${width}px`,
-  //         minWidth: "365px",
-  //         maxWidth: "800px",
-  //         height: "100%",
-  //         overflow: "auto",
-  //       }}
-  //       onScroll={(e) => {
-  //         const target = e.currentTarget;
-  //         const totalPages = Math.ceil(inboxCount / filterData.page_size);
-
-  //         // Scroll to bottom: load next page
-  //         if (target.scrollHeight - target.scrollTop === target.clientHeight) {
-  //           if (filterData.page < totalPages) {
-  //             if (isFiltered) {
-  //               // dispatch(setFilterSettings({ ...filters, page: filters?.page + 1 }));
-  //               // setIsFiltered(true);
-  //             } else {
-  //               setFilterData((prev: any) => ({
-  //                 ...prev,
-  //                 page: prev.page + 1,
-  //               }));
-  //               setIsFiltered(false);
-  //             }
-  //           }
-  //         }
-
-  //         // Scroll to top: load previous page (if not on first page)
-  //         if (target.scrollTop === 10) {
-  //           if (filterData.page > 1) {
-  //             if (isFiltered) {
-  //               // dispatch(setFilterSettings({ ...filters, page: filters?.page - 1 }));
-  //               // setIsFiltered(true);
-  //             } else {
-  //               setFilterData((prev: any) => ({
-  //                 ...prev,
-  //                 page: prev.page - 1,
-  //               }));
-  //               setIsFiltered(false);
-  //             }
-  //           }
-  //         }
-  //       }}
-
-  //     >
-  //       {/* Resizer */}
-  //       <div
-  //         className="absolute top-0 right-0 h-full w-2 cursor-col-resize flex items-center justify-center hover:bg-blue-50 transition-colors group z-10"
-  //         onMouseDown={handleResizeStart}
-  //       >
-  //         <div className="bg-gray-300 group-hover:bg-blue-400 h-6 w-0.5 rounded-full transition-colors" />
-  //       </div>
-  //       <div className="p-4 border-b border-gray-200" style={{ backgroundColor: "#dbeafe" }}>
-  //         <h2 className="text-lg font-semibold text-gray-900">
-  //           {getSectionTitle(activeSection)}
-  //         </h2>
-  //       </div>
-  //       <EmptyState section={activeSection} />
-  //     </div>
-  //   );
-  // }
-
-
   useEffect(() => {
     dummyCountRef.current = dummyCount;
   }, [dummyCount]);
@@ -527,35 +311,10 @@ const EmailList: React.FC<EmailListProps> = ({
   useEffect(() => {
     const intervalId = setInterval(() => {
       // Check scrollTop to skip API call if scrolled down
-      const isScrolledDown =
-        containerRef.current &&
-        containerRef.current.scrollTop > 10; // adjust buffer as needed
-
-      // if (isScrolledDown) {
-      //   console.log("Skipping API call due to scroll position");
-      //   return;
-      // }
-      // if (!isScrolledDown) {
-      //   // Reset page to 1 if needed
-      //   if (isFiltered) {
-      //     dispatch(setFilterSettings({ ...filters, page: 1 }));
-      //   } else {
-      //     setFilterData((prev : any) => ({
-      //       ...prev,
-      //       page: 1,
-      //     }));
-      //   }
-
-      //   // Call API and update list (if you're not already doing this inside getMailList)
-      //   getMailList({ page_size: 50, page: 1 });
-      // }
-
 
       setDummyContent((prev) => {
         const newVal = prev + 1;
         dummyCountRef.current = newVal;
-
-        console.log("countena", newVal);
 
         const shouldFetch =
           newVal % 2 === 0 &&
@@ -570,7 +329,6 @@ const EmailList: React.FC<EmailListProps> = ({
             page: undefined,
             search: isInputFilled ? isInputFilled : "",
           };
-          console.log(updatedFilters, "updatedFilters");
           getMailList(updatedFilters);
         }
 
@@ -589,11 +347,8 @@ const EmailList: React.FC<EmailListProps> = ({
 
   const handleChange = (e: any) => {
     const value = e.target.value;
-    setInputValue(value);
-
     // Dispatch true if input is not empty, false if empty
     dispatch(setInputFilled(value));
-    // console.log(value,"rag1");
   };
 
   const handleSearchChange = (query: any) => {
@@ -647,8 +402,6 @@ const EmailList: React.FC<EmailListProps> = ({
       }}
 
       onScroll={(e) => {
-        // console.log(scrollTopEnable);
-
         const target = e.currentTarget;
         const totalPages = Math.ceil(paginationCount / (isFiltered ? filters?.page_size : filterData.page_size));
 
@@ -659,7 +412,6 @@ const EmailList: React.FC<EmailListProps> = ({
         if (isLoadingRef.current) return;
 
         const reachedBottom = target.scrollHeight - target.scrollTop <= target.clientHeight + scrollBuffer;
-        const reachedTop = target.scrollTop <= scrollBuffer;
 
         // Scroll to bottom: Next page
         if (reachedBottom) {
@@ -676,7 +428,6 @@ const EmailList: React.FC<EmailListProps> = ({
                 setFilterSettings({ ...filters, page: (filters?.page ?? 1) + 1 })
               );
               setIsFiltered(true);
-              console.log("dispatching");
             } else {
               setFilterData((prev: any) => ({
                 ...prev,
@@ -690,79 +441,9 @@ const EmailList: React.FC<EmailListProps> = ({
             }, 300);
           }
         }
-
-        // Scroll to top: Previous page
-        // if (reachedTop) {
-        //   const currentPage = isFiltered ? filters?.page : filterData.page;
-
-        //   if (currentPage > 1) {
-        //     isLoadingRef.current = true;
-
-        //     if (isFiltered && isFiltered) {
-        //       dispatch(
-        //         setFilterSettings({ ...filters, page: filters?.page - 1 })
-        //       );
-        //       setIsFiltered(true);
-        //     } else {
-        //       setFilterData((prev: any) => ({
-        //         ...prev,
-        //         page: prev.page - 1,
-        //       }));
-        //       setIsFiltered(false);
-        //     }
-
-        //     setTimeout(() => {
-        //       isLoadingRef.current = false;
-        //     }, 300);
-        //   }
-        // }
       }}
 
     >
-      {/* {getMailListResponse?.isFetching &&
-        <p className="cls-sending-status">Loading ...</p>
-      } */}
-
-      {/* Resizer */}
-      {/* <div
-        className="absolute top-0 right-0 h-full w-2 cursor-col-resize flex items-center justify-center hover:bg-blue-50 transition-colors group z-10"
-        onMouseDown={handleResizeStart}
-      >
-        <div className="bg-gray-300 group-hover:bg-blue-400 h-6 w-0.5 rounded-full transition-colors" />
-      </div> */}
-      {/* <div className="border-b border-gray-300 mb-4" >
-        <nav className="flex space-x-6" style={{justifyContent: "space-around", padding:"10px"}}>          <span
-            onClick={() => {
-              setActiveSectionTab("inbox");
-              setFilterData((prev: any) => ({
-                ...prev,
-                folder: 'inbox',
-              }));
-            }}
-            className={`cursor-pointer py-2 px-1 text-sm font-medium ${activeSectionTab === "inbox"
-              ? "border-b-2 border-blue-600 text-blue-600"
-              : "text-gray-500 hover:text-gray-700"
-              }`}
-          >
-            INBOX
-          </span>
-          <span
-            onClick={() => {
-              setActiveSectionTab("sent");
-              setFilterData((prev: any) => ({
-                ...prev,
-                folder: 'sent',
-              }));
-            }}
-            className={`cursor-pointer py-2 px-1 text-sm font-medium ${activeSectionTab === "sent"
-              ? "border-b-2 border-blue-600 text-blue-600"
-              : "text-gray-500 hover:text-gray-700"
-              }`}
-          >
-            SENT
-          </span>
-        </nav>
-      </div> */}
       <div
         className="py-4 px-1 border-b border-gray-200"
         style={{ backgroundColor: "#dbeafe", position: "sticky", top: '0' }}
@@ -846,13 +527,7 @@ const EmailList: React.FC<EmailListProps> = ({
               ) : (
                 <>
                   <h4 className="text-sm font-semibold text-gray-900">
-                    {/* {activeSectionTab === "sent" ? "Sent" : "Selected Emails"}
-                    {activeSectionTab === "sent"
-                      ? ` Selected Emails ${emails.filter((email) => !email.is_read).length}/${readStatus === "all" ? paginationCount : emails.length
-                      })`
-                      : ` (${selectedMails})`} */}
-                      {` Selected Emails (${selectedMails})
-                      `}
+                      {` Selected Emails (${selectedMails})`}
                   </h4>
                   <p className="text-sm mt-1 text-gray-800 truncate">
                     support@atyourprice.net
@@ -978,7 +653,6 @@ const EmailList: React.FC<EmailListProps> = ({
         {emails.map((email) => {
           const isSelected = selectedEmailId === email.mail_id;
           const isChecked = checkedEmails.has(email.mail_id);
-          const emailLabels = email?.corporate_label;
 
           return (
             <div
@@ -1028,7 +702,6 @@ const EmailList: React.FC<EmailListProps> = ({
 
                 <div className="flex-1 min-w-0 flex items-start justify-between">
                   <div className="flex-1 min-w-0 pr-2">
-                    {/* <p>{JSON.stringify(email?.from_address)}</p> */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2 min-w-0">
                         <p
@@ -1125,11 +798,6 @@ const EmailList: React.FC<EmailListProps> = ({
                       )}
 
                     </div>
-
-                    {/* Custom Labels */}
-                    {/* {emailLabels.length > 0 && (
-                      <LabelList emailLabels={email?.labels as string[]} />
-                    )} */}
                   </div>
                 </div>
               </div>

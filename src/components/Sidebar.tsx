@@ -9,26 +9,22 @@ import {
   ChevronRight,
   Settings,
   UserCircle,
-  Scroll,
 } from "lucide-react";
 import { CustomLabel } from "../types/email";
 import EmailFilters, { FilterOptions } from "./EmailFilters";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch } from "react-redux";
 import { setFilterSettings } from "../store/filterSlice";
 import SignatureSetup from "./SignatureSetup";
 import { setFilterFilled, setInputFilled, setSelectedTabStatus, setScrollTop } from "../store/alignmentSlice";
 import {
   useLazyGetLabelListQuery,
-  useLazyGetMailListResponseQuery,
 } from "../service/inboxService";
 import { Empty } from 'antd';
 interface SidebarProps {
   activeItem: string;
   onItemSelect: (item: string) => void;
-  isOpen: boolean;
   onComposeClick: () => void;
   customLabels: CustomLabel[];
-  onManageLabels: () => void;
   emailCounts: Record<string, number>;
   onSearch: (query: string) => void;
   searchQuery: string;
@@ -40,10 +36,8 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({
   activeItem,
   onItemSelect,
-  isOpen,
   onComposeClick,
   customLabels,
-  onManageLabels,
   emailCounts,
   onSearch,
   searchQuery,
@@ -57,7 +51,6 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [showSignatureSetup, setShowSignatureSetup] = useState(false);
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
   const settingsRef = useRef<HTMLDivElement>(null);
-  const [getMailList, getMailListResponse] = useLazyGetMailListResponseQuery();
   const [selectedTab, setSelectedTab] = useState<string>("inbox");
   const [getLabelList, getLabelListResponse] = useLazyGetLabelListQuery();
   const [countsSection, setCountsSection] = useState<any>();
@@ -93,15 +86,6 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const [isIntentOpen, setIsIntentOpen] = useState(false);
   const [isCorporateOpen, setIsCorporateOpen] = useState(false);
-  const [isAllConversation, setIsAllConversation] = useState(false);
-
-  const intentLabels = customLabels.filter(
-    (label) => label.category === "intent"
-  );
-
-  const corporateLabels = customLabels.filter(
-    (label) => label.category === "corporate"
-  );
 
   const getLabelCount = (labelId: string) => {
     return (
@@ -120,19 +104,10 @@ const Sidebar: React.FC<SidebarProps> = ({
     intent: "all",
   });
 
-  // const handleLabelClick = (labelId: string, isSystem: boolean) => {
-  //   if (isSystem) {
-  //     onItemSelect(`label-${labelId}`);
-  //   } else {
-  //     onItemSelect(`custom-label-${labelId}`);
-  //   }
-  // };
-
   const handleLabelClick = (
     labelId: string,
     category: "intent" | "corporate"
   ) => {
-    console.log("Clicked Label:", labelId);
     if (category === "intent") {
       setSelectedIntentLabels((prev) =>
         prev.includes(labelId)
@@ -146,21 +121,15 @@ const Sidebar: React.FC<SidebarProps> = ({
           : [...prev, labelId]
       );
     }
-
-    // if (isSystem) {
-    //   onItemSelect(`label-${labelId}`);
-    // } else {
-    //   onItemSelect(`custom-label-${labelId}`);
-    // }
   };
 
-  useEffect(() => {
-    console.log("Intent Selected:", selectedIntentLabels);
-  }, [selectedIntentLabels]);
+  // useEffect(() => {
+  //   console.log("Intent Selected:", selectedIntentLabels);
+  // }, [selectedIntentLabels]);
 
-  useEffect(() => {
-    console.log("Corporate Selected:", selectedCorporateLabels);
-  }, [selectedCorporateLabels]);
+  // useEffect(() => {
+  //   console.log("Corporate Selected:", selectedCorporateLabels);
+  // }, [selectedCorporateLabels]);
 
   const handleFiltersChange = (newFilters: FilterOptions) => {
     setFilters(newFilters);
@@ -177,7 +146,6 @@ const Sidebar: React.FC<SidebarProps> = ({
         has_attachment: newFilters?.hasAttachment,
       })
     );
-    // dispatch(setInputStatus(true));
   };
 
   const handleClearFilters = () => {
@@ -284,10 +252,6 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
   }, [getLabelListResponse]);
 
-  // useEffect(() => {
-  //   getMailList({ page_size: 20, folder: "inbox" });
-  // }, [isAllConversation]);
-
   // Intent / Corporate labels sorting based on unread count.
   const generateSortedLabelOptions = (
     data: Record<string, { unread: number; total: number }>,
@@ -319,7 +283,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         search: undefined
       };
       dispatch(setSelectedTabStatus("sent"));
-      dispatch(setInputFilled(''));
+     
     } else if (selectedTab === "starred") {
       filterSettings = {
         page: undefined,
@@ -329,7 +293,6 @@ const Sidebar: React.FC<SidebarProps> = ({
         search: undefined
       };
       dispatch(setSelectedTabStatus("starred"));
-      dispatch(setInputFilled(''));
     } else if (selectedTab === "bin") {
       filterSettings = {
         page: undefined,
@@ -339,7 +302,6 @@ const Sidebar: React.FC<SidebarProps> = ({
         search: undefined
       };
       dispatch(setSelectedTabStatus("bin"));
-      dispatch(setInputFilled(''));
     } else if (selectedTab === "inbox") {
       filterSettings = {
         page: undefined,
@@ -349,36 +311,13 @@ const Sidebar: React.FC<SidebarProps> = ({
         search: undefined
       };
       dispatch(setSelectedTabStatus("inbox"));
-      dispatch(setInputFilled(''));
     }
 
+    dispatch(setInputFilled(''));
     dispatch(setFilterSettings(filterSettings));
     dispatch(setFilterFilled(true));
     dispatch(setScrollTop(true));
   }, [selectedTab]);
-
-
-  // useEffect(() => {
-  //   if (getMailListResponse?.isSuccess) {
-  //     const staticList = (getMailListResponse as any)?.data?.response?.data
-  //       .results;
-  //     console.log(staticList, "static list");
-  //     setEmails(
-  //       staticList.map((email: any) => ({
-  //         ...email,
-  //         intentLabel: email.labels || "new",
-  //       }))
-  //     );
-  //   }
-  // }, [getMailListResponse]);
-
-  useEffect(() => {
-    // if (!isOpen) {
-    console.log(intentLableOptions, "rag");
-    // }
-  }, [intentLableOptions])
-
-
 
   // Intent Search All and auto Complete
   const filteredIntentOptions = (intentLableOptions ?? []).filter((label: any) =>
@@ -430,7 +369,6 @@ const Sidebar: React.FC<SidebarProps> = ({
   const allFilteredCorporateSelected = filteredCorporateOptions.every((item: any) =>
     selectedCorporateLabels.includes(item.value)
   );
-  const isCorporateSearchActive = searchCorporateLabel.trim().length > 0;
 
   // SelectAll for corporate
   const handleSelectAllCorporate = () => {
@@ -733,12 +671,12 @@ const Sidebar: React.FC<SidebarProps> = ({
                   setIsIntentOpen(false); // close other
                 }}
                 className={`
-      flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors
-      ${isCorporateOpen || selectedCorporateLabels?.length > 0
-                    ? "bg-gray-100 text-gray-900"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-                  }
-    `}
+                      flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                      ${isCorporateOpen || selectedCorporateLabels?.length > 0
+                                    ? "bg-gray-100 text-gray-900"
+                                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                                  }
+                    `}
               >
                 <Tag className="w-4 h-4" />
                 <span className="hidden sm:inline">Corporate labels</span>
@@ -882,11 +820,6 @@ const Sidebar: React.FC<SidebarProps> = ({
           {/* Right side - Actions */}
           <div className="flex items-center space-x-2">
             {/* Filters Button */}
-            {/* <div className="relative">
-              <button className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900">
-                <span className="hidden sm:inline">Filters</span>
-              </button>
-            </div> */}
             <EmailFilters
               filters={filters}
               onFiltersChange={handleFiltersChange}
@@ -904,18 +837,6 @@ const Sidebar: React.FC<SidebarProps> = ({
 
               {showSettingsDropdown && (
                 <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
-                  {/* <div className="px-4 py-2 border-b border-gray-100">
-                <h3 className="font-semibold text-gray-900">Settings</h3>
-              </div>
-
-              <button 
-                onClick={handleOpenNotificationPreferences}
-                className="w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors flex items-center space-x-3"
-              >
-                <Bell className="w-4 h-4 text-gray-500" />
-                <span className="text-gray-700">Notification Preferences</span>
-              </button> */}
-
                   <button
                     onClick={handleOpenSignatureSetup}
                     className="w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors flex items-center space-x-3"
@@ -923,22 +844,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                     <UserCircle className="w-4 h-4 text-gray-500" />
                     <span className="text-gray-700">Signature Setup</span>
                   </button>
-
-                  {/* <button 
-                onClick={handleOpenEmailDisplayOptions}
-                className="w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors flex items-center space-x-3"
-              >
-                <Settings className="w-4 h-4 text-gray-500" />
-                <span className="text-gray-700">Email Display Options</span>
-              </button>
-
-              <button 
-                onClick={handleOpenGeneralSettings}
-                className="w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors flex items-center space-x-3"
-              >
-                <Settings className="w-4 h-4 text-gray-500" />
-                <span className="text-gray-700">General Settings</span>
-              </button> */}
                 </div>
               )}
             </div>
